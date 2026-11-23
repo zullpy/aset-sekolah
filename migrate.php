@@ -9,13 +9,20 @@
 
 define('AUTO_MIGRATE', false);
 
+// Muat konfigurasi global & deteksi lingkungan
+if (file_exists(__DIR__ . '/config/app.php')) {
+    require_once __DIR__ . '/config/app.php';
+}
+
 require_once __DIR__ . '/config/conn.php';
 
 $isCli   = (php_sapi_name() === 'cli');
 $newline = $isCli ? PHP_EOL : "<br>";
 
+$envName = defined('APP_ENV') ? APP_ENV : 'unknown';
+
 echo ($isCli ? "=== Migrasi Database SDN Budi Karya ===" : "<h3>Migrasi Database SDN Budi Karya</h3>") . $newline;
-echo "[INFO] Lingkungan: " . strtoupper(APP_ENV) . $newline;
+echo "[INFO] Lingkungan: " . strtoupper($envName) . $newline;
 
 try {
     $logs = run_migrations($pdo, MIGRATIONS_DIR);
