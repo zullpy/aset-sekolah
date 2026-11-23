@@ -1,0 +1,424 @@
+/* ==========================================================================
+   Header Styles - Sistem Informasi Aset SDN Budi Karya
+   ========================================================================== */
+
+/* CSS Variables & Global Tokens */
+:root {
+    --color-maroon-primary: #852019;
+    --color-maroon-dark: #6d1c16;
+    --color-maroon-deep: #3a1210;
+    --color-maroon-light: #fbeeed;
+    --color-slate-900: #0f172a;
+    --color-slate-800: #1e293b;
+    --color-slate-700: #334155;
+    --color-slate-600: #475569;
+    --color-slate-500: #64748b;
+    --color-slate-400: #94a3b8;
+    --color-slate-200: #e2e8f0;
+    --color-slate-100: #f1f5f9;
+    --color-slate-50: #f8fafc;
+    --header-height: 64px;
+    --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--color-slate-50);
+    color: var(--color-slate-800);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container Header */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 95;
+    height: var(--header-height);
+    background: #ffffff;
+    border-bottom: 1px solid var(--color-slate-200);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    transition: all 0.2s ease;
+}
+
+/* Header Sisi Kiri: Brand & Logo */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.header-toggle-sidebar {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: 1px solid var(--color-slate-200);
+    border-radius: 8px;
+    color: var(--color-slate-700);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.header-toggle-sidebar:hover {
+    background: var(--color-slate-100);
+    color: var(--color-maroon-primary);
+    border-color: var(--color-maroon-primary);
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.header-logo-wrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-slate-200);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    padding: 3px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.header-brand:hover .header-logo-wrapper {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(133, 32, 25, 0.15);
+}
+
+.header-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.header-brand-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.header-school-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--color-maroon-primary);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.header-app-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-slate-500);
+}
+
+/* Header Sisi Tengah: Quick Search / Status */
+.header-center {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 420px;
+    margin: 0 24px;
+}
+
+.header-search-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.header-search-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--color-slate-400);
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.header-search-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 14px 0 38px;
+    background: var(--color-slate-50);
+    border: 1px solid var(--color-slate-200);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--color-slate-800);
+    transition: all 0.2s ease;
+}
+
+.header-search-input:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: var(--color-maroon-primary);
+    box-shadow: 0 0 0 3px rgba(133, 32, 25, 0.1);
+}
+
+.header-search-input::placeholder {
+    color: var(--color-slate-400);
+}
+
+/* Header Sisi Kanan: Tanggal, Notifikasi & User Menu */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Tanggal Aktif */
+.header-date-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--color-slate-100);
+    border-radius: 8px;
+    color: var(--color-slate-600);
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--color-slate-200);
+}
+
+.header-date-badge i {
+    color: var(--color-maroon-primary);
+    font-size: 15px;
+}
+
+/* User Profile Dropdown */
+.header-user-wrapper {
+    position: relative;
+}
+
+.header-user-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 5px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    text-align: left;
+}
+
+.header-user-btn:hover,
+.header-user-btn.active {
+    background: var(--color-slate-100);
+    border-color: var(--color-slate-200);
+}
+
+.header-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--color-maroon-primary);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(133, 32, 25, 0.25);
+    flex-shrink: 0;
+}
+
+.header-user-meta {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.header-user-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-slate-800);
+    white-space: nowrap;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header-user-role {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-slate-500);
+}
+
+.header-user-caret {
+    font-size: 13px;
+    color: var(--color-slate-400);
+    transition: transform 0.2s ease;
+}
+
+.header-user-btn.active .header-user-caret {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu Popup */
+.header-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 220px;
+    background: #ffffff;
+    border: 1px solid var(--color-slate-200);
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    padding: 6px;
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    animation: fadeIn 0.15s ease-out;
+}
+
+.header-dropdown-menu.show {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.header-dropdown-header {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--color-slate-100);
+    margin-bottom: 4px;
+}
+
+.header-dropdown-role {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--color-maroon-light);
+    color: var(--color-maroon-primary);
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 4px;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.header-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-slate-700);
+    transition: all 0.15s ease;
+}
+
+.header-dropdown-item:hover {
+    background: var(--color-slate-100);
+    color: var(--color-maroon-primary);
+}
+
+.header-dropdown-item i {
+    font-size: 16px;
+}
+
+.header-dropdown-divider {
+    height: 1px;
+    background: var(--color-slate-100);
+    margin: 4px 0;
+}
+
+.header-dropdown-item.danger {
+    color: #dc2626;
+}
+
+.header-dropdown-item.danger:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Backdrop Sidebar Mobile */
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 99;
+}
+
+.sidebar-backdrop.show {
+    display: block;
+}
+
+/* Responsif Breakpoints */
+@media (max-width: 991.98px) {
+    .header-toggle-sidebar {
+        display: flex;
+    }
+
+    .header-center {
+        display: none;
+    }
+
+    .app-sidebar {
+        position: fixed !important;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        height: 100vh !important;
+        z-index: 105 !important;
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .app-sidebar.show,
+    .app-sidebar.is-open-mobile {
+        transform: translateX(0) !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .app-header {
+        padding: 0 12px;
+    }
+
+    .header-app-tag,
+    .header-date-badge,
+    .header-user-meta {
+        display: none;
+    }
+
+    .header-school-name {
+        font-size: 13.5px;
+    }
+
+    .header-logo-wrapper {
+        width: 36px;
+        height: 36px;
+    }
+}

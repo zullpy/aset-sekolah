@@ -44,9 +44,31 @@ if (empty($activeMenu)) {
 }
 
 // Helper path agar link fleksibel (bisa dipanggil dari root maupun dari subfolder /pages/)
-$isInPages = (strpos($_SERVER['PHP_SELF'] ?? '', '/pages/') !== false);
-$basePath  = $basePath ?? ($isInPages ? './' : 'pages/');
-$homePath  = $homePath ?? ($isInPages ? '../index.php' : 'index.php');
+$projectDir = str_replace('\\', '/', realpath(dirname(__DIR__)));
+$docRoot    = isset($_SERVER['DOCUMENT_ROOT']) ? str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'])) : '';
+
+if ($docRoot !== '' && str_starts_with($projectDir, $docRoot)) {
+    $subPath = substr($projectDir, strlen($docRoot));
+    $appUrlPath = '/' . ltrim($subPath, '/');
+    $appUrlPath = rtrim($appUrlPath, '/') . '/';
+} else {
+    $appUrlPath = '/';
+}
+
+$scriptUri  = $_SERVER['PHP_SELF'] ?? $_SERVER['SCRIPT_NAME'] ?? '';
+$isInPages  = (strpos($scriptUri, '/pages/') !== false);
+$isInSubdir = $isInPages || (strpos($scriptUri, '/includes/') !== false);
+
+$basePath   = $basePath ?? ($isInPages ? './' : ($appUrlPath . 'pages/'));
+$homePath   = $homePath ?? ($appUrlPath . 'index.php');
+$assetsPath = $assetsPath ?? ($isInSubdir ? '../assets/' : 'assets/');
+$logoUrl    = $appUrlPath . 'assets/logo.webp';
+
+// Tentukan data URI agar logo selalu tampil seketika tanpa error path / 404
+$logoLocalFile = dirname(__DIR__) . '/assets/logo.webp';
+$logoSrc       = file_exists($logoLocalFile) 
+    ? ('data:image/webp;base64,' . base64_encode(file_get_contents($logoLocalFile))) 
+    : $logoUrl;
 ?>
 
 <!-- Phosphor Icons (jika belum dimuat di header) -->
@@ -56,339 +78,14 @@ $homePath  = $homePath ?? ($isInPages ? '../index.php' : 'index.php');
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css"/>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"/>
 
-<style>
-:root {
-    --sb-maroon-primary: #852019;
-    --sb-maroon-dark: #6d1c16;
-    --sb-maroon-deep: #3a1210;
-    --sb-maroon-hover: rgba(255, 255, 255, 0.12);
-    --sb-text-white: #ffffff;
-    --sb-text-muted: rgba(255, 255, 255, 0.78);
-    --sb-active-bg: #ffffff;
-    --sb-active-text: #852019;
-    --sb-badge-purple: #986dca;
-    --sb-border-subtle: rgba(255, 255, 255, 0.14);
-    --sb-font: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-/* Sidebar Container */
-.app-sidebar {
-    width: 260px;
-    height: 100vh;
-    max-height: 100vh;
-    background: var(--sb-maroon-primary);
-    background: linear-gradient(180deg, var(--sb-maroon-primary) 0%, var(--sb-maroon-dark) 100%);
-    color: var(--sb-text-white);
-    display: flex;
-    flex-direction: column;
-    font-family: var(--sb-font);
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
-    user-select: none;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-/* Brand / Header */
-.sidebar-brand {
-    padding: 16px 16px 14px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid var(--sb-border-subtle);
-    text-decoration: none;
-    color: var(--sb-text-white);
-    transition: opacity 0.2s ease;
-    flex-shrink: 0;
-}
-
-.sidebar-brand:hover {
-    opacity: 0.95;
-}
-
-.sidebar-brand-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 9px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--sb-text-white);
-    font-size: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    flex-shrink: 0;
-}
-
-.sidebar-brand-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-}
-
-.sidebar-brand-title {
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-}
-
-.sidebar-brand-subtitle {
-    font-size: 10.5px;
-    font-weight: 500;
-    color: var(--sb-text-muted);
-    letter-spacing: 0.2px;
-}
-
-/* Menu Navigation */
-.sidebar-nav {
-    flex: 1;
-    min-height: 0;
-    padding: 10px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-}
-
-/* Scrollbar Custom */
-.sidebar-nav::-webkit-scrollbar {
-    width: 4px;
-}
-.sidebar-nav::-webkit-scrollbar-track {
-    background: transparent;
-}
-.sidebar-nav::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-}
-.sidebar-nav::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.35);
-}
-
-/* Menu Item & Buttons */
-.sidebar-item {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.sidebar-link,
-.sidebar-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 12px;
-    border-radius: 8px;
-    text-decoration: none;
-    color: var(--sb-text-white);
-    background: transparent;
-    border: none;
-    font-family: inherit;
-    font-size: 13.5px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-    box-sizing: border-box;
-    text-align: left;
-}
-
-.sidebar-link-content,
-.sidebar-btn-content {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.sidebar-icon {
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: transform 0.2s ease;
-}
-
-/* Hover state */
-.sidebar-link:hover,
-.sidebar-btn:hover {
-    background: var(--sb-maroon-hover);
-    color: var(--sb-text-white);
-    transform: translateX(2px);
-}
-
-/* Active State (Seperti di UI Kit: Background Putih & Teks Maroon) */
-.sidebar-item.active > .sidebar-link,
-.sidebar-group.active > .sidebar-btn {
-    background: var(--sb-active-bg);
-    color: var(--sb-active-text);
-    font-weight: 700;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-    transform: none;
-}
-
-.sidebar-item.active > .sidebar-link .sidebar-icon,
-.sidebar-group.active > .sidebar-btn .sidebar-icon,
-.sidebar-group.active > .sidebar-btn .sidebar-caret {
-    color: var(--sb-active-text);
-}
-
-/* Caret Arrow for Dropdown */
-.sidebar-caret {
-    font-size: 14px;
-    color: var(--sb-text-muted);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
-}
-
-.sidebar-group.is-open > .sidebar-btn .sidebar-caret {
-    transform: rotate(180deg);
-}
-
-/* Collapsible Submenu */
-.sidebar-submenu {
-    list-style: none;
-    margin: 2px 0 4px 10px;
-    padding: 2px 0 2px 10px;
-    border-left: 2px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    overflow: hidden;
-    transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
-}
-
-/* Keadaan tertutup */
-.sidebar-group:not(.is-open) > .sidebar-submenu {
-    max-height: 0;
-    opacity: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-    border-left-color: transparent;
-    pointer-events: none;
-}
-
-/* Keadaan terbuka */
-.sidebar-group.is-open > .sidebar-submenu {
-    max-height: 350px;
-    opacity: 1;
-}
-
-/* Submenu Links */
-.sidebar-sublink {
-    display: flex;
-    align-items: center;
-    padding: 5px 10px;
-    border-radius: 6px;
-    text-decoration: none;
-    color: var(--sb-text-muted);
-    font-size: 12.5px;
-    font-weight: 500;
-    line-height: 1.25;
-    transition: all 0.15s ease;
-}
-
-.sidebar-sublink:hover {
-    color: var(--sb-text-white);
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateX(2px);
-}
-
-/* Active Submenu Link */
-.sidebar-subitem.active > .sidebar-sublink {
-    background: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    font-weight: 700;
-    border-left: 3px solid #ffffff;
-}
-
-/* Footer / User Profile */
-.sidebar-footer {
-    padding: 10px 14px;
-    border-top: 1px solid var(--sb-border-subtle);
-    background: var(--sb-maroon-deep);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-}
-
-.sidebar-user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    color: var(--sb-text-white);
-    overflow: hidden;
-}
-
-.sidebar-user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-    border: 1.5px solid rgba(255, 255, 255, 0.3);
-}
-
-.sidebar-user-info {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    line-height: 1.2;
-}
-
-.sidebar-user-name {
-    font-size: 12.5px;
-    font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sidebar-user-role {
-    font-size: 10.5px;
-    color: var(--sb-text-muted);
-}
-
-.sidebar-logout-btn {
-    background: transparent;
-    border: none;
-    color: var(--sb-text-muted);
-    font-size: 17px;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 6px;
-    transition: all 0.15s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-}
-
-.sidebar-logout-btn:hover {
-    color: #ff8080;
-    background: rgba(255, 255, 255, 0.1);
-}
-</style>
+<!-- Sidebar Stylesheet -->
+<link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/sidebar.css'); ?>">
 
 <aside class="app-sidebar" id="appSidebar">
     <!-- Brand Header -->
     <a href="<?php echo htmlspecialchars($homePath); ?>" class="sidebar-brand">
         <div class="sidebar-brand-icon">
-            <i class="ph-bold ph-buildings"></i>
+            <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="Logo SDN Budi Karya" class="sidebar-brand-img" width="28" height="28">
         </div>
         <div class="sidebar-brand-text">
             <span class="sidebar-brand-title">ASET SEKOLAH</span>
