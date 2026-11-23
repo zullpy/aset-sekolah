@@ -1,0 +1,35 @@
+# ====== Kredensial & konfigurasi rahasia ======
+.env
+.env.*
+!.env.example
+config/conn.php
+
+# ====== Upload user (foto aset, nota, dll.) ======
+uploads/*
+!uploads/.gitkeep
+
+# ====== Log & cache ======
+*.log
+logs/
+cache/
+tmp/
+
+# ====== Backup & dump database ======
+*.sql.gz
+*.zip
+*.tar.gz
+backup/
+dump*.sql
+
+# ====== Dependency (kalau pakai Composer) ======
+vendor/
+
+# ====== Editor & OS ======
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# script local
+serve.sh
