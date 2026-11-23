@@ -115,6 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
         // Hash kata sandi baru dengan aman
         $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
         $updated = false;
+        $matchedUser = null;
 
         // Update di database jika tersedia
         if (file_exists($connFile)) {
@@ -123,36 +124,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
                 if (isset($pdo) && $pdo instanceof PDO) {
                     $checkUsers = $pdo->query("SHOW TABLES LIKE 'users'")->fetch();
                     if ($checkUsers) {
-                        $stmtUpdate = $pdo->prepare("UPDATE users SET password = ? WHERE email = ?");
-                        $stmtUpdate->execute([$hashedPassword, $targetEmail]);
-                        $updated = true;
+                        // Cari user berdasarkan email atau username
+                        $stmtFind = $pdo->prepare("SELECT id, username, email, role FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(?)) OR LOWER(TRIM(username)) = LOWER(TRIM(?)) LIMIT 1");
+                        $stmtFind->execute([$targetEmail, $targetEmail]);
+                        $matchedUser = $stmtFind->fetch();
+
+                        if ($matchedUser) {
+                            $stmtUpdate = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+                            $stmtUpdate->execute([$hashedPassword, $matchedUser['id']]);
+                            $updated = true;
+                        } else {
+                            $errorMessage = 'Akun pengguna (' . htmlspecialchars($targetEmail) . ') tidak ditemukan di tabel pengguna database.';
+                        }
+                    } else {
+                        $errorMessage = 'Tabel users belum dibuat di database. Silakan jalankan migrasi database.';
                     }
 
-                    // Hapus token yang sudah terpakai dan semua token lama untuk email ini
-                    $checkResets = $pdo->query("SHOW TABLES LIKE 'password_resets'")->fetch();
-                    if ($checkResets) {
-                        $stmtClean = $pdo->prepare("DELETE FROM password_resets WHERE token = ? OR email = ?");
-                        $stmtClean->execute([$token, $targetEmail]);
+                    if ($updated) {
+                        // Hapus token yang sudah terpakai dan semua token lama untuk email ini
+                        $checkResets = $pdo->query("SHOW TABLES LIKE 'password_resets'")->fetch();
+                        if ($checkResets) {
+                            $stmtClean = $pdo->prepare("DELETE FROM password_resets WHERE token = ? OR email = ?");
+                            $stmtClean->execute([$token, $targetEmail]);
+                        }
                     }
                 }
             } catch (Throwable $e) {
                 error_log('Gagal update password user: ' . $e->getMessage());
+                $errorMessage = 'Terjadi kesalahan sistem saat memperbarui kata sandi: ' . $e->getMessage();
             }
+        } else {
+            // Fallback mode jika file koneksi database tidak ada (mode demo/lokal)
+            $updated = true;
         }
 
-        // Hapus token dari session cache
-        if (isset($_SESSION['password_reset_cache'][$token])) {
-            unset($_SESSION['password_reset_cache'][$token]);
+        if ($updated) {
+            // Hapus token dari session cache
+            if (isset($_SESSION['password_reset_cache'][$token])) {
+                unset($_SESSION['password_reset_cache'][$token]);
+            }
+            $resetCompleted = true;
         }
-
-        $resetCompleted = true;
     }
 
     if (is_ajax_request()) {
         if ($resetCompleted) {
-            json_success('Kata sandi berhasil diperbarui! Silakan masuk kembali menggunakan kata sandi baru Anda.', ['redirect' => 'login.php']);
+            $userRole = strtolower($matchedUser['role'] ?? 'administrator');
+            $loginTargetUrl = 'login.php?role=' . urlencode($userRole);
+            $msgDetail = !empty($matchedUser['username']) ? ' untuk akun "' . htmlspecialchars($matchedUser['username']) . '"' : '';
+            json_success('Kata sandi berhasil diperbarui' . $msgDetail . '! Silakan masuk kembali menggunakan kata sandi baru Anda.', [
+                'redirect' => $loginTargetUrl,
+                'role'     => $userRole,
+                'username' => $matchedUser['username'] ?? '',
+            ]);
         } else {
-            json_error($errorMessage);
+            json_error(!empty($errorMessage) ? $errorMessage : 'Gagal memperbarui kata sandi. Silakan coba lagi.');
         }
     }
 }

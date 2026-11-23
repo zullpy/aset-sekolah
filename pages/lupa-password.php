@@ -67,9 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $checkTable = $pdo->query("SHOW TABLES LIKE 'users'")->fetch();
                     if ($checkTable) {
                         $tableExists = true;
-                        $stmt = $pdo->prepare("SELECT id, username, nama_lengkap, email FROM users WHERE email = ? LIMIT 1");
-                        $stmt->execute([$email]);
+                        $stmt = $pdo->prepare("SELECT id, username, nama_lengkap, email, role FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(?)) OR LOWER(TRIM(username)) = LOWER(TRIM(?)) LIMIT 1");
+                        $stmt->execute([$email, $email]);
                         $userFound = $stmt->fetch();
+                        if ($userFound && !empty($userFound['email'])) {
+                            $email = $userFound['email'];
+                        }
                     }
                 }
             } catch (Throwable $e) {

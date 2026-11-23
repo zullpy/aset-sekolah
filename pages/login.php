@@ -54,10 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
 
     if (empty($username) || empty($password)) {
-        $errorMessage = 'Silakan masukkan username dan kata sandi Anda.';
+        $errorMessage = 'Silakan masukkan username/email dan kata sandi Anda.';
     } else {
         // Cek database jika koneksi tersedia
         $authenticated = false;
+        $hasDatabaseUsers = false;
         $userData = null;
         $connFile = dirname(__DIR__) . '/config/conn.php';
 
@@ -68,12 +69,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Cek apakah tabel users ada
                     $checkTable = $pdo->query("SHOW TABLES LIKE 'users'")->fetch();
                     if ($checkTable) {
-                        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND LOWER(role) = ? LIMIT 1");
-                        $stmt->execute([$username, $roleKey]);
+                        $countUsers = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+                        if ($countUsers > 0) {
+                            $hasDatabaseUsers = true;
+                        }
+
+                        // Izinkan login dengan Username ATAU Email (case-insensitive & trimmed)
+                        $stmt = $pdo->prepare("SELECT * FROM users WHERE (LOWER(TRIM(username)) = LOWER(TRIM(?)) OR LOWER(TRIM(email)) = LOWER(TRIM(?))) AND LOWER(role) = ? LIMIT 1");
+                        $stmt->execute([$username, $username, $roleKey]);
                         $userData = $stmt->fetch();
 
-                        if ($userData && (password_verify($password, $userData['password']) || $password === $userData['password'])) {
-                            $authenticated = true;
+                        // Jika tidak ditemukan di portal role saat ini, cari apakah ada di role lain
+                        if (!$userData) {
+                            $stmtAny = $pdo->prepare("SELECT * FROM users WHERE (LOWER(TRIM(username)) = LOWER(TRIM(?)) OR LOWER(TRIM(email)) = LOWER(TRIM(?))) LIMIT 1");
+                            $stmtAny->execute([$username, $username]);
+                            $foundAny = $stmtAny->fetch();
+
+                            if ($foundAny && (password_verify($password, $foundAny['password']) || $password === $foundAny['password'])) {
+                                $userData = $foundAny;
+                                $authenticated = true;
+                                $actualRole = strtolower($userData['role'] ?? $roleKey);
+                                $isOperator = ($actualRole === 'operator');
+                                $roleKey    = $actualRole;
+                                $roleTitle  = $isOperator ? 'Operator' : 'Administrator';
+                            }
+                        } else {
+                            if (password_verify($password, $userData['password']) || $password === $userData['password']) {
+                                $authenticated = true;
+                            }
                         }
                     }
                 }
@@ -82,10 +105,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Fallback default akun demo jika database belum ada data pengguna
-        if (!$authenticated) {
-            $validAdmin = (!$isOperator && ($username === 'admin' || $username === 'administrator') && ($password === 'admin' || $password === 'admin123'));
-            $validOperator = ($isOperator && ($username === 'operator' || $username === 'user') && ($password === 'operator' || $password === 'operator123'));
+        // Fallback default akun demo HANYA jika database tidak terhubung atau belum ada data pengguna
+        if (!$authenticated && !$hasDatabaseUsers) {
+            $validAdmin = (!$isOperator && in_array(strtolower($username), ['admin', 'administrator', 'admin@sdnbudikarya.sch.id']) && ($password === 'admin' || $password === 'admin123'));
+            $validOperator = ($isOperator && in_array(strtolower($username), ['operator', 'user', 'operator@sdnbudikarya.sch.id']) && ($password === 'operator' || $password === 'operator123'));
 
             if ($validAdmin || $validOperator) {
                 $authenticated = true;
@@ -210,11 +233,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form action="login.php?role=<?php echo htmlspecialchars($roleKey); ?>" method="POST" autocomplete="on">
                 <input type="hidden" name="role" value="<?php echo htmlspecialchars($roleKey); ?>">
 
-                <!-- Field Username -->
+                <!-- Field Username atau Email -->
                 <div class="login-form-group">
-                    <label for="username" class="login-form-label">Username</label>
+                    <label for="username" class="login-form-label">Username atau Email</label>
                     <div class="login-input-wrapper">
-                        <input type="text" id="username" name="username" class="login-form-input" placeholder="Masukkan username" required autocomplete="username" autofocus value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
+                        <input type="text" id="username" name="username" class="login-form-input" placeholder="Masukkan username atau email" required autocomplete="username" autofocus value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
                         <i class="ph-bold ph-user login-input-icon"></i>
                     </div>
                 </div>
