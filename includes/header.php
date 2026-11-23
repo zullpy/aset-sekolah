@@ -75,8 +75,9 @@ $tanggalStr = date('j') . ' ' . ($bulanArray[(int)date('n')] ?? date('M')) . ' '
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css"/>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"/>
 
-    <!-- Header & Layout Stylesheet -->
+    <!-- Header & Layout Stylesheet & SweetAlert2 Theme -->
     <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/header.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/sweetalert-theme.css'); ?>">
 </head>
 <body>
 
@@ -142,7 +143,7 @@ $tanggalStr = date('j') . ' ' . ($bulanArray[(int)date('n')] ?? date('M')) . ' '
                     <span>Kelola Akun</span>
                 </a>
                 <div class="header-dropdown-divider"></div>
-                <a href="<?php echo htmlspecialchars($basePath . 'logout.php'); ?>" class="header-dropdown-item danger" onclick="return confirm('Apakah Anda yakin ingin keluar?');">
+                <a href="<?php echo htmlspecialchars($basePath . 'logout.php'); ?>" class="header-dropdown-item danger" onclick="confirmLogout(event, this.href);">
                     <i class="ph-bold ph-sign-out"></i>
                     <span>Keluar</span>
                 </a>
@@ -151,72 +152,10 @@ $tanggalStr = date('j') . ' ' . ($bulanArray[(int)date('n')] ?? date('M')) . ' '
     </div>
 </header>
 
-<script>
-/**
- * Toggle Dropdown Menu Pengguna
- */
-function toggleUserDropdown(event) {
-    event.stopPropagation();
-    const btn = document.getElementById('userMenuBtn');
-    const menu = document.getElementById('userDropdownMenu');
-    if (!menu || !btn) return;
+<!-- SweetAlert2 Library & Custom Config -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?php echo htmlspecialchars($assetsPath . 'js/sweetalert-init.js'); ?>"></script>
 
-    const isShown = menu.classList.contains('show');
-    if (isShown) {
-        menu.classList.remove('show');
-        btn.classList.remove('active');
-        btn.setAttribute('aria-expanded', 'false');
-    } else {
-        menu.classList.add('show');
-        btn.classList.add('active');
-        btn.setAttribute('aria-expanded', 'true');
-    }
-}
+<!-- Header & Navigation Interactions -->
+<script src="<?php echo htmlspecialchars($assetsPath . 'js/header.js'); ?>" defer></script>
 
-/**
- * Tutup dropdown saat klik di luar elemen
- */
-document.addEventListener('click', function(e) {
-    const menu = document.getElementById('userDropdownMenu');
-    const btn = document.getElementById('userMenuBtn');
-    if (menu && menu.classList.contains('show')) {
-        if (!menu.contains(e.target) && !btn.contains(e.target)) {
-            menu.classList.remove('show');
-            if (btn) {
-                btn.classList.remove('active');
-                btn.setAttribute('aria-expanded', 'false');
-            }
-        }
-    }
-});
-
-/**
- * Mobile Sidebar Handlers
- */
-function toggleMobileSidebar() {
-    const sidebar = document.getElementById('appSidebar');
-    const backdrop = document.getElementById('sidebarBackdrop');
-    if (!sidebar) return;
-
-    const isOpen = sidebar.classList.contains('show') || sidebar.classList.contains('is-open-mobile');
-    if (isOpen) {
-        closeMobileSidebar();
-    } else {
-        sidebar.classList.add('show', 'is-open-mobile');
-        if (backdrop) backdrop.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-function closeMobileSidebar() {
-    const sidebar = document.getElementById('appSidebar');
-    const backdrop = document.getElementById('sidebarBackdrop');
-    if (sidebar) {
-        sidebar.classList.remove('show', 'is-open-mobile');
-    }
-    if (backdrop) {
-        backdrop.classList.remove('show');
-    }
-    document.body.style.overflow = '';
-}
-</script>

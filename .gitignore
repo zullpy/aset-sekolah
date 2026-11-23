@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 config/conn.php
+config/mail.php
 
 # ====== Upload user (foto aset, nota, dll.) ======
 uploads/*

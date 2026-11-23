@@ -7,10 +7,14 @@ const DB_PASS = '';
 
 const MIGRATIONS_DIR = __DIR__ . '/../database/migrations';
 
-// true  = migrasi jalan otomatis tiap file ini di-include (enak buat development)
-// false = migrasi hanya jalan manual lewat `php migrate.php` (disarankan di produksi)
+// Muat deteksi lingkungan (production vs local)
+require_once __DIR__ . '/app.php';
+
+// Otomatis aktif di LOCAL/DEVELOPMENT, non-aktif di PRODUCTION
+// true  = migrasi jalan otomatis tiap file ini di-include (praktis saat development)
+// false = migrasi hanya jalan manual lewat `php migrate.php` (aman untuk produksi)
 if (!defined('AUTO_MIGRATE')) {
-    define('AUTO_MIGRATE', true);
+    define('AUTO_MIGRATE', is_local());
 }
 
 // ====== KONEKSI ======

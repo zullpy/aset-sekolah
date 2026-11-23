@@ -1,0 +1,532 @@
+/* ==========================================================================
+   Login Page Styles - Sistem Informasi Inventaris Aset SDN Budi Karya
+   Layout: Split Card 2 Kolom (Admin: Teks Kiri, Form Kanan | Operator: Form Kiri, Teks Kanan)
+   ========================================================================== */
+
+:root {
+    --color-maroon-primary: #852019;
+    --color-maroon-dark: #6d1c16;
+    --color-maroon-deep: #3a1210;
+    --color-maroon-light: #fbeeed;
+    --color-maroon-hover: #9c271f;
+    --color-slate-900: #0f172a;
+    --color-slate-800: #1e293b;
+    --color-slate-700: #334155;
+    --color-slate-600: #475569;
+    --color-slate-500: #64748b;
+    --color-slate-400: #94a3b8;
+    --color-slate-200: #e2e8f0;
+    --color-slate-100: #f1f5f9;
+    --color-slate-50: #f8fafc;
+    --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100vh;
+    font-family: var(--font-main);
+    color: var(--color-slate-800);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Background Wrapper dengan Gambar Sekolah & Red Maroon Overlay */
+.login-page-wrapper {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: 
+        linear-gradient(135deg, rgba(58, 18, 16, 0.88) 0%, rgba(133, 32, 25, 0.84) 50%, rgba(109, 28, 22, 0.90) 100%),
+        var(--bg-school-image, url('../sekolah.webp'));
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    padding: 70px 20px 30px 20px;
+}
+
+/* Tombol Kembali di Kiri Atas */
+.login-btn-back {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-btn-back i {
+    font-size: 16px;
+    transition: transform 0.2s ease;
+}
+
+.login-btn-back:hover {
+    background: #ffffff;
+    color: var(--color-maroon-primary);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    transform: translateX(-3px);
+}
+
+.login-btn-back:hover i {
+    transform: translateX(-2px);
+}
+
+/* Card Utama yang Terbagi 2 Kolom */
+.login-card-container {
+    width: 100%;
+    max-width: 940px;
+    min-height: 540px;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+    animation: cardAppear 0.35s ease-out;
+}
+
+@keyframes cardAppear {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Posisi Kolom: Default (Admin) = Info di Kiri, Form di Kanan */
+.login-card-container.role-admin {
+    flex-direction: row;
+}
+
+/* Posisi Kolom: Operator = Form di Kiri, Info di Kanan (Kebalikannya) */
+.login-card-container.role-operator {
+    flex-direction: row-reverse;
+}
+
+/* ==========================================================================
+   Panel Kiri/Kanan: Informasi & Kalimat Peran (Info Panel)
+   ========================================================================== */
+.login-info-panel {
+    flex: 1;
+    min-width: 0;
+    background: linear-gradient(160deg, var(--color-maroon-primary) 0%, var(--color-maroon-deep) 100%);
+    color: #ffffff;
+    padding: 44px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Dekorasi Pola Latar Belakang Info Panel */
+.login-info-panel::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.login-info-panel::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: -40px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.login-info-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.login-info-logo-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    flex-shrink: 0;
+}
+
+.login-info-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.login-info-school {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-info-school-title {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.login-info-school-sub {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.78);
+    font-weight: 500;
+}
+
+/* Konten Teks Kalimat */
+.login-info-body {
+    display: flex;
+    flex-direction: column;
+    margin: auto 0;
+}
+
+.login-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    width: fit-content;
+    margin-bottom: 16px;
+    backdrop-filter: blur(4px);
+}
+
+.login-role-headline {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+}
+
+.login-role-paragraph {
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.88);
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+/* Poin-poin Hak Akses / Fitur */
+.login-features-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.login-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.login-feature-item i {
+    font-size: 16px;
+    color: #ffc4c1;
+    flex-shrink: 0;
+}
+
+.login-info-footer {
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+/* ==========================================================================
+   Panel Form Login
+   ========================================================================== */
+.login-form-panel {
+    flex: 1;
+    min-width: 0;
+    padding: 44px 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #ffffff;
+}
+
+.login-form-header {
+    margin-bottom: 28px;
+}
+
+.login-form-greeting {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--color-slate-900);
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+}
+
+.login-form-sub {
+    font-size: 13.5px;
+    color: var(--color-slate-500);
+}
+
+/* Alert Error / Sukses */
+.login-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-bottom: 20px;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+}
+
+.login-alert i {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* Input Fields */
+.login-form-group {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.login-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.login-form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-slate-700);
+}
+
+.login-forgot-link {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-maroon-primary);
+    text-decoration: none;
+    transition: color 0.15s ease, text-decoration 0.15s ease;
+}
+
+.login-forgot-link:hover {
+    color: var(--color-maroon-hover);
+    text-decoration: underline;
+}
+
+.login-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.login-input-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--color-slate-400);
+    font-size: 18px;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.login-form-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 42px 0 42px;
+    border: 1.5px solid var(--color-slate-200);
+    border-radius: 10px;
+    background: var(--color-slate-50);
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--color-slate-800);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-form-input:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: var(--color-maroon-primary);
+    box-shadow: 0 0 0 3.5px rgba(133, 32, 25, 0.12);
+}
+
+.login-form-input:focus ~ .login-input-icon {
+    color: var(--color-maroon-primary);
+}
+
+.login-toggle-password {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: var(--color-slate-400);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: color 0.15s ease;
+}
+
+.login-toggle-password:hover {
+    color: var(--color-slate-700);
+}
+
+/* Tombol Submit Login */
+.login-btn-submit {
+    width: 100%;
+    height: 46px;
+    border: none;
+    border-radius: 10px;
+    background: var(--color-maroon-primary);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(133, 32, 25, 0.28);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 10px;
+}
+
+.login-btn-submit:hover {
+    background: var(--color-maroon-hover);
+    box-shadow: 0 6px 18px rgba(133, 32, 25, 0.38);
+    transform: translateY(-1px);
+}
+
+.login-btn-submit:active {
+    transform: translateY(0);
+}
+
+.login-btn-submit i {
+    font-size: 16px;
+    transition: transform 0.2s ease;
+}
+
+.login-btn-submit:hover i {
+    transform: translateX(3px);
+}
+
+/* Switch Peran / Alternatif Link */
+.login-switch-role {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--color-slate-500);
+    padding-top: 18px;
+    border-top: 1px solid var(--color-slate-100);
+}
+
+.login-switch-link {
+    color: var(--color-maroon-primary);
+    font-weight: 700;
+    text-decoration: none;
+    transition: text-decoration 0.15s ease;
+}
+
+.login-switch-link:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   Responsif Breakpoints
+   ========================================================================== */
+@media (max-width: 860px) {
+    .login-page-wrapper {
+        padding: 70px 16px 24px 16px;
+    }
+
+    .login-card-container {
+        flex-direction: column !important;
+        max-width: 480px;
+        min-height: auto;
+    }
+
+    .login-info-panel {
+        padding: 32px 24px;
+    }
+
+    .login-role-headline {
+        font-size: 20px;
+    }
+
+    .login-role-paragraph {
+        font-size: 13px;
+        margin-bottom: 16px;
+    }
+
+    .login-features-list {
+        display: none;
+    }
+
+    .login-info-footer {
+        display: none;
+    }
+
+    .login-form-panel {
+        padding: 32px 24px;
+    }
+
+    .login-btn-back {
+        top: 16px;
+        left: 16px;
+        font-size: 12.5px;
+        padding: 6px 12px;
+    }
+}

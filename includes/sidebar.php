@@ -240,40 +240,12 @@ $logoSrc       = file_exists($logoLocalFile)
                 <span class="sidebar-user-role"><?php echo htmlspecialchars($_SESSION['role'] ?? 'Administrator'); ?></span>
             </div>
         </a>
-        <a href="<?php echo htmlspecialchars($basePath . 'logout.php'); ?>" class="sidebar-logout-btn" title="Keluar / Logout" onclick="return confirm('Apakah Anda yakin ingin keluar?');">
+        <a href="<?php echo htmlspecialchars($basePath . 'logout.php'); ?>" class="sidebar-logout-btn" title="Keluar / Logout" onclick="confirmLogout(event, this.href);">
             <i class="ph-bold ph-sign-out"></i>
         </a>
     </div>
 </aside>
 
-<script>
-/**
- * Toggle Accordion Submenu Grup
- * @param {string} groupId - ID elemen <li> grup
- */
-function toggleSidebarGroup(groupId) {
-    const targetGroup = document.getElementById(groupId);
-    if (!targetGroup) return;
+<!-- Sidebar Interactions -->
+<script src="<?php echo htmlspecialchars($assetsPath . 'js/sidebar.js'); ?>" defer></script>
 
-    const isCurrentlyOpen = targetGroup.classList.contains('is-open');
-
-    // Accordion: tutup submenu lain agar tidak memicu scroll berlebih
-    document.querySelectorAll('.sidebar-group').forEach(function(group) {
-        if (group !== targetGroup) {
-            group.classList.remove('is-open');
-            const btn = group.querySelector('.sidebar-btn');
-            if (btn) btn.setAttribute('aria-expanded', 'false');
-        }
-    });
-
-    if (isCurrentlyOpen) {
-        targetGroup.classList.remove('is-open');
-        const button = targetGroup.querySelector('.sidebar-btn');
-        if (button) button.setAttribute('aria-expanded', 'false');
-    } else {
-        targetGroup.classList.add('is-open');
-        const button = targetGroup.querySelector('.sidebar-btn');
-        if (button) button.setAttribute('aria-expanded', 'true');
-    }
-}
-</script>
