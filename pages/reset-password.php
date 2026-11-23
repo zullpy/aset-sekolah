@@ -9,7 +9,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Muat helper AJAX
+// Muat konfigurasi global & helper AJAX
+require_once dirname(__DIR__) . '/config/app.php';
 require_once dirname(__DIR__) . '/includes/ajax.php';
 
 // Deteksi path dasar aplikasi & file aset
@@ -60,13 +61,19 @@ if (empty($token)) {
                 $dbConnected = true;
                 $checkTable = $pdo->query("SHOW TABLES LIKE 'password_resets'")->fetch();
                 if ($checkTable) {
-                    $stmt = $pdo->prepare("SELECT email, expires_at FROM password_resets WHERE token = ? LIMIT 1");
+                    $stmt = $pdo->prepare("SELECT email, expires_at, (expires_at > NOW()) AS sql_valid FROM password_resets WHERE token = ? LIMIT 1");
                     $stmt->execute([$token]);
                     $resetRow = $stmt->fetch();
 
                     if ($resetRow) {
                         $expiresTime = strtotime($resetRow['expires_at']);
-                        if ($expiresTime !== false && $expiresTime < time()) {
+                        $sqlValid = !empty($resetRow['sql_valid']);
+
+                        // Token valid jika PHP timestamp belum kedaluwarsa ATAU evaluasi MySQL NOW() masih valid
+                        // (Mencegah false expired karena perbedaan zona waktu server OS / MySQL UTC vs PHP WIB)
+                        $isValidTime = ($expiresTime !== false && $expiresTime >= time()) || $sqlValid;
+
+                        if (!$isValidTime) {
                             $tokenStatus = 'expired';
                         } else {
                             $tokenStatus = 'valid';
@@ -121,11 +128,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
                         $updated = true;
                     }
 
-                    // Hapus token yang sudah terpakai
+                    // Hapus token yang sudah terpakai dan semua token lama untuk email ini
                     $checkResets = $pdo->query("SHOW TABLES LIKE 'password_resets'")->fetch();
                     if ($checkResets) {
-                        $stmtClean = $pdo->prepare("DELETE FROM password_resets WHERE token = ?");
-                        $stmtClean->execute([$token]);
+                        $stmtClean = $pdo->prepare("DELETE FROM password_resets WHERE token = ? OR email = ?");
+                        $stmtClean->execute([$token, $targetEmail]);
                     }
                 }
             } catch (Throwable $e) {

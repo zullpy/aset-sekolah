@@ -81,9 +81,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($dbConnected && $tableExists && !$userFound) {
             $errorMessage = 'Alamat email tidak ditemukan dalam sistem inventaris. Gunakan email akun terdaftar (contoh: admin@sdnbudikarya.sch.id atau operator@sdnbudikarya.sch.id).';
         } else {
-            // Buat token acak yang aman
+            // Buat token acak yang aman dan hitung waktu kedaluwarsa (15 menit = 900 detik)
             $token = bin2hex(random_bytes(32));
             $recipientName = $userFound['nama_lengkap'] ?? $userFound['username'] ?? '';
+            $expiresAtTimestamp = time() + 900;
+            $expiresAt = date('Y-m-d H:i:s', $expiresAtTimestamp);
 
             // Simpan token ke database jika koneksi tersedia
             if ($dbConnected) {
@@ -99,13 +101,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         INDEX idx_token (token)
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-                    // Hapus token lama untuk email ini
+                    // Bersihkan token yang sudah kedaluwarsa di sistem
+                    $pdo->exec("DELETE FROM password_resets WHERE expires_at < NOW()");
+
+                    // Hapus token lama untuk email yang sama agar tidak menumpuk
                     $stmtDel = $pdo->prepare("DELETE FROM password_resets WHERE email = ?");
                     $stmtDel->execute([$email]);
 
-                    // Simpan token baru berlaku selama 15 menit
-                    $stmtIns = $pdo->prepare("INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE))");
-                    $stmtIns->execute([$email, $token]);
+                    // Simpan token baru dengan waktu kedaluwarsa eksplisit dari PHP
+                    $stmtIns = $pdo->prepare("INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)");
+                    $stmtIns->execute([$email, $token, $expiresAt]);
                 } catch (Throwable $e) {
                     error_log('Gagal menyimpan password_resets: ' . $e->getMessage());
                 }
@@ -118,11 +123,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['password_reset_cache'][$token] = [
                 'email'      => $email,
                 'name'       => $recipientName,
-                'expires_at' => time() + 900,
+                'expires_at' => $expiresAtTimestamp,
             ];
 
-            // Tentukan URL absolut link reset password
-            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || ($_SERVER['SERVER_PORT'] ?? '') == 443) ? 'https://' : 'http://';
+            // Tentukan URL absolut link reset password dengan deteksi HTTPS yang akurat (termasuk proxy & Cloudflare)
+            $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)
+                || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
+                || (isset($_SERVER['HTTP_CF_VISITOR']) && str_contains($_SERVER['HTTP_CF_VISITOR'], 'https'));
+            $protocol = $isHttps ? 'https://' : 'http://';
             $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
             $resetLink = $protocol . $host . $appUrlPath . 'pages/reset-password.php?token=' . urlencode($token);
 

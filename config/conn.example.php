@@ -29,6 +29,9 @@ try {
             PDO::ATTR_EMULATE_PREPARES   => false,
         ]
     );
+
+    // Sinkronkan zona waktu koneksi MySQL dengan PHP (WIB / UTC+7)
+    $pdo->exec("SET time_zone = '+07:00'");
 } catch (PDOException $e) {
     error_log('Koneksi DB gagal: ' . $e->getMessage());
     http_response_code(500);

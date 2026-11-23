@@ -4,6 +4,9 @@
  * Sistem Informasi Inventaris Aset SDN Budi Karya
  */
 
+// Standarisasi zona waktu aplikasi ke Waktu Indonesia Barat (WIB / UTC+7)
+date_default_timezone_set('Asia/Jakarta');
+
 if (!function_exists('detect_environment')) {
     /**
      * Mendeteksi apakah aplikasi berjalan di 'production' atau 'local' (development)
