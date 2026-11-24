@@ -25,12 +25,21 @@ if ($docRoot !== '' && str_starts_with($projectDir, $docRoot)) {
 }
 
 $scriptUri  = $_SERVER['PHP_SELF'] ?? $_SERVER['SCRIPT_NAME'] ?? '';
+$isInSubSub = (strpos($scriptUri, '/pages/data-aset/') !== false);
 $isInPages  = (strpos($scriptUri, '/pages/') !== false);
 $isInSubdir = $isInPages || (strpos($scriptUri, '/includes/') !== false);
 
-$basePath   = $basePath ?? ($isInPages ? './' : ($appUrlPath . 'pages/'));
-$homePath   = $homePath ?? ($appUrlPath . 'index.php');
-$assetsPath = $assetsPath ?? ($isInSubdir ? '../assets/' : 'assets/');
+$pagesPath  = $isInSubSub ? '../' : ($isInPages ? './' : ($appUrlPath . 'pages/'));
+
+if (!isset($assetsPath)) {
+    if ($isInSubSub) {
+        $assetsPath = '../../assets/';
+    } elseif ($isInSubdir) {
+        $assetsPath = '../assets/';
+    } else {
+        $assetsPath = 'assets/';
+    }
+}
 $logoUrl    = $appUrlPath . 'assets/logo.webp';
 
 // Tentukan data URI agar logo selalu tampil seketika tanpa error path / 404
@@ -96,7 +105,7 @@ $tanggalStr = date('j') . ' ' . ($bulanArray[(int)date('n')] ?? date('M')) . ' '
             <i class="ph-bold ph-list"></i>
         </button>
 
-        <a href="<?php echo htmlspecialchars($homePath); ?>" class="header-brand" title="Beranda Aset SDN Budi Karya">
+        <a href="<?php echo htmlspecialchars($pagesPath . 'dashboard.php'); ?>" class="header-brand" title="Beranda Aset SDN Budi Karya">
             <div class="header-logo-wrapper">
                 <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="Logo SDN Budi Karya" class="header-logo-img" width="40" height="40" loading="eager">
             </div>
@@ -107,14 +116,6 @@ $tanggalStr = date('j') . ' ' . ($bulanArray[(int)date('n')] ?? date('M')) . ' '
         </a>
     </div>
 
-    <!-- Tengah: Pencarian Cepat Data Aset -->
-    <div class="header-center">
-        <div class="header-search-bar">
-            <i class="ph-bold ph-magnifying-glass header-search-icon"></i>
-            <input type="text" class="header-search-input" placeholder="Cari nama aset, kode barang, ruangan..." aria-label="Cari Aset">
-        </div>
-    </div>
-
     <!-- Kanan: Tanggal Hari Ini & Profil Pengguna -->
     <div class="header-right">
         <!-- Tanggal -->
@@ -122,36 +123,6 @@ $tanggalStr = date('j') . ' ' . ($bulanArray[(int)date('n')] ?? date('M')) . ' '
             <i class="ph-bold ph-calendar-blank"></i>
             <span><?php echo htmlspecialchars($hariIni . ', ' . $tanggalStr); ?></span>
         </div>
-
-        <!-- Profil & Menu Pengguna -->
-        <div class="header-user-wrapper">
-            <button type="button" class="header-user-btn" id="userMenuBtn" aria-expanded="false" onclick="toggleUserDropdown(event)">
-                <div class="header-user-avatar">
-                    <?php echo htmlspecialchars($userInitial); ?>
-                </div>
-                <div class="header-user-meta">
-                    <span class="header-user-name"><?php echo htmlspecialchars($userNama); ?></span>
-                    <span class="header-user-role"><?php echo htmlspecialchars($userRole); ?></span>
-                </div>
-                <i class="ph-bold ph-caret-down header-user-caret"></i>
-            </button>
-
-            <!-- Dropdown Menu -->
-            <div class="header-dropdown-menu" id="userDropdownMenu">
-                <div class="header-dropdown-header">
-                    <div style="font-size: 13px; font-weight: 700; color: var(--color-slate-800);"><?php echo htmlspecialchars($userNama); ?></div>
-                    <span class="header-dropdown-role"><?php echo htmlspecialchars($userRole); ?></span>
-                </div>
-                <a href="<?php echo htmlspecialchars($basePath . 'kelola-akun.php'); ?>" class="header-dropdown-item">
-                    <i class="ph-bold ph-user-gear"></i>
-                    <span>Kelola Akun</span>
-                </a>
-                <div class="header-dropdown-divider"></div>
-                <a href="<?php echo htmlspecialchars($basePath . 'logout.php'); ?>" class="header-dropdown-item danger" onclick="confirmLogout(event, this.href);">
-                    <i class="ph-bold ph-sign-out"></i>
-                    <span>Keluar</span>
-                </a>
-            </div>
         </div>
     </div>
 </header>

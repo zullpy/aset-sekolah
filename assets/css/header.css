@@ -39,7 +39,7 @@ body {
 .app-header {
     position: sticky;
     top: 0;
-    z-index: 95;
+    z-index: 102;
     height: var(--header-height);
     background: #ffffff;
     border-bottom: 1px solid var(--color-slate-200);
@@ -365,7 +365,10 @@ body {
 .sidebar-backdrop {
     display: none;
     position: fixed;
-    inset: 0;
+    top: var(--header-height, 64px);
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(15, 23, 42, 0.5);
     backdrop-filter: blur(2px);
     z-index: 99;
@@ -388,10 +391,11 @@ body {
     .app-sidebar {
         position: fixed !important;
         left: 0;
-        top: 0;
-        bottom: 0;
-        height: 100vh !important;
-        z-index: 105 !important;
+        top: var(--header-height, 64px) !important;
+        bottom: 0 !important;
+        height: calc(100vh - var(--header-height, 64px)) !important;
+        max-height: calc(100vh - var(--header-height, 64px)) !important;
+        z-index: 101 !important;
         transform: translateX(-100%);
         transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
@@ -399,6 +403,11 @@ body {
     .app-sidebar.show,
     .app-sidebar.is-open-mobile {
         transform: translateX(0) !important;
+    }
+
+    /* Sembunyikan brand di dalam sidebar saat mobile karena header sudah memuat logo */
+    .app-sidebar .sidebar-brand {
+        display: none;
     }
 }
 

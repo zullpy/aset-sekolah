@@ -1,0 +1,1039 @@
+/* ==========================================================================
+   Kelola Akun Styles - Sistem Informasi Inventaris Aset SDN Budi Karya
+   ========================================================================== */
+
+/* Header Halaman & Aksi */
+.account-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.account-header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.account-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Tombol Filter (Outline Hijau) */
+.btn-account-filter {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    background: #ffffff;
+    border: 1.5px solid #16a34a;
+    color: #16a34a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.btn-account-filter:hover {
+    background: #f0fdf4;
+    color: #15803d;
+    border-color: #15803d;
+    transform: translateY(-1px);
+}
+
+.btn-account-filter.has-filter::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 1.5px solid #ffffff;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.4);
+}
+
+/* Tombol Tambah Akun (Hijau Solid) */
+.btn-account-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 9px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+    transition: all 0.18s ease;
+}
+
+.btn-account-add i {
+    font-size: 16px;
+}
+
+.btn-account-add:hover {
+    background: #15803d;
+    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.35);
+    transform: translateY(-1px);
+}
+
+/* Card Akun */
+.account-card {
+    padding: 22px 24px 20px;
+}
+
+/* Toolbar & Search Bar */
+.account-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.account-search-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+}
+
+.account-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-slate-400, #94a3b8);
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.account-search-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 36px 0 38px;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    border-radius: 9px;
+    background: #ffffff;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--color-slate-800, #1e293b);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.account-search-input::placeholder {
+    color: var(--color-slate-400, #94a3b8);
+    font-weight: 400;
+}
+
+.account-search-input:focus {
+    outline: none;
+    border-color: var(--color-maroon-primary, #852019);
+    box-shadow: 0 0 0 3px rgba(133, 32, 25, 0.12);
+}
+
+/* Tombol Clear Search */
+.account-search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--color-slate-200, #e2e8f0);
+    color: var(--color-slate-600, #475569);
+    border: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.account-search-clear:hover {
+    background: var(--color-slate-300, #cbd5e1);
+    color: var(--color-slate-900, #0f172a);
+}
+
+.account-search-clear.show {
+    display: inline-flex;
+}
+
+/* Toolbar Right & Toggle Kolom Password */
+.account-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.toggle-password-col {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-slate-600, #475569);
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle-password-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.toggle-password-switch {
+    position: relative;
+    width: 38px;
+    height: 22px;
+    background: var(--color-slate-300, #cbd5e1);
+    border-radius: 9999px;
+    transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.toggle-password-switch::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    top: 3px;
+    background: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-password-input:checked + .toggle-password-switch {
+    background: #16a34a;
+}
+
+.toggle-password-input:checked + .toggle-password-switch::before {
+    transform: translateX(16px);
+}
+
+.toggle-password-input:focus-visible + .toggle-password-switch {
+    outline: 2px solid #16a34a;
+    outline-offset: 2px;
+}
+
+.toggle-password-label {
+    line-height: 1.2;
+}
+
+/* Meta Count */
+.account-meta-count {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-slate-500, #64748b);
+}
+
+.account-meta-count span {
+    font-weight: 700;
+    color: var(--color-slate-800, #1e293b);
+}
+
+/* Tabel Akun */
+.account-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.account-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.account-table thead tr {
+    background: var(--color-slate-100, #f1f5f9);
+    border-bottom: 1px solid var(--color-slate-200, #e2e8f0);
+}
+
+.account-table th {
+    padding: 12px 16px;
+    font-weight: 700;
+    color: var(--color-slate-800, #1e293b);
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    letter-spacing: 0.2px;
+}
+
+.account-table td {
+    padding: 13px 16px;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    color: var(--color-slate-700, #334155);
+    vertical-align: middle;
+}
+
+.account-table tbody tr:hover {
+    background: var(--color-slate-50, #f8fafc);
+}
+
+/* Alignment Kolom */
+.col-no {
+    width: 60px;
+    text-align: center;
+}
+
+.account-table td.cell-no {
+    text-align: center;
+    font-weight: 600;
+    color: var(--color-slate-500, #64748b);
+}
+
+.col-nama {
+    font-weight: 600;
+}
+
+.account-table td.cell-nama {
+    font-weight: 600;
+    color: var(--color-slate-900, #0f172a);
+}
+
+.col-username {
+    color: var(--color-slate-600, #475569);
+}
+
+.account-table td.cell-username {
+    color: var(--color-slate-600, #475569);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12.5px;
+}
+
+/* Kolom Password */
+.col-password {
+    width: 175px;
+    min-width: 175px;
+}
+
+.account-table td.cell-password {
+    width: 175px;
+    min-width: 175px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    color: var(--color-slate-700, #334155);
+}
+
+.password-display-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 150px;
+    gap: 8px;
+}
+
+.password-text {
+    flex: 1;
+    min-width: 0;
+    letter-spacing: 2px;
+    font-size: 13px;
+    color: var(--color-slate-600, #475569);
+    user-select: all;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.password-text.revealed {
+    letter-spacing: normal;
+    font-weight: 500;
+    color: var(--color-slate-800, #1e293b);
+}
+
+.btn-pw-eye {
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-slate-400, #94a3b8);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.btn-pw-eye:hover {
+    color: var(--color-slate-700, #334155);
+    background: var(--color-slate-100, #f1f5f9);
+}
+
+.col-peran {
+    width: 150px;
+    text-align: center;
+}
+
+.account-table td.cell-peran {
+    text-align: center;
+    font-weight: 500;
+}
+
+.col-status {
+    width: 120px;
+    text-align: center;
+}
+
+.account-table td.cell-status {
+    text-align: center;
+}
+
+.col-aktivitas {
+    width: 200px;
+    text-align: center;
+}
+
+.account-table td.cell-aktivitas {
+    text-align: center;
+}
+
+/* Highlight Pencarian */
+.search-highlight {
+    background: #fef08a;
+    color: #854d0e;
+    font-weight: 700;
+    padding: 1px 3px;
+    border-radius: 3px;
+}
+
+/* Badges Status */
+.badge-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.badge-status--aktif {
+    background: var(--color-slate-100, #f1f5f9);
+    color: var(--color-slate-600, #475569);
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+}
+
+.badge-status--nonaktif {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+/* Aksi Kolom Aktivitas */
+.account-actions-cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.btn-act-detail {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid var(--color-slate-300, #cbd5e1);
+    color: var(--color-slate-800, #1e293b);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-act-detail:hover {
+    background: var(--color-slate-100, #f1f5f9);
+    color: #000000;
+    border-color: var(--color-slate-400, #94a3b8);
+}
+
+/* Tombol Edit (Kuning / Amber) */
+.btn-act-edit {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #d97706;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-act-edit:hover {
+    background: #fef3c7;
+    color: #b45309;
+    border-color: #fcd34d;
+    transform: translateY(-1px);
+}
+
+/* Tombol Nonaktifkan (Merah) & Aktifkan (Hijau) */
+.btn-toggle-status {
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+}
+
+.btn-toggle-status--deactivate {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.btn-toggle-status--deactivate:hover {
+    background: #b91c1c;
+}
+
+.btn-toggle-status--activate {
+    background: #16a34a;
+    color: #ffffff;
+}
+
+.btn-toggle-status--activate:hover {
+    background: #15803d;
+}
+
+/* Baris Kosong / Tidak Ada Hasil */
+.account-empty-row {
+    padding: 36px 16px;
+    text-align: center;
+    color: var(--color-slate-400, #94a3b8);
+    font-size: 14px;
+    font-style: italic;
+}
+
+.account-empty-row i {
+    font-size: 28px;
+    display: block;
+    margin: 0 auto 8px;
+    color: var(--color-slate-300, #cbd5e1);
+}
+
+/* Footer Tabel & Pagination */
+.account-table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-slate-200, #e2e8f0);
+    flex-wrap: wrap;
+}
+
+/* Range Selector */
+.account-range-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--color-slate-600, #475569);
+    font-weight: 500;
+}
+
+.range-label {
+    font-weight: 600;
+    color: var(--color-slate-700, #334155);
+}
+
+.range-options {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--color-slate-100, #f1f5f9);
+    padding: 3px;
+    border-radius: 8px;
+}
+
+.range-btn {
+    border: none;
+    background: transparent;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--color-slate-600, #475569);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.range-btn:hover {
+    color: var(--color-slate-900, #0f172a);
+}
+
+.range-btn.active {
+    background: var(--color-maroon-primary, #852019);
+    color: #ffffff;
+    box-shadow: 0 1px 3px rgba(133, 32, 25, 0.25);
+}
+
+/* Pagination */
+.account-pagination {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 7px;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    background: #ffffff;
+    color: var(--color-slate-700, #334155);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.page-btn:hover:not(:disabled):not(.active) {
+    background: var(--color-slate-50, #f8fafc);
+    border-color: var(--color-slate-300, #cbd5e1);
+    color: var(--color-slate-900, #0f172a);
+}
+
+.page-btn.active {
+    background: var(--color-maroon-primary, #852019);
+    color: #ffffff;
+    border-color: var(--color-maroon-primary, #852019);
+    box-shadow: 0 2px 4px rgba(133, 32, 25, 0.2);
+}
+
+.page-btn:disabled {
+    background: #ffffff;
+    color: var(--color-slate-300, #cbd5e1);
+    border-color: var(--color-slate-200, #e2e8f0);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.page-ellipsis {
+    padding: 0 6px;
+    color: var(--color-slate-400, #94a3b8);
+    font-size: 13px;
+    user-select: none;
+}
+
+/* ==========================================================================
+   Modal Dialogs (Filter Data, Tambah Akun, Edit Akun)
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-dialog {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.2), 0 0 1px rgba(15, 23, 42, 0.2);
+    width: 100%;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    overflow: hidden;
+    transform: scale(0.96) translateY(-8px);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 32px);
+    margin: auto;
+}
+
+.modal-overlay.show .modal-dialog {
+    transform: scale(1) translateY(0);
+}
+
+.modal-dialog--filter {
+    max-width: 440px;
+}
+
+.modal-dialog--account {
+    max-width: 480px;
+}
+
+.modal-dialog form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 22px 14px;
+    border-bottom: 1px solid var(--color-slate-200, #e2e8f0);
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-header-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+}
+
+.modal-header-icon--green {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+.modal-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--color-slate-900, #0f172a);
+    letter-spacing: 0.2px;
+    margin: 0;
+}
+
+.modal-btn-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    color: #dc2626;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.modal-btn-close:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Modal Body & Forms */
+.modal-body {
+    padding: 16px 22px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.modal-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-slate-700, #334155);
+    margin-bottom: 4px;
+    display: block;
+}
+
+.modal-label.required::after {
+    content: ' *';
+    color: #ef4444;
+}
+
+.modal-input,
+.modal-select {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    border-radius: 8px;
+    background: #f8fafc;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--color-slate-800, #1e293b);
+    transition: all 0.18s ease;
+    box-sizing: border-box;
+}
+
+.modal-input::placeholder {
+    color: var(--color-slate-400, #94a3b8);
+    font-weight: 400;
+}
+
+.modal-input:focus,
+.modal-select:focus {
+    background: #ffffff;
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.modal-input.has-error,
+.modal-select.has-error {
+    border-color: #ef4444;
+    background: #fffdfd;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.modal-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 256 256'%3E%3Cpath fill='%2364748b' d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
+    cursor: pointer;
+}
+
+.modal-input-icon-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.modal-field-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-slate-400, #94a3b8);
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.modal-input--has-icon {
+    padding-left: 38px;
+}
+
+.modal-password-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.modal-input--password {
+    padding-right: 42px;
+}
+
+.btn-password-toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    color: var(--color-slate-400, #94a3b8);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-password-toggle:hover {
+    color: var(--color-slate-700, #334155);
+    background: var(--color-slate-200, #e2e8f0);
+}
+
+.field-error {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #dc2626;
+    margin-top: 5px;
+    display: none;
+    line-height: 1.3;
+}
+
+.field-error.show {
+    display: block;
+}
+
+/* Modal Footer */
+.modal-footer {
+    padding: 13px 22px 15px;
+    border-top: 1px solid var(--color-slate-100, #f1f5f9);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.modal-footer--space-between {
+    justify-content: space-between;
+}
+
+.modal-footer--center {
+    justify-content: center;
+}
+
+.btn-modal-reset {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: 1.5px solid #ef4444;
+    background: #ffffff;
+    color: #ef4444;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-modal-reset:hover {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #dc2626;
+    transform: translateY(-1px);
+}
+
+.btn-modal-primary {
+    height: 38px;
+    padding: 0 22px;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    transition: all 0.15s ease;
+}
+
+.btn-modal-primary:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-modal-primary--submit {
+    min-width: 160px;
+    height: 38px;
+}
+
+/* Responsif */
+@media (max-width: 768px) {
+    .account-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .account-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .account-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .account-search-wrapper {
+        max-width: 100%;
+    }
+
+    .account-toolbar-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .account-table-footer {
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .modal-dialog {
+        max-width: 100%;
+    }
+
+    .modal-body {
+        padding: 18px 16px;
+    }
+
+    .modal-footer {
+        padding: 14px 16px 16px;
+    }
+
+    .btn-modal-primary--submit {
+        width: 100%;
+    }
+}

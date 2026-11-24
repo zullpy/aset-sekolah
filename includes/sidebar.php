@@ -56,12 +56,24 @@ if ($docRoot !== '' && str_starts_with($projectDir, $docRoot)) {
 }
 
 $scriptUri  = $_SERVER['PHP_SELF'] ?? $_SERVER['SCRIPT_NAME'] ?? '';
+$isInSubSub = (strpos($scriptUri, '/pages/data-aset/') !== false);
 $isInPages  = (strpos($scriptUri, '/pages/') !== false);
 $isInSubdir = $isInPages || (strpos($scriptUri, '/includes/') !== false);
 
-$basePath   = $basePath ?? ($isInPages ? './' : ($appUrlPath . 'pages/'));
+$pagesPath  = $isInSubSub ? '../' : ($isInPages ? './' : ($appUrlPath . 'pages/'));
+$kibPath    = $isInSubSub ? './' : ($isInPages ? 'data-aset/' : ($appUrlPath . 'pages/data-aset/'));
+$basePath   = $basePath ?? $pagesPath;
 $homePath   = $homePath ?? ($appUrlPath . 'index.php');
-$assetsPath = $assetsPath ?? ($isInSubdir ? '../assets/' : 'assets/');
+
+if (!isset($assetsPath)) {
+    if ($isInSubSub) {
+        $assetsPath = '../../assets/';
+    } elseif ($isInSubdir) {
+        $assetsPath = '../assets/';
+    } else {
+        $assetsPath = 'assets/';
+    }
+}
 $logoUrl    = $appUrlPath . 'assets/logo.webp';
 
 // Tentukan data URI agar logo selalu tampil seketika tanpa error path / 404
@@ -82,22 +94,11 @@ $logoSrc       = file_exists($logoLocalFile)
 <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/sidebar.css'); ?>">
 
 <aside class="app-sidebar" id="appSidebar">
-    <!-- Brand Header -->
-    <a href="<?php echo htmlspecialchars($homePath); ?>" class="sidebar-brand">
-        <div class="sidebar-brand-icon">
-            <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="Logo SDN Budi Karya" class="sidebar-brand-img" width="28" height="28">
-        </div>
-        <div class="sidebar-brand-text">
-            <span class="sidebar-brand-title">ASET SEKOLAH</span>
-            <span class="sidebar-brand-subtitle">SDN Budi Karya</span>
-        </div>
-    </a>
-
     <!-- Navigation Menu -->
     <ul class="sidebar-nav">
         <!-- 1. Dashboard -->
         <li class="sidebar-item <?php echo ($activeMenu === 'dashboard') ? 'active' : ''; ?>">
-            <a href="<?php echo htmlspecialchars($homePath); ?>" class="sidebar-link">
+            <a href="<?php echo htmlspecialchars($basePath . 'dashboard.php'); ?>" class="sidebar-link">
                 <div class="sidebar-link-content">
                     <i class="ph-bold ph-squares-four sidebar-icon"></i>
                     <span>Dashboard</span>
@@ -127,32 +128,32 @@ $logoSrc       = file_exists($logoLocalFile)
             </button>
             <ul class="sidebar-submenu">
                 <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kib-a') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'kib-a.php'); ?>" class="sidebar-sublink">
+                    <a href="<?php echo htmlspecialchars($kibPath . 'kib-a.php'); ?>" class="sidebar-sublink">
                         <span>KIB A</span>
                     </a>
                 </li>
                 <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kib-b') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'kib-b.php'); ?>" class="sidebar-sublink">
+                    <a href="<?php echo htmlspecialchars($kibPath . 'kib-b.php'); ?>" class="sidebar-sublink">
                         <span>KIB B</span>
                     </a>
                 </li>
                 <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kib-c') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'kib-c.php'); ?>" class="sidebar-sublink">
+                    <a href="<?php echo htmlspecialchars($kibPath . 'kib-c.php'); ?>" class="sidebar-sublink">
                         <span>KIB C</span>
                     </a>
                 </li>
                 <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kib-d') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'kib-d.php'); ?>" class="sidebar-sublink">
+                    <a href="<?php echo htmlspecialchars($kibPath . 'kib-d.php'); ?>" class="sidebar-sublink">
                         <span>KIB D</span>
                     </a>
                 </li>
                 <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kib-e') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'kib-e.php'); ?>" class="sidebar-sublink">
+                    <a href="<?php echo htmlspecialchars($kibPath . 'kib-e.php'); ?>" class="sidebar-sublink">
                         <span>KIB E</span>
                     </a>
                 </li>
                 <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kib-f') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'kib-f.php'); ?>" class="sidebar-sublink">
+                    <a href="<?php echo htmlspecialchars($kibPath . 'kib-f.php'); ?>" class="sidebar-sublink">
                         <span>KIB F</span>
                     </a>
                 </li>

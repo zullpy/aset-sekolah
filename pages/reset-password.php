@@ -138,8 +138,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
                             $matchedUser = $stmtFind->fetch();
 
                             if ($matchedUser) {
-                                $stmtUpdate = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-                                $stmtUpdate->execute([$hashedPassword, $matchedUser['id']]);
+                                $stmtUpdate = $pdo->prepare("UPDATE users SET password = ?, password_plain = ? WHERE id = ?");
+                                $stmtUpdate->execute([$hashedPassword, $password, $matchedUser['id']]);
                                 $updated = true;
                             } else {
                                 $errorMessage = 'Akun pengguna (' . htmlspecialchars($targetEmail) . ') tidak ditemukan di tabel pengguna database.';

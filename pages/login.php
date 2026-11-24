@@ -105,23 +105,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($authenticated && $userData) {
-                // Regenerasi ID Sesi secara ketat untuk mencegah Session Fixation
-                session_regenerate_id(true);
+                // Cek status keaktifan akun pengguna
+                if (isset($userData['status']) && strtolower($userData['status']) === 'nonaktif') {
+                    $errorMessage = 'Akun Anda sedang dinonaktifkan. Silakan hubungi Administrator.';
+                } else {
+                    // Regenerasi ID Sesi secara ketat untuk mencegah Session Fixation
+                    session_regenerate_id(true);
 
-                $_SESSION['user_id']      = $userData['id'];
-                $_SESSION['username']     = $userData['username'] ?? $username;
-                $_SESSION['nama_lengkap'] = $userData['nama_lengkap'] ?? $userData['username'] ?? $username;
-                $_SESSION['role']         = $roleTitle;
+                    $_SESSION['user_id']      = $userData['id'];
+                    $_SESSION['username']     = $userData['username'] ?? $username;
+                    $_SESSION['nama_lengkap'] = $userData['nama_lengkap'] ?? $userData['username'] ?? $username;
+                    $_SESSION['role']         = $roleTitle;
 
-                // Alihkan ke Dashboard
-                $targetRedirect = file_exists(__DIR__ . '/dashboard.php') ? 'dashboard.php' : '../index.php';
+                    // Alihkan ke Dashboard
+                    $targetRedirect = file_exists(__DIR__ . '/dashboard.php') ? 'dashboard.php' : '../index.php';
 
-                if (is_ajax_request()) {
-                    json_success('Login berhasil! Mengalihkan ke halaman dashboard...', ['redirect' => $targetRedirect]);
+                    if (is_ajax_request()) {
+                        json_success('Login berhasil! Mengalihkan ke halaman dashboard...', ['redirect' => $targetRedirect]);
+                    }
+
+                    header("Location: " . $targetRedirect);
+                    exit;
                 }
-
-                header("Location: " . $targetRedirect);
-                exit;
             } elseif (empty($errorMessage)) {
                 $errorMessage = 'Username atau kata sandi tidak sesuai untuk peran ' . htmlspecialchars($roleTitle) . '.';
             }

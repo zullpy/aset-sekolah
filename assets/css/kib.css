@@ -1,0 +1,966 @@
+/* ==========================================================================
+   KIB Data Aset Styles - Sistem Informasi Inventaris Aset SDN Budi Karya
+   ========================================================================== */
+
+/* Header Halaman & Aksi */
+.kib-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.kib-header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.kib-page-title {
+    font-family: var(--font-main, 'Plus Jakarta Sans', sans-serif);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--color-slate-900, #0f172a);
+    padding-bottom: 10px;
+    border-bottom: 3.5px solid var(--color-maroon-primary, #852019);
+    display: inline-block;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.kib-page-subtitle {
+    font-size: 13.5px;
+    color: var(--color-slate-500, #64748b);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.kib-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Tombol Filter (Outline Hijau) */
+.btn-kib-filter {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    background: #ffffff;
+    border: 1.5px solid #16a34a;
+    color: #16a34a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.btn-kib-filter:hover {
+    background: #f0fdf4;
+    color: #15803d;
+    border-color: #15803d;
+    transform: translateY(-1px);
+}
+
+.btn-kib-filter.has-filter::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 1.5px solid #ffffff;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.4);
+}
+
+/* Tombol Tambah Aset (Hijau Solid) */
+.btn-kib-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 9px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+    transition: all 0.18s ease;
+}
+
+.btn-kib-add i {
+    font-size: 16px;
+}
+
+.btn-kib-add:hover {
+    background: #15803d;
+    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.35);
+    transform: translateY(-1px);
+}
+
+/* Card Utama KIB */
+.kib-card {
+    background: #ffffff;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    border-radius: 14px;
+    padding: 22px 24px 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+/* Toolbar & Pencarian */
+.kib-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.kib-search-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+}
+
+.kib-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-slate-400, #94a3b8);
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.kib-search-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 36px 0 38px;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    border-radius: 9px;
+    background: #ffffff;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--color-slate-800, #1e293b);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.kib-search-input::placeholder {
+    color: var(--color-slate-400, #94a3b8);
+    font-weight: 400;
+}
+
+.kib-search-input:focus {
+    outline: none;
+    border-color: var(--color-maroon-primary, #852019);
+    box-shadow: 0 0 0 3px rgba(133, 32, 25, 0.12);
+}
+
+/* Tombol Clear Search */
+.kib-search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--color-slate-200, #e2e8f0);
+    color: var(--color-slate-600, #475569);
+    border: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.kib-search-clear:hover {
+    background: var(--color-slate-300, #cbd5e1);
+    color: var(--color-slate-900, #0f172a);
+}
+
+.kib-search-clear.show {
+    display: inline-flex;
+}
+
+.kib-meta-count {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-slate-500, #64748b);
+}
+
+.kib-meta-count span {
+    font-weight: 700;
+    color: var(--color-slate-800, #1e293b);
+}
+
+/* Tabel KIB */
+.kib-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    border-radius: 10px;
+    background: #ffffff;
+    -webkit-overflow-scrolling: touch;
+}
+
+.kib-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+/* Table Header */
+.kib-table thead tr {
+    background: var(--color-slate-100, #f1f5f9);
+}
+
+.kib-table th {
+    padding: 11px 14px;
+    font-weight: 700;
+    color: var(--color-slate-800, #1e293b);
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    letter-spacing: 0.15px;
+    font-size: 12.5px;
+    background: var(--color-slate-100, #f1f5f9);
+    vertical-align: middle;
+}
+
+.kib-table th.th-center,
+.kib-table th.col-no {
+    text-align: center;
+}
+
+/* Table Body */
+.kib-table tbody tr {
+    background: #ffffff;
+    transition: background 0.12s ease;
+}
+
+.kib-table tbody tr:nth-child(even) {
+    background: #fcf8f8; /* Soft subtle tint sesuai referensi */
+}
+
+.kib-table tbody tr:hover {
+    background: #fef2f2; /* Soft maroon hover tint */
+}
+
+.kib-table td {
+    padding: 11px 14px;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    color: var(--color-slate-700, #334155);
+    vertical-align: middle;
+    font-size: 13px;
+}
+
+/* Alignment & Cells */
+.kib-table td.cell-no {
+    text-align: center;
+    font-weight: 600;
+    color: var(--color-slate-500, #64748b);
+    width: 50px;
+}
+
+.kib-table td.cell-center {
+    text-align: center;
+}
+
+.kib-table td.cell-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-maroon-primary, #852019);
+}
+
+.kib-table td.cell-name {
+    font-weight: 600;
+    color: var(--color-slate-900, #0f172a);
+}
+
+.kib-table td.cell-actions {
+    text-align: center;
+    width: 130px;
+}
+
+/* Action Buttons Cell */
+.kib-actions-cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-kib-act {
+    width: 29px;
+    height: 29px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+/* Detail Button (Slate/Notebook) */
+.btn-kib-detail {
+    background: transparent;
+    border: 1px solid var(--color-slate-300, #cbd5e1);
+    color: var(--color-slate-700, #334155);
+}
+
+.btn-kib-detail:hover {
+    background: var(--color-slate-100, #f1f5f9);
+    color: #000000;
+    border-color: var(--color-slate-400, #94a3b8);
+}
+
+/* Edit Button (Amber/Kuning) */
+.btn-kib-edit {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #d97706;
+}
+
+.btn-kib-edit:hover {
+    background: #fef3c7;
+    color: #b45309;
+    border-color: #fcd34d;
+    transform: translateY(-1px);
+}
+
+/* Hapus Button (Merah) */
+.btn-kib-delete {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+}
+
+.btn-kib-delete:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-color: #fca5a5;
+    transform: translateY(-1px);
+}
+
+/* Badges Kondisi & Status */
+.badge-kib {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.badge-kib--baik {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+.badge-kib--rusak-ringan {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+.badge-kib--rusak-berat {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.badge-kib--sumber {
+    background: var(--color-slate-100, #f1f5f9);
+    color: var(--color-slate-700, #334155);
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+}
+
+.badge-kib--progress {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.badge-kib--percent {
+    background: #f8fafc;
+    color: var(--color-maroon-primary, #852019);
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    font-weight: 700;
+}
+
+.cell-muted {
+    color: var(--color-slate-400, #94a3b8);
+}
+
+.cell-price {
+    font-weight: 600;
+    color: var(--color-slate-800, #1e293b);
+}
+
+/* Tombol Lampiran */
+.btn-kib-lampiran {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    max-width: 140px;
+}
+
+.btn-kib-lampiran i {
+    font-size: 13px;
+    color: var(--color-maroon-primary, #852019);
+    flex-shrink: 0;
+}
+
+.btn-kib-lampiran span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.btn-kib-lampiran:hover {
+    background: #fdf2f2;
+    border-color: #fca5a5;
+    color: var(--color-maroon-primary, #852019);
+}
+
+.badge-kib--done {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+/* Highlight Pencarian */
+.search-highlight {
+    background: #fef08a;
+    color: #854d0e;
+    font-weight: 700;
+    padding: 1px 3px;
+    border-radius: 3px;
+}
+
+/* Baris Kosong */
+.kib-empty-row {
+    padding: 38px 16px;
+    text-align: center;
+    color: var(--color-slate-400, #94a3b8);
+    font-size: 13.5px;
+    font-style: italic;
+}
+
+.kib-empty-row i {
+    font-size: 28px;
+    display: block;
+    margin: 0 auto 8px;
+    color: var(--color-slate-300, #cbd5e1);
+}
+
+/* Footer Tabel & Pagination */
+.kib-table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-slate-200, #e2e8f0);
+    flex-wrap: wrap;
+}
+
+/* Range Selector */
+.kib-range-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--color-slate-600, #475569);
+    font-weight: 500;
+}
+
+.range-label {
+    font-weight: 600;
+    color: var(--color-slate-700, #334155);
+}
+
+.range-options {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--color-slate-100, #f1f5f9);
+    padding: 3px;
+    border-radius: 8px;
+}
+
+.range-btn {
+    border: none;
+    background: transparent;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--color-slate-600, #475569);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.range-btn:hover {
+    color: var(--color-slate-900, #0f172a);
+}
+
+.range-btn.active {
+    background: var(--color-maroon-primary, #852019);
+    color: #ffffff;
+    box-shadow: 0 1px 3px rgba(133, 32, 25, 0.25);
+}
+
+/* Pagination Controls */
+.kib-pagination {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 7px;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    background: #ffffff;
+    color: var(--color-slate-700, #334155);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.page-btn:hover:not(:disabled):not(.active) {
+    background: var(--color-slate-50, #f8fafc);
+    border-color: var(--color-slate-300, #cbd5e1);
+    color: var(--color-slate-900, #0f172a);
+}
+
+.page-btn.active {
+    background: var(--color-maroon-primary, #852019);
+    color: #ffffff;
+    border-color: var(--color-maroon-primary, #852019);
+    box-shadow: 0 2px 4px rgba(133, 32, 25, 0.2);
+}
+
+.page-btn:disabled {
+    background: #ffffff;
+    color: var(--color-slate-300, #cbd5e1);
+    border-color: var(--color-slate-200, #e2e8f0);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.page-ellipsis {
+    padding: 0 6px;
+    color: var(--color-slate-400, #94a3b8);
+    font-size: 13px;
+    user-select: none;
+}
+
+/* ==========================================================================
+   Modal Dialogs (Filter Data & Tambah/Edit Aset)
+   ========================================================================== */
+.kib-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.kib-modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.kib-modal-dialog {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.2), 0 0 1px rgba(15, 23, 42, 0.2);
+    width: 100%;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    overflow: hidden;
+    transform: scale(0.96) translateY(-8px);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 32px);
+    margin: auto;
+}
+
+.kib-modal-overlay.show .kib-modal-dialog {
+    transform: scale(1) translateY(0);
+}
+
+.kib-modal-dialog--filter {
+    max-width: 420px; /* Sesuai referensi: lebar maksimal sekitar 420px */
+}
+
+.kib-modal-dialog--form {
+    max-width: 520px;
+}
+
+.kib-modal-dialog form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Modal Header */
+.kib-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 22px 14px;
+    border-bottom: 1px solid var(--color-slate-200, #e2e8f0);
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.kib-modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.kib-modal-icon-green {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+}
+
+.kib-modal-title {
+    font-size: 16.5px;
+    font-weight: 800;
+    color: var(--color-slate-900, #0f172a);
+    letter-spacing: 0.2px;
+    margin: 0;
+}
+
+.kib-modal-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    color: #dc2626;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.kib-modal-close:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Modal Body */
+.kib-modal-body {
+    padding: 16px 22px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.kib-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.kib-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-slate-700, #334155);
+    margin-bottom: 4px;
+    display: block;
+}
+
+.kib-label.required::after {
+    content: ' *';
+    color: #ef4444;
+}
+
+.kib-input,
+.kib-select,
+.kib-textarea {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    border-radius: 8px;
+    background: #f8fafc;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--color-slate-800, #1e293b);
+    transition: all 0.18s ease;
+    box-sizing: border-box;
+}
+
+.kib-textarea {
+    height: auto;
+    min-height: 64px;
+    padding: 8px 12px;
+    resize: vertical;
+}
+
+.kib-input::placeholder,
+.kib-textarea::placeholder {
+    color: var(--color-slate-400, #94a3b8);
+    font-weight: 400;
+}
+
+.kib-input:focus,
+.kib-select:focus,
+.kib-textarea:focus {
+    background: #ffffff;
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.kib-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 256 256'%3E%3Cpath fill='%2364748b' d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
+    cursor: pointer;
+}
+
+.kib-input-icon-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.kib-input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-slate-400, #94a3b8);
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.kib-input--has-icon {
+    padding-left: 38px;
+}
+
+.kib-input.has-error,
+.kib-select.has-error,
+.kib-textarea.has-error {
+    border-color: #ef4444;
+    background: #fffdfd;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.kib-field-error {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #dc2626;
+    margin-top: 4px;
+    display: none;
+    line-height: 1.3;
+}
+
+.kib-field-error.show {
+    display: block;
+}
+
+/* Modal Footer */
+.kib-modal-footer {
+    padding: 13px 22px 15px;
+    border-top: 1px solid var(--color-slate-100, #f1f5f9);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.kib-modal-footer--space-between {
+    justify-content: space-between;
+}
+
+.kib-modal-footer--center {
+    justify-content: center;
+}
+
+.btn-kib-modal-reset {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: 1.5px solid #ef4444;
+    background: #ffffff;
+    color: #ef4444;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-kib-modal-reset:hover {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #dc2626;
+    transform: translateY(-1px);
+}
+
+.btn-kib-modal-apply {
+    height: 38px;
+    padding: 0 22px;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    transition: all 0.15s ease;
+}
+
+.btn-kib-modal-apply:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-kib-modal-submit {
+    min-width: 160px;
+    height: 38px;
+    padding: 0 22px;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    transition: all 0.15s ease;
+}
+
+.btn-kib-modal-submit:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+
+/* Responsif */
+@media (max-width: 768px) {
+    .kib-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .kib-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .kib-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .kib-search-wrapper {
+        max-width: 100%;
+    }
+
+    .kib-table-footer {
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .kib-modal-dialog {
+        max-width: 100%;
+    }
+
+    .kib-modal-body {
+        padding: 16px 14px;
+    }
+
+    .kib-modal-footer {
+        padding: 12px 14px 14px;
+    }
+
+    .btn-kib-modal-submit {
+        width: 100%;
+    }
+}
