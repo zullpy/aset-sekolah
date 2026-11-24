@@ -6,11 +6,8 @@
  * Layout: Split Card 2 Kolom (Admin: Teks Kiri, Form Kanan | Operator: Form Kiri, Teks Kanan)
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Muat helper AJAX
+require_once dirname(__DIR__) . '/config/app.php';
+require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/ajax.php';
 
 // Deteksi path dasar aplikasi & file aset
@@ -50,96 +47,83 @@ $errorMessage = '';
 $successMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
-
-    if (empty($username) || empty($password)) {
-        $errorMessage = 'Silakan masukkan username/email dan kata sandi Anda.';
+    // 1. Validasi Keamanan Token CSRF
+    if (!verify_csrf_token()) {
+        $errorMessage = 'Sesi atau token keamanan (CSRF) tidak valid. Silakan muat ulang halaman.';
+        if (is_ajax_request()) {
+            json_error($errorMessage, [], 403);
+        }
     } else {
-        // Cek database jika koneksi tersedia
-        $authenticated = false;
-        $hasDatabaseUsers = false;
-        $userData = null;
-        $connFile = dirname(__DIR__) . '/config/conn.php';
+        $username = trim($_POST['username'] ?? '');
+        $password = $_POST['password'] ?? '';
 
-        if (file_exists($connFile)) {
-            try {
-                require_once $connFile;
-                if (isset($pdo) && $pdo instanceof PDO) {
-                    // Cek apakah tabel users ada
-                    $checkTable = $pdo->query("SHOW TABLES LIKE 'users'")->fetch();
-                    if ($checkTable) {
-                        $countUsers = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
-                        if ($countUsers > 0) {
-                            $hasDatabaseUsers = true;
-                        }
+        if (empty($username) || empty($password)) {
+            $errorMessage = 'Silakan masukkan username/email dan kata sandi Anda.';
+        } else {
+            $authenticated = false;
+            $userData = null;
+            $connFile = dirname(__DIR__) . '/config/conn.php';
 
-                        // Izinkan login dengan Username ATAU Email (case-insensitive & trimmed)
-                        $stmt = $pdo->prepare("SELECT * FROM users WHERE (LOWER(TRIM(username)) = LOWER(TRIM(?)) OR LOWER(TRIM(email)) = LOWER(TRIM(?))) AND LOWER(role) = ? LIMIT 1");
-                        $stmt->execute([$username, $username, $roleKey]);
-                        $userData = $stmt->fetch();
+            if (file_exists($connFile)) {
+                try {
+                    require_once $connFile;
+                    if (isset($pdo) && $pdo instanceof PDO) {
+                        $checkTable = $pdo->query("SHOW TABLES LIKE 'users'")->fetch();
+                        if ($checkTable) {
+                            // Izinkan login dengan Username ATAU Email (case-insensitive & trimmed)
+                            $stmt = $pdo->prepare("SELECT * FROM users WHERE (LOWER(TRIM(username)) = LOWER(TRIM(?)) OR LOWER(TRIM(email)) = LOWER(TRIM(?))) AND LOWER(role) = ? LIMIT 1");
+                            $stmt->execute([$username, $username, $roleKey]);
+                            $userData = $stmt->fetch();
 
-                        // Jika tidak ditemukan di portal role saat ini, cari apakah ada di role lain
-                        if (!$userData) {
-                            $stmtAny = $pdo->prepare("SELECT * FROM users WHERE (LOWER(TRIM(username)) = LOWER(TRIM(?)) OR LOWER(TRIM(email)) = LOWER(TRIM(?))) LIMIT 1");
-                            $stmtAny->execute([$username, $username]);
-                            $foundAny = $stmtAny->fetch();
+                            // Jika tidak ditemukan di portal role saat ini, cari apakah akun terdaftar di peran lain
+                            if (!$userData) {
+                                $stmtAny = $pdo->prepare("SELECT * FROM users WHERE (LOWER(TRIM(username)) = LOWER(TRIM(?)) OR LOWER(TRIM(email)) = LOWER(TRIM(?))) LIMIT 1");
+                                $stmtAny->execute([$username, $username]);
+                                $foundAny = $stmtAny->fetch();
 
-                            if ($foundAny && (password_verify($password, $foundAny['password']) || $password === $foundAny['password'])) {
-                                $userData = $foundAny;
-                                $authenticated = true;
-                                $actualRole = strtolower($userData['role'] ?? $roleKey);
-                                $isOperator = ($actualRole === 'operator');
-                                $roleKey    = $actualRole;
-                                $roleTitle  = $isOperator ? 'Operator' : 'Administrator';
-                            }
-                        } else {
-                            if (password_verify($password, $userData['password']) || $password === $userData['password']) {
-                                $authenticated = true;
+                                if ($foundAny && password_verify($password, $foundAny['password'])) {
+                                    $userData = $foundAny;
+                                    $authenticated = true;
+                                    $actualRole = strtolower($userData['role'] ?? $roleKey);
+                                    $isOperator = ($actualRole === 'operator');
+                                    $roleKey    = $actualRole;
+                                    $roleTitle  = $isOperator ? 'Operator' : 'Administrator';
+                                }
+                            } else {
+                                if (password_verify($password, $userData['password'])) {
+                                    $authenticated = true;
+                                }
                             }
                         }
                     }
+                } catch (Throwable $e) {
+                    error_log('Login DB check error: ' . $e->getMessage());
+                    $errorMessage = 'Terjadi gangguan saat menghubungkan ke database sistem inventaris.';
                 }
-            } catch (Throwable $e) {
-                error_log('Login DB check error: ' . $e->getMessage());
-            }
-        }
-
-        // Fallback default akun demo HANYA jika database tidak terhubung atau belum ada data pengguna
-        if (!$authenticated && !$hasDatabaseUsers) {
-            $validAdmin = (!$isOperator && in_array(strtolower($username), ['admin', 'administrator', 'admin@sdnbudikarya.sch.id']) && ($password === 'admin' || $password === 'admin123'));
-            $validOperator = ($isOperator && in_array(strtolower($username), ['operator', 'user', 'operator@sdnbudikarya.sch.id']) && ($password === 'operator' || $password === 'operator123'));
-
-            if ($validAdmin || $validOperator) {
-                $authenticated = true;
-                $userData = [
-                    'id'           => $isOperator ? 2 : 1,
-                    'username'     => $username,
-                    'nama_lengkap' => $isOperator ? 'Operator Aset' : 'Administrator Aset',
-                    'role'         => $roleTitle,
-                ];
-            }
-        }
-
-        if ($authenticated && $userData) {
-            $_SESSION['user_id']      = $userData['id'] ?? 1;
-            $_SESSION['username']     = $userData['username'] ?? $username;
-            $_SESSION['nama_lengkap'] = $userData['nama_lengkap'] ?? $userData['username'] ?? $username;
-            $_SESSION['role']         = $roleTitle;
-
-            // Alihkan ke Dashboard
-            $targetRedirect = file_exists(__DIR__ . '/dashboard.php') ? 'dashboard.php' : '../index.php';
-
-            if (is_ajax_request()) {
-                json_success('Login berhasil! Mengalihkan ke halaman dashboard...', ['redirect' => $targetRedirect]);
+            } else {
+                $errorMessage = 'Konfigurasi database server belum terpasang.';
             }
 
-            header("Location: " . $targetRedirect);
-            exit;
-        } else {
-            $errorMessage = 'Username atau kata sandi tidak sesuai untuk peran ' . htmlspecialchars($roleTitle) . '.';
-            if (is_ajax_request()) {
-                json_error($errorMessage);
+            if ($authenticated && $userData) {
+                // Regenerasi ID Sesi secara ketat untuk mencegah Session Fixation
+                session_regenerate_id(true);
+
+                $_SESSION['user_id']      = $userData['id'];
+                $_SESSION['username']     = $userData['username'] ?? $username;
+                $_SESSION['nama_lengkap'] = $userData['nama_lengkap'] ?? $userData['username'] ?? $username;
+                $_SESSION['role']         = $roleTitle;
+
+                // Alihkan ke Dashboard
+                $targetRedirect = file_exists(__DIR__ . '/dashboard.php') ? 'dashboard.php' : '../index.php';
+
+                if (is_ajax_request()) {
+                    json_success('Login berhasil! Mengalihkan ke halaman dashboard...', ['redirect' => $targetRedirect]);
+                }
+
+                header("Location: " . $targetRedirect);
+                exit;
+            } elseif (empty($errorMessage)) {
+                $errorMessage = 'Username atau kata sandi tidak sesuai untuk peran ' . htmlspecialchars($roleTitle) . '.';
             }
         }
     }
@@ -155,6 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Masuk ke Sistem Informasi Inventaris Aset SDN Budi Karya sebagai <?php echo htmlspecialchars($roleTitle); ?>">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars(get_csrf_token()); ?>">
     <title>Login <?php echo htmlspecialchars($roleTitle); ?> - SDN Budikarya</title>
 
     <!-- Favicon -->
@@ -183,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Container Card Terbagi 2 (Admin: Teks Kiri Form Kanan | Operator: Form Kiri Teks Kanan) -->
     <div class="login-card-container <?php echo $isOperator ? 'role-operator' : 'role-admin'; ?>">
-        
+
         <!-- ================= PANEL INFORMASI & KALIMAT PERAN ================= -->
         <div class="login-info-panel">
             <div class="login-info-header">
@@ -231,6 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Form Autentikasi -->
             <form action="login.php?role=<?php echo htmlspecialchars($roleKey); ?>" method="POST" autocomplete="on">
+                <?php echo csrf_input(); ?>
                 <input type="hidden" name="role" value="<?php echo htmlspecialchars($roleKey); ?>">
 
                 <!-- Field Username atau Email -->

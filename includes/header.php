@@ -5,8 +5,11 @@
  */
 
 // Pastikan sesi aktif untuk membaca data admin yang login
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+require_once __DIR__ . '/auth.php';
+
+// Lindungi komponen internal agar hanya dapat diakses pengguna yang sah
+if (empty($skipAuthCheck)) {
+    require_auth();
 }
 
 // Deteksi path dasar aplikasi & URL web
@@ -62,6 +65,7 @@ $tanggalStr = date('j') . ' ' . ($bulanArray[(int)date('n')] ?? date('M')) . ' '
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Sistem Informasi Inventaris dan Manajemen Aset Sekolah SDN Budi Karya">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars(get_csrf_token()); ?>">
     <title><?php echo htmlspecialchars($pageTitle); ?></title>
 
     <!-- Favicon Sekolah -->

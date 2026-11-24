@@ -62,8 +62,9 @@ if (!function_exists('send_mail')) {
             return ['success' => false, 'message' => 'Alamat email penerima tidak valid.'];
         }
 
-        // Cek apakah password masih placeholder
-        if (empty($config['password']) || $config['password'] === 'ganti-dengan-app-password') {
+        // Cek apakah password masih placeholder atau kosong
+        $rawPass = trim($config['password'] ?? '');
+        if ($rawPass === '' || $rawPass === 'ganti-dengan-app-password') {
             return [
                 'success' => false,
                 'message' => 'Konfigurasi SMTP belum selesai. Harap atur App Password di file config/mail.php.'
@@ -148,9 +149,11 @@ if (!function_exists('send_mail_with_native_smtp')) {
 
         $context = stream_context_create([
             'ssl' => [
-                'verify_peer'       => false,
-                'verify_peer_name'  => false,
-                'allow_self_signed' => true,
+                'verify_peer'       => true,
+                'verify_peer_name'  => true,
+                'allow_self_signed' => false,
+                'SNI_enabled'       => true,
+                'peer_name'         => $host,
             ]
         ]);
 

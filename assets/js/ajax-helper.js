@@ -5,10 +5,21 @@
 
 const SDNAjax = {
     /**
+     * Mengambil token CSRF dari meta tag atau hidden input
+     */
+    getCsrfToken: function() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta && meta.content) return meta.content;
+        const input = document.querySelector('input[name="csrf_token"]');
+        if (input && input.value) return input.value;
+        return '';
+    },
+
+    /**
      * Mengirim form secara asynchronous (AJAX) tanpa reload halaman
-     * 
-     * @param {HTMLFormElement} formElement 
-     * @param {Object} options 
+     *
+     * @param {HTMLFormElement} formElement
+     * @param {Object} options
      */
     submitForm: async function(formElement, options = {}) {
         const form = formElement instanceof HTMLFormElement ? formElement : document.querySelector(formElement);
@@ -22,6 +33,11 @@ const SDNAjax = {
         const formData = new FormData(form);
         formData.append('ajax', '1');
 
+        const csrfToken = this.getCsrfToken();
+        if (csrfToken && !formData.has('csrf_token')) {
+            formData.append('csrf_token', csrfToken);
+        }
+
         const url = options.url || form.getAttribute('action') || window.location.href;
         const method = (options.method || form.getAttribute('method') || 'POST').toUpperCase();
 
@@ -33,13 +49,18 @@ const SDNAjax = {
                 submitBtn.innerHTML = `<i class="ph-bold ph-spinner" style="animation: spin 1s linear infinite; display: inline-block;"></i> <span>${loadingText}</span>`;
             }
 
+            const headers = {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            };
+            if (csrfToken) {
+                headers['X-CSRF-TOKEN'] = csrfToken;
+            }
+
             const response = await fetch(url, {
                 method: method,
                 body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
+                headers: headers
             });
 
             const result = await response.json().catch(() => null);
@@ -150,12 +171,25 @@ const SDNAjax = {
                         }
                     });
 
+                    const deleteHeaders = {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    };
+                    const csrfToken = SDNAjax.getCsrfToken();
+                    if (csrfToken) {
+                        deleteHeaders['X-CSRF-TOKEN'] = csrfToken;
+                    }
+
+                    const deleteBody = new FormData();
+                    deleteBody.append('ajax', '1');
+                    if (csrfToken) {
+                        deleteBody.append('csrf_token', csrfToken);
+                    }
+
                     const response = await fetch(deleteUrl, {
                         method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
+                        body: deleteBody,
+                        headers: deleteHeaders
                     });
 
                     const res = await response.json();

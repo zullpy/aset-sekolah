@@ -4,9 +4,10 @@
  * Lokasi: pages/lupa-password.php
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once dirname(__DIR__) . '/config/app.php';
+require_once dirname(__DIR__) . '/includes/auth.php';
+require_once dirname(__DIR__) . '/includes/ajax.php';
+require_once dirname(__DIR__) . '/includes/mailer.php';
 
 // Deteksi path dasar aplikasi & file aset
 $projectDir = str_replace('\\', '/', realpath(dirname(__DIR__)));
@@ -38,128 +39,141 @@ $bgSchoolUrl = file_exists($bgLocalFile)
 $roleParam = strtolower($_GET['role'] ?? 'administrator');
 $loginBackUrl = 'login.php' . ($roleParam === 'operator' ? '?role=operator' : '?role=administrator');
 
-// Muat konfigurasi global & mailer & ajax
-require_once dirname(__DIR__) . '/config/app.php';
-require_once dirname(__DIR__) . '/includes/ajax.php';
-require_once dirname(__DIR__) . '/includes/mailer.php';
-
 $errorMessage = '';
 $successMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-
-    if (empty($email)) {
-        $errorMessage = 'Silakan masukkan alamat email akun Anda.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errorMessage = 'Format alamat email tidak valid.';
+    // 1. Validasi Token Keamanan CSRF
+    if (!verify_csrf_token()) {
+        $errorMessage = 'Sesi atau token keamanan (CSRF) tidak valid. Silakan muat ulang halaman.';
+        if (is_ajax_request()) {
+            json_error($errorMessage, [], 403);
+        }
     } else {
-        $userFound = null;
-        $dbConnected = false;
-        $tableExists = false;
+        $email = trim($_POST['email'] ?? '');
 
-        // Cek database jika tersedia
-        if (file_exists(dirname(__DIR__) . '/config/conn.php')) {
-            try {
-                require_once dirname(__DIR__) . '/config/conn.php';
-                if (isset($pdo)) {
-                    $dbConnected = true;
-                    $checkTable = $pdo->query("SHOW TABLES LIKE 'users'")->fetch();
-                    if ($checkTable) {
-                        $tableExists = true;
-                        $stmt = $pdo->prepare("SELECT id, username, nama_lengkap, email, role FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(?)) OR LOWER(TRIM(username)) = LOWER(TRIM(?)) LIMIT 1");
-                        $stmt->execute([$email, $email]);
-                        $userFound = $stmt->fetch();
-                        if ($userFound && !empty($userFound['email'])) {
-                            $email = $userFound['email'];
+        if (empty($email)) {
+            $errorMessage = 'Silakan masukkan alamat email akun Anda.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errorMessage = 'Format alamat email tidak valid.';
+        } else {
+            $userFound = null;
+            $dbConnected = false;
+            $tableExists = false;
+
+            // Cek database jika tersedia
+            if (file_exists(dirname(__DIR__) . '/config/conn.php')) {
+                try {
+                    require_once dirname(__DIR__) . '/config/conn.php';
+                    if (isset($pdo)) {
+                        $dbConnected = true;
+                        $checkTable = $pdo->query("SHOW TABLES LIKE 'users'")->fetch();
+                        if ($checkTable) {
+                            $tableExists = true;
+                            $stmt = $pdo->prepare("SELECT id, username, nama_lengkap, email, role FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(?)) OR LOWER(TRIM(username)) = LOWER(TRIM(?)) LIMIT 1");
+                            $stmt->execute([$email, $email]);
+                            $userFound = $stmt->fetch();
+                            if ($userFound && !empty($userFound['email'])) {
+                                $email = $userFound['email'];
+                            }
                         }
                     }
-                }
-            } catch (Throwable $e) {
-                error_log('DB check error: ' . $e->getMessage());
-            }
-        }
-
-        // Jika DB & tabel users ada namun email tidak ditemukan
-        if ($dbConnected && $tableExists && !$userFound) {
-            $errorMessage = 'Alamat email tidak ditemukan dalam sistem inventaris. Gunakan email akun terdaftar (contoh: admin@sdnbudikarya.sch.id atau operator@sdnbudikarya.sch.id).';
-        } else {
-            // Buat token acak yang aman dan hitung waktu kedaluwarsa (15 menit = 900 detik)
-            $token = bin2hex(random_bytes(32));
-            $recipientName = $userFound['nama_lengkap'] ?? $userFound['username'] ?? '';
-            $expiresAtTimestamp = time() + 900;
-            $expiresAt = date('Y-m-d H:i:s', $expiresAtTimestamp);
-
-            // Simpan token ke database jika koneksi tersedia
-            if ($dbConnected) {
-                try {
-                    // Buat tabel password_resets jika belum ada
-                    $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        email VARCHAR(255) NOT NULL,
-                        token VARCHAR(255) NOT NULL UNIQUE,
-                        expires_at DATETIME NOT NULL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        INDEX idx_email (email),
-                        INDEX idx_token (token)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
-                    // Bersihkan token yang sudah kedaluwarsa di sistem
-                    $pdo->exec("DELETE FROM password_resets WHERE expires_at < NOW()");
-
-                    // Hapus token lama untuk email yang sama agar tidak menumpuk
-                    $stmtDel = $pdo->prepare("DELETE FROM password_resets WHERE email = ?");
-                    $stmtDel->execute([$email]);
-
-                    // Simpan token baru dengan waktu kedaluwarsa eksplisit dari PHP
-                    $stmtIns = $pdo->prepare("INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)");
-                    $stmtIns->execute([$email, $token, $expiresAt]);
                 } catch (Throwable $e) {
-                    error_log('Gagal menyimpan password_resets: ' . $e->getMessage());
+                    error_log('DB check error: ' . $e->getMessage());
                 }
             }
 
-            // Simpan juga di session sebagai fallback (berlaku 15 menit = 900 detik)
-            if (!isset($_SESSION['password_reset_cache'])) {
-                $_SESSION['password_reset_cache'] = [];
-            }
-            $_SESSION['password_reset_cache'][$token] = [
-                'email'      => $email,
-                'name'       => $recipientName,
-                'expires_at' => $expiresAtTimestamp,
-            ];
+            // Pesan respon generik terstandar untuk mencegah kebocoran/enumerasi akun (User Enumeration)
+            $standardSuccessMsg = 'Jika alamat email terdaftar pada sistem inventaris, tautan pemulihan kata sandi telah dikirimkan. Silakan periksa kotak masuk atau folder spam email Anda (berlaku selama 15 menit).';
 
-            // Tentukan URL absolut link reset password dengan deteksi HTTPS yang akurat (termasuk proxy & Cloudflare)
-            $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-                || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)
-                || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
-                || (isset($_SERVER['HTTP_CF_VISITOR']) && str_contains($_SERVER['HTTP_CF_VISITOR'], 'https'));
-            $protocol = $isHttps ? 'https://' : 'http://';
-            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-            $resetLink = $protocol . $host . $appUrlPath . 'pages/reset-password.php?token=' . urlencode($token);
+            // Jika akun ada dan valid, buat token reset dan kirim email
+            if ($userFound) {
+                // Buat token acak berkekuatan tinggi (32 byte = 64 karakter hex)
+                $token = bin2hex(random_bytes(32));
+                // Simpan hanya hash SHA-256 token di database untuk mencegah kebocoran jika database disusupi
+                $tokenHash = hash('sha256', $token);
 
-            // Kirim email menggunakan Mailer (PHPMailer / Native SMTP)
-            $mailResult = send_reset_password_mail($email, $resetLink, $recipientName);
+                $recipientName = $userFound['nama_lengkap'] ?? $userFound['username'] ?? '';
+                $expiresAtTimestamp = time() + 900; // 15 menit
+                $expiresAt = date('Y-m-d H:i:s', $expiresAtTimestamp);
 
-            if ($mailResult['success']) {
-                $successMessage = 'Tautan pemulihan kata sandi telah berhasil dikirim ke <strong>' . htmlspecialchars($email) . '</strong>. Silakan periksa kotak masuk atau folder spam email Anda (berlaku selama 15 menit).';
+                if ($dbConnected) {
+                    try {
+                        $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            email VARCHAR(255) NOT NULL,
+                            token VARCHAR(255) NOT NULL UNIQUE,
+                            expires_at DATETIME NOT NULL,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            INDEX idx_email (email),
+                            INDEX idx_token (token)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+                        // Bersihkan token yang kedaluwarsa
+                        $pdo->exec("DELETE FROM password_resets WHERE expires_at < NOW()");
+
+                        // Hapus token lama untuk email yang sama
+                        $stmtDel = $pdo->prepare("DELETE FROM password_resets WHERE email = ?");
+                        $stmtDel->execute([$email]);
+
+                        // Simpan hash token baru
+                        $stmtIns = $pdo->prepare("INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)");
+                        $stmtIns->execute([$email, $tokenHash, $expiresAt]);
+                    } catch (Throwable $e) {
+                        error_log('Gagal menyimpan password_resets: ' . $e->getMessage());
+                    }
+                }
+
+                // Simpan hash token di sesi sebagai cadangan
+                if (!isset($_SESSION['password_reset_cache'])) {
+                    $_SESSION['password_reset_cache'] = [];
+                }
+                $_SESSION['password_reset_cache'][$tokenHash] = [
+                    'email'      => $email,
+                    'name'       => $recipientName,
+                    'expires_at' => $expiresAtTimestamp,
+                ];
+
+                // URL absolut aman dengan validasi host whitelist untuk mencegah Password Reset Poisoning
+                $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                    || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)
+                    || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
+                    || (isset($_SERVER['HTTP_CF_VISITOR']) && str_contains($_SERVER['HTTP_CF_VISITOR'], 'https'));
+                $protocol = $isHttps ? 'https://' : 'http://';
+                $host = get_app_canonical_host();
+                $resetLink = $protocol . $host . $appUrlPath . 'pages/reset-password.php?token=' . urlencode($token);
+
+                // Kirim email
+                $mailResult = send_reset_password_mail($email, $resetLink, $recipientName);
+
+                if ($mailResult['success']) {
+                    $successMessage = 'Tautan pemulihan kata sandi telah dikirim ke <strong>' . htmlspecialchars($email) . '</strong>. Silakan periksa kotak masuk atau folder spam email Anda (berlaku selama 15 menit).';
+                } else {
+                    error_log('Mailer error: ' . $mailResult['message']);
+                    if (is_local()) {
+                        error_log('[DEV TESTING RESET LINK]: ' . $resetLink);
+                        $errorMessage = 'Gagal mengirim email: ' . $mailResult['message'];
+                    } else {
+                        $errorMessage = 'Layanan email sedang mengalami gangguan. Silakan hubungi administrator sistem.';
+                    }
+                }
             } else {
-                // Tampilkan pesan status pengiriman SMTP
-                $errorMessage = $mailResult['message'];
-
-                // Di lingkungan LOCAL (development), sediakan tautan langsung untuk memudahkan pengujian
+                // Akun tidak ditemukan
                 if (is_local()) {
-                    $devResetLink = $resetLink;
+                    $errorMessage = 'Akun dengan email / username "' . htmlspecialchars($email) . '" tidak ditemukan di database.';
+                } else {
+                    // Mencegah enumerasi akun di mode produksi
+                    $successMessage = $standardSuccessMsg;
                 }
             }
         }
     }
 
     if (is_ajax_request()) {
-        if (!empty($successMessage)) {
-            json_success($successMessage, ['email' => $email]);
+        if (!empty($errorMessage)) {
+            json_error($errorMessage);
         } else {
-            json_error($errorMessage, ['devResetLink' => $devResetLink ?? null]);
+            json_success($successMessage, ['email' => $email ?? '']);
         }
     }
 }
@@ -170,6 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Lupa Password - Sistem Informasi Inventaris Aset SDN Budi Karya">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars(get_csrf_token()); ?>">
     <title>Lupa Kata Sandi - SDN Budi Karya</title>
 
     <!-- Favicon -->
@@ -210,17 +225,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Form Kirim Tautan -->
         <form action="lupa-password.php?role=<?php echo htmlspecialchars($roleParam); ?>" method="POST">
+            <?php echo csrf_input(); ?>
+
             <div class="forgot-form-group">
                 <label for="email" class="forgot-form-label">Alamat Email</label>
                 <div class="forgot-input-wrapper">
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        class="forgot-form-input" 
-                        placeholder="contoh@sdnbudikarya.sch.id" 
-                        required 
-                        autocomplete="email" 
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="forgot-form-input"
+                        placeholder="contoh@sdnbudikarya.sch.id"
+                        required
+                        autocomplete="email"
                         autofocus
                         value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
                     >
@@ -255,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     Swal.fire({
                         icon: 'success',
                         title: 'Tautan Terkirim!',
-                        html: res.message || 'Tautan reset kata sandi telah dikirim ke email Anda.',
+                        html: res.message || 'Tautan reset kata sandi telah dikirim ke email Anda jika terdaftar.',
                         confirmButtonColor: '#852019',
                         confirmButtonText: 'Selesai'
                     }).then(() => {
@@ -264,17 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 },
                 onError: (res) => {
-                    if (res.data && res.data.devResetLink) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Mode Uji Coba Lokal',
-                            html: res.message + '<br><br><a href="' + res.data.devResetLink + '" class="swal2-confirm swal2-styled" style="display:inline-block; text-decoration:none; margin: 0 auto; background-color: #852019;">Buka Tautan Reset Password</a>',
-                            showConfirmButton: false,
-                            showCloseButton: true
-                        });
-                    } else {
-                        SDNAlert.error('Permintaan Gagal', res.message || 'Alamat email tidak ditemukan.');
-                    }
+                    SDNAlert.error('Permintaan Gagal', res.message || 'Terjadi kesalahan saat memproses permintaan.');
                 }
             });
         });
@@ -293,20 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <?php if (!empty($errorMessage)): ?>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        <?php if (!empty($devResetLink)): ?>
-            Swal.fire({
-                icon: 'warning',
-                title: 'Mode Uji Coba Lokal',
-                html: <?php echo json_encode(
-                    htmlspecialchars($errorMessage) . '<br><br>' .
-                    '<a href="' . htmlspecialchars($devResetLink) . '" class="swal2-confirm swal2-styled" style="display:inline-block; text-decoration:none; margin: 0 auto; background-color: #852019;">Buka Tautan Reset Password</a>'
-                ); ?>,
-                showConfirmButton: false,
-                showCloseButton: true
-            });
-        <?php else: ?>
-            SDNAlert.error('Permintaan Gagal', <?php echo json_encode($errorMessage); ?>);
-        <?php endif; ?>
+        SDNAlert.error('Permintaan Gagal', <?php echo json_encode($errorMessage); ?>);
     });
 </script>
 <?php endif; ?>

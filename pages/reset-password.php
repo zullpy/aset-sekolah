@@ -5,12 +5,8 @@
  * Lokasi: pages/reset-password.php
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Muat konfigurasi global & helper AJAX
 require_once dirname(__DIR__) . '/config/app.php';
+require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/ajax.php';
 
 // Deteksi path dasar aplikasi & file aset
@@ -50,6 +46,8 @@ $resetCompleted = false;
 if (empty($token)) {
     $tokenStatus = 'missing';
 } else {
+    $tokenHash = hash('sha256', $token);
+
     // 1. Cek token di database jika koneksi tersedia
     $connFile = dirname(__DIR__) . '/config/conn.php';
     $dbConnected = false;
@@ -61,8 +59,9 @@ if (empty($token)) {
                 $dbConnected = true;
                 $checkTable = $pdo->query("SHOW TABLES LIKE 'password_resets'")->fetch();
                 if ($checkTable) {
-                    $stmt = $pdo->prepare("SELECT email, expires_at, (expires_at > NOW()) AS sql_valid FROM password_resets WHERE token = ? LIMIT 1");
-                    $stmt->execute([$token]);
+                    // Cari berdasarkan hash SHA-256 atau token mentah (kompatibilitas)
+                    $stmt = $pdo->prepare("SELECT email, expires_at, (expires_at > NOW()) AS sql_valid FROM password_resets WHERE token = ? OR token = ? LIMIT 1");
+                    $stmt->execute([$tokenHash, $token]);
                     $resetRow = $stmt->fetch();
 
                     if ($resetRow) {
@@ -70,7 +69,6 @@ if (empty($token)) {
                         $sqlValid = !empty($resetRow['sql_valid']);
 
                         // Token valid jika PHP timestamp belum kedaluwarsa ATAU evaluasi MySQL NOW() masih valid
-                        // (Mencegah false expired karena perbedaan zona waktu server OS / MySQL UTC vs PHP WIB)
                         $isValidTime = ($expiresTime !== false && $expiresTime >= time()) || $sqlValid;
 
                         if (!$isValidTime) {
@@ -88,82 +86,94 @@ if (empty($token)) {
     }
 
     // 2. Cek token di session cache (fallback dev mode)
-    if ($tokenStatus === 'invalid' && isset($_SESSION['password_reset_cache'][$token])) {
-        $cached = $_SESSION['password_reset_cache'][$token];
-        if (time() > ($cached['expires_at'] ?? 0)) {
-            $tokenStatus = 'expired';
-        } else {
-            $tokenStatus = 'valid';
-            $targetEmail = $cached['email'] ?? '';
-            $recipientName = $cached['name'] ?? '';
+    if ($tokenStatus === 'invalid') {
+        $cached = $_SESSION['password_reset_cache'][$tokenHash] ?? $_SESSION['password_reset_cache'][$token] ?? null;
+        if ($cached) {
+            if (time() > ($cached['expires_at'] ?? 0)) {
+                $tokenStatus = 'expired';
+            } else {
+                $tokenStatus = 'valid';
+                $targetEmail = $cached['email'] ?? '';
+                $recipientName = $cached['name'] ?? '';
+            }
         }
     }
 }
 
 // Proses submit kata sandi baru
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
-    $newPassword     = $_POST['new_password'] ?? '';
-    $confirmPassword = $_POST['confirm_password'] ?? '';
-
-    if (empty($newPassword) || empty($confirmPassword)) {
-        $errorMessage = 'Silakan isi kata sandi baru dan konfirmasi kata sandi.';
-    } elseif (strlen($newPassword) < 6) {
-        $errorMessage = 'Kata sandi minimal harus terdiri dari 6 karakter.';
-    } elseif ($newPassword !== $confirmPassword) {
-        $errorMessage = 'Konfirmasi kata sandi tidak cocok dengan kata sandi baru.';
-    } else {
-        // Hash kata sandi baru dengan aman
-        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-        $updated = false;
-        $matchedUser = null;
-
-        // Update di database jika tersedia
-        if (file_exists($connFile)) {
-            try {
-                require_once $connFile;
-                if (isset($pdo) && $pdo instanceof PDO) {
-                    $checkUsers = $pdo->query("SHOW TABLES LIKE 'users'")->fetch();
-                    if ($checkUsers) {
-                        // Cari user berdasarkan email atau username
-                        $stmtFind = $pdo->prepare("SELECT id, username, email, role FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(?)) OR LOWER(TRIM(username)) = LOWER(TRIM(?)) LIMIT 1");
-                        $stmtFind->execute([$targetEmail, $targetEmail]);
-                        $matchedUser = $stmtFind->fetch();
-
-                        if ($matchedUser) {
-                            $stmtUpdate = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-                            $stmtUpdate->execute([$hashedPassword, $matchedUser['id']]);
-                            $updated = true;
-                        } else {
-                            $errorMessage = 'Akun pengguna (' . htmlspecialchars($targetEmail) . ') tidak ditemukan di tabel pengguna database.';
-                        }
-                    } else {
-                        $errorMessage = 'Tabel users belum dibuat di database. Silakan jalankan migrasi database.';
-                    }
-
-                    if ($updated) {
-                        // Hapus token yang sudah terpakai dan semua token lama untuk email ini
-                        $checkResets = $pdo->query("SHOW TABLES LIKE 'password_resets'")->fetch();
-                        if ($checkResets) {
-                            $stmtClean = $pdo->prepare("DELETE FROM password_resets WHERE token = ? OR email = ?");
-                            $stmtClean->execute([$token, $targetEmail]);
-                        }
-                    }
-                }
-            } catch (Throwable $e) {
-                error_log('Gagal update password user: ' . $e->getMessage());
-                $errorMessage = 'Terjadi kesalahan sistem saat memperbarui kata sandi: ' . $e->getMessage();
-            }
-        } else {
-            // Fallback mode jika file koneksi database tidak ada (mode demo/lokal)
-            $updated = true;
+    // 1. Validasi Token Keamanan CSRF
+    if (!verify_csrf_token()) {
+        $errorMessage = 'Sesi atau token keamanan (CSRF) tidak valid. Silakan muat ulang halaman.';
+        if (is_ajax_request()) {
+            json_error($errorMessage, [], 403);
         }
+    } else {
+        $newPassword     = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
 
-        if ($updated) {
-            // Hapus token dari session cache
-            if (isset($_SESSION['password_reset_cache'][$token])) {
-                unset($_SESSION['password_reset_cache'][$token]);
+        if (empty($newPassword) || empty($confirmPassword)) {
+            $errorMessage = 'Silakan isi kata sandi baru dan konfirmasi kata sandi.';
+        } elseif (strlen($newPassword) < 6) {
+            $errorMessage = 'Kata sandi minimal harus terdiri dari 6 karakter.';
+        } elseif ($newPassword !== $confirmPassword) {
+            $errorMessage = 'Konfirmasi kata sandi tidak cocok dengan kata sandi baru.';
+        } else {
+            // Hash kata sandi baru dengan aman menggunakan bcrypt terstandar PHP
+            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+            $updated = false;
+            $matchedUser = null;
+            $tokenHash = hash('sha256', $token);
+
+            // Update di database jika tersedia
+            $connFile = dirname(__DIR__) . '/config/conn.php';
+            if (file_exists($connFile)) {
+                try {
+                    require_once $connFile;
+                    if (isset($pdo) && $pdo instanceof PDO) {
+                        $checkUsers = $pdo->query("SHOW TABLES LIKE 'users'")->fetch();
+                        if ($checkUsers) {
+                            $stmtFind = $pdo->prepare("SELECT id, username, email, role FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(?)) OR LOWER(TRIM(username)) = LOWER(TRIM(?)) LIMIT 1");
+                            $stmtFind->execute([$targetEmail, $targetEmail]);
+                            $matchedUser = $stmtFind->fetch();
+
+                            if ($matchedUser) {
+                                $stmtUpdate = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+                                $stmtUpdate->execute([$hashedPassword, $matchedUser['id']]);
+                                $updated = true;
+                            } else {
+                                $errorMessage = 'Akun pengguna (' . htmlspecialchars($targetEmail) . ') tidak ditemukan di tabel pengguna database.';
+                            }
+                        } else {
+                            $errorMessage = 'Tabel users belum dibuat di database. Silakan jalankan migrasi database.';
+                        }
+
+                        if ($updated) {
+                            // Hapus token yang sudah terpakai dan semua token lama untuk email ini
+                            $checkResets = $pdo->query("SHOW TABLES LIKE 'password_resets'")->fetch();
+                            if ($checkResets) {
+                                $stmtClean = $pdo->prepare("DELETE FROM password_resets WHERE token = ? OR token = ? OR email = ?");
+                                $stmtClean->execute([$tokenHash, $token, $targetEmail]);
+                            }
+                        }
+                    }
+                } catch (Throwable $e) {
+                    error_log('Gagal update password user: ' . $e->getMessage());
+                    $errorMessage = 'Terjadi kesalahan sistem saat memperbarui kata sandi.';
+                }
+            } else {
+                $errorMessage = 'Koneksi database tidak tersedia. Gagal memperbarui kata sandi.';
             }
-            $resetCompleted = true;
+
+            if ($updated) {
+                // Hapus token dari session cache
+                unset($_SESSION['password_reset_cache'][$tokenHash], $_SESSION['password_reset_cache'][$token]);
+
+                // Regenerasi ID sesi untuk mencegah Session Fixation
+                session_regenerate_id(true);
+
+                $resetCompleted = true;
+            }
         }
     }
 
@@ -189,6 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Atur Ulang Kata Sandi - Sistem Informasi Inventaris Aset SDN Budi Karya">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars(get_csrf_token()); ?>">
     <title>Atur Ulang Kata Sandi - SDN Budi Karya</title>
 
     <!-- Favicon -->
@@ -283,19 +294,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
 
             <!-- Form Reset Password -->
             <form action="reset-password.php" method="POST" id="form-reset-password">
+                <?php echo csrf_input(); ?>
                 <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
 
                 <!-- Input Kata Sandi Baru -->
                 <div class="reset-form-group">
                     <label for="new_password" class="reset-form-label">Kata Sandi Baru</label>
                     <div class="reset-input-wrapper">
-                        <input 
-                            type="password" 
-                            id="new_password" 
-                            name="new_password" 
-                            class="reset-form-input" 
-                            placeholder="Minimal 6 karakter" 
-                            required 
+                        <input
+                            type="password"
+                            id="new_password"
+                            name="new_password"
+                            class="reset-form-input"
+                            placeholder="Minimal 6 karakter"
+                            required
                             autofocus
                         >
                         <i class="ph-bold ph-lock-key reset-input-icon"></i>
@@ -309,12 +321,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
                 <div class="reset-form-group">
                     <label for="confirm_password" class="reset-form-label">Ulangi Kata Sandi Baru</label>
                     <div class="reset-input-wrapper">
-                        <input 
-                            type="password" 
-                            id="confirm_password" 
-                            name="confirm_password" 
-                            class="reset-form-input" 
-                            placeholder="Ketik ulang kata sandi baru" 
+                        <input
+                            type="password"
+                            id="confirm_password"
+                            name="confirm_password"
+                            class="reset-form-input"
+                            placeholder="Ketik ulang kata sandi baru"
                             required
                         >
                         <i class="ph-bold ph-lock-key-open reset-input-icon"></i>
