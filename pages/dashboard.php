@@ -56,7 +56,7 @@ $userRoleDisplay = ucfirst($_SESSION['role'] ?? 'Administrator');
                 <div class="dash-card">
                     <div class="dash-card-title-row">
                         <h2 class="dash-card-title">Aktivitas Terbaru</h2>
-                        <a href="#" class="dash-link-all">Lihat Semua</a>
+                        <button type="button" class="dash-link-all" id="btnAllActivities">Lihat Semua</button>
                     </div>
                     <div class="dash-activity-list" id="activityList"></div>
                 </div>
@@ -64,6 +64,46 @@ $userRoleDisplay = ucfirst($_SESSION['role'] ?? 'Administrator');
 
         </div>
     </main>
+</div>
+
+<!-- Modal Semua Aktivitas -->
+<div class="dash-modal-overlay" id="dashActivitiesModal" aria-hidden="true">
+    <div class="dash-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="dashActModalTitle">
+        <div class="dash-modal-header">
+            <div class="dash-modal-header-left">
+                <span class="dash-modal-icon" aria-hidden="true">
+                    <i class="ph-bold ph-clock-counter-clockwise"></i>
+                </span>
+                <div>
+                    <h3 class="dash-modal-title" id="dashActModalTitle">Riwayat Aktivitas</h3>
+                    <p class="dash-modal-subtitle" id="dashActModalCount">Memuat aktivitas...</p>
+                </div>
+            </div>
+            <button type="button" class="dash-modal-close" id="btnCloseActModal" aria-label="Tutup">
+                <i class="ph-bold ph-x"></i>
+            </button>
+        </div>
+
+        <div class="dash-modal-search-bar">
+            <div class="dash-modal-search-wrap">
+                <i class="ph-bold ph-magnifying-glass dash-modal-search-icon" aria-hidden="true"></i>
+                <input
+                    type="text"
+                    id="dashActSearchInput"
+                    class="dash-modal-search-input"
+                    placeholder="Cari aktivitas atau nama petugas..."
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+
+        <div class="dash-modal-body">
+            <div class="dash-activity-list" id="dashAllActivitiesList"></div>
+            <div class="dash-modal-load-more-wrap" id="dashActLoadMoreWrap" style="display:none;">
+                <button type="button" class="dash-btn-load-more" id="btnActLoadMore">Muat Lebih Banyak</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>

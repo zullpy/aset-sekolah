@@ -51,8 +51,8 @@ ON DUPLICATE KEY UPDATE
 
 INSERT INTO kib_f (kode, jenis, nama, tingkat, beton, luas, letak_bangunan, dokumen, tgl_mulai, status_tanah, biaya, persen_fisik, status_pengerjaan, sumber, keterangan, lampiran)
 VALUES
-('KIB-F/2024/001', 'Pembangunan', 'Pembangunan Ruang Perpustakaan', 'Tidak', 'Beton', '56', 'Sebelah Barat Ruang Kelas 6', '600/045/Disdik/2024, 10 Maret 2024', '15 Maret 2024', 'Hak Pakai', 'Rp 120.000.000', '65%', 'Dalam Pengerjaan', 'APBD', 'Pekerjaan pasangan dinding & atap', 'Kontrak_Perpus_2024.pdf'),
-('KIB-F/2023/002', 'Pembangunan', 'Pembangunan Toilet Siswa (4 Pintu)', 'Tidak', 'Beton', '24', 'Belakang Ruang Guru', '600/112/DAK/2023, 05 Juli 2023', '12 Juli 2023', 'Hak Pakai', 'Rp 45.000.000', '100%', 'Selesai', 'DAK Fisik', 'Pembangunan sanitasi sekolah telah rampung 100%', 'BAST_Toilet_2023.pdf')
+('KIB-F/2024/001', 'Pembangunan', 'Pembangunan Ruang Perpustakaan', 'Tidak Bertingkat', 'Beton', '56', 'Sebelah Barat Ruang Kelas 6', '600/045/Disdik/2024, 10 Maret 2024', '15 Maret 2024', 'Hak Pakai', 'Rp 120.000.000', '65%', 'Dalam Pengerjaan', 'APBD', 'Pekerjaan pasangan dinding & atap', 'Kontrak_Perpus_2024.pdf'),
+('KIB-F/2023/002', 'Pembangunan', 'Pembangunan Toilet Siswa (4 Pintu)', 'Tidak Bertingkat', 'Beton', '24', 'Belakang Ruang Guru', '600/112/DAK/2023, 05 Juli 2023', '12 Juli 2023', 'Hak Pakai', 'Rp 45.000.000', '100%', 'Selesai', 'DAK Fisik', 'Pembangunan sanitasi sekolah telah rampung 100%', 'BAST_Toilet_2023.pdf')
 ON DUPLICATE KEY UPDATE
     nama = VALUES(nama), persen_fisik = VALUES(persen_fisik), status_pengerjaan = VALUES(status_pengerjaan), biaya = VALUES(biaya);
 

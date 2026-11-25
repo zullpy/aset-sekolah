@@ -85,7 +85,6 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <th>Penggunaan</th>
                                 <th class="th-center">Sumber</th>
                                 <th class="th-center">Harga</th>
-                                <th class="th-center">Penempatan</th>
                                 <th class="th-center">Lampiran</th>
                                 <th class="th-center">Aksi</th>
                             </tr>
@@ -144,7 +143,6 @@ window.__kibEngine = new KibEngine({
         { key: 'penggunaan' },
         { key: 'sumber', align: 'center' },
         { key: 'harga', align: 'center' },
-        { key: 'penempatan', align: 'center' },
         { key: 'lampiran', align: 'center' }
     ],
     formFields: [
@@ -157,10 +155,9 @@ window.__kibEngine = new KibEngine({
         { name: 'status_tanah', label: 'Status Tanah', span: 4, required: true, type: 'select', default: 'Hak Guna Bangunan', options: ['Hak Milik', 'Hak Guna Bangunan', 'Hak Pakai', 'Hak Pengelolaan'] },
         { name: 'sertifikat', label: 'No Sertifikat', span: 4, required: true, placeholder: 'Masukkan nomor sertifikat' },
         { name: 'penggunaan', label: 'Penggunaan', span: 4, required: true, placeholder: 'Masukkan jenis penggunaan' },
-        { name: 'sumber', label: 'Sumber', span: 3, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
-        { name: 'harga', label: 'Harga (Rp.)', span: 3, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
-        { name: 'penempatan', label: 'Penempatan', span: 3, required: true, type: 'select', default: 'umum', options: [{ value: 'kelas-1', label: 'Kelas 1' }, { value: 'kelas-2', label: 'Kelas 2' }, { value: 'kelas-3', label: 'Kelas 3' }, { value: 'kelas-4', label: 'Kelas 4' }, { value: 'kelas-5', label: 'Kelas 5' }, { value: 'kelas-6', label: 'Kelas 6' }, { value: 'umum', label: 'Aset Umum' }] },
-        { name: 'lampiran', label: 'Lampiran', span: 3, type: 'file' }
+        { name: 'sumber', label: 'Sumber', span: 4, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
+        { name: 'harga', label: 'Harga (Rp.)', span: 4, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
+        { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
     ],
     initialData: [
         {

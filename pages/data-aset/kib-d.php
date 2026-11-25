@@ -84,7 +84,6 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <th>No. &amp; Tanggal Dokumen</th>
                                 <th class="th-center">Harga</th>
                                 <th class="th-center">Sumber</th>
-                                <th class="th-center">Penempatan</th>
                                 <th class="th-center">Lampiran</th>
                                 <th class="th-center">Aksi</th>
                             </tr>
@@ -142,7 +141,6 @@ window.__kibEngine = new KibEngine({
         { key: 'dokumen' },
         { key: 'harga', align: 'center' },
         { key: 'sumber', align: 'center' },
-        { key: 'penempatan', align: 'center' },
         { key: 'lampiran', align: 'center' }
     ],
     formFields: [
@@ -155,9 +153,8 @@ window.__kibEngine = new KibEngine({
         { name: 'dokumen', label: 'No & Tanggal Dokumen', span: 5, required: true, placeholder: 'Masukkan nomor & tanggal dokumen' },
         { name: 'tahun', label: 'Tahun Perolehan', span: 4, required: true, placeholder: 'ex : 2024' },
         { name: 'sumber', label: 'Sumber', span: 3, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
-        { name: 'harga', label: 'Harga (Rp.)', span: 4, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
-        { name: 'penempatan', label: 'Penempatan', span: 4, required: true, type: 'select', default: 'umum', options: [{ value: 'kelas-1', label: 'Kelas 1' }, { value: 'kelas-2', label: 'Kelas 2' }, { value: 'kelas-3', label: 'Kelas 3' }, { value: 'kelas-4', label: 'Kelas 4' }, { value: 'kelas-5', label: 'Kelas 5' }, { value: 'kelas-6', label: 'Kelas 6' }, { value: 'umum', label: 'Aset Umum' }] },
-        { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
+        { name: 'harga', label: 'Harga (Rp.)', span: 6, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
+        { name: 'lampiran', label: 'Lampiran', span: 6, type: 'file' }
     ],
     initialData: [
         {

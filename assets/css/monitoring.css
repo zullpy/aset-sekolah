@@ -87,6 +87,220 @@
     text-decoration: underline;
 }
 
+.mon-quota-hint {
+    display: none;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    line-height: 1.35;
+}
+
+.mon-quota-hint.show {
+    display: block;
+}
+
+.mon-quota-hint.is-full {
+    color: #b45309;
+}
+
+/* Searchable Combobox Nama Aset */
+.mon-aset-combobox {
+    position: relative;
+    width: 100%;
+}
+
+.mon-aset-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.mon-aset-search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #64748b;
+    pointer-events: none;
+}
+
+.kib-modal-dialog--form .mon-aset-search-input {
+    width: 100%;
+    padding-left: 34px;
+    padding-right: 58px;
+}
+
+.kib-modal-dialog--form .mon-aset-search-input:disabled {
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: not-allowed;
+}
+
+.mon-aset-clear-btn,
+.mon-aset-toggle-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.mon-aset-clear-btn {
+    right: 32px;
+    display: none;
+    font-size: 12px;
+}
+
+.mon-aset-clear-btn.visible {
+    display: inline-flex;
+}
+
+.mon-aset-clear-btn:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.mon-aset-toggle-btn {
+    right: 7px;
+    font-size: 14px;
+}
+
+.mon-aset-toggle-btn:hover:not(:disabled) {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.mon-aset-toggle-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.mon-aset-combobox.is-open .mon-aset-toggle-btn i {
+    transform: rotate(180deg);
+}
+
+.mon-aset-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    z-index: 45;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    box-shadow: 0 14px 32px -8px rgba(15, 23, 42, 0.2), 0 4px 10px -4px rgba(15, 23, 42, 0.08);
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.mon-aset-combobox.is-open .mon-aset-dropdown {
+    display: block;
+}
+
+.mon-aset-option {
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: background-color 0.12s ease;
+}
+
+.mon-aset-option + .mon-aset-option {
+    margin-top: 2px;
+}
+
+.mon-aset-option:hover,
+.mon-aset-option.is-active {
+    background: #fbeeed;
+}
+
+.mon-aset-option.is-selected {
+    background: #fff5f5;
+    box-shadow: inset 3px 0 0 #852019;
+}
+
+.mon-aset-option-top {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+.mon-aset-option-kib {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 10.5px;
+    font-weight: 700;
+    background: #fbeeed;
+    color: #852019;
+    border: 1px solid #f5c2bf;
+    flex-shrink: 0;
+}
+
+.mon-aset-option-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    flex: 1 1 auto;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.mon-aset-option-code {
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 1px 6px;
+    border-radius: 5px;
+    flex-shrink: 0;
+}
+
+.mon-aset-option-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11.5px;
+    color: #64748b;
+    flex-wrap: wrap;
+}
+
+.mon-aset-option-quota {
+    font-weight: 600;
+    color: #15803d;
+}
+
+.mon-aset-option-quota.is-full {
+    color: #b45309;
+}
+
+.mon-aset-empty {
+    padding: 14px 12px;
+    text-align: center;
+    font-size: 12.5px;
+    color: #64748b;
+}
+
 /* Modal Filter Monitoring: 2 Kolom + Kata Kunci Full Width */
 #monModalFilter .kib-modal-dialog--filter {
     max-width: 500px;

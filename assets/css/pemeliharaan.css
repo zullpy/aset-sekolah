@@ -1,0 +1,1087 @@
+/* ==========================================================================
+   Halaman Pemeliharaan Aset - Sistem Informasi Inventaris Aset SDN Budi Karya
+   ========================================================================== */
+
+:root {
+    --pml-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --pml-bg-card: #ffffff;
+    --pml-border: #e2e8f0;
+    --pml-shadow-card: 0 10px 28px -8px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+    --pml-radius-lg: 18px;
+    --pml-radius-md: 10px;
+    --pml-radius-sm: 4px;
+    --pml-text-dark: #111827;
+    --pml-text-muted: #64748b;
+    --pml-input-bg: #d9d9d9;
+    --pml-green: #16a34a;
+    --pml-green-hover: #15803d;
+    --pml-blue-apply: #2a7bc8;
+    --pml-blue-submit: #2f6df0;
+    --pml-red: #dc2626;
+    --pml-space-sm: 10px;
+    --pml-space-md: 16px;
+    --pml-space-lg: 24px;
+}
+
+.pml-container {
+    font-family: var(--pml-font);
+}
+
+/* Header */
+.pml-page-header {
+    margin-bottom: 20px;
+}
+
+.pml-page-title {
+    font-family: var(--pml-font);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--pml-text-dark);
+    border-bottom: 3px solid var(--pml-text-dark);
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+}
+
+.pml-page-subtitle {
+    color: var(--pml-text-muted);
+    font-size: 13.5px;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   Timeline Tahapan Pemeliharaan
+   ========================================================================== */
+.pml-timeline-card {
+    background: var(--pml-bg-card);
+    border: 1px solid var(--pml-border);
+    border-radius: var(--pml-radius-lg);
+    box-shadow: var(--pml-shadow-card);
+    padding: 22px 24px 20px;
+    margin-bottom: 24px;
+}
+
+.pml-timeline-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+}
+
+.pml-timeline-stage-wrap {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    height: 288px;
+}
+
+.pml-timeline-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.pml-stage {
+    position: absolute;
+    left: var(--stage-x);
+    top: 0;
+    width: clamp(112px, 18%, 168px);
+    transform: translateX(-50%);
+    z-index: 2;
+    text-align: center;
+    pointer-events: none;
+}
+
+.pml-stage-circle {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--stage-color);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    box-shadow: 0 6px 14px -4px rgba(15, 23, 42, 0.25);
+}
+
+.pml-stage-stem {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 38px;
+    border-left: 2px dashed var(--stage-color);
+    opacity: 0.78;
+}
+
+.pml-stage-dot {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid var(--stage-color);
+    box-sizing: border-box;
+    z-index: 3;
+}
+
+.pml-stage-meta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.pml-stage-label {
+    font-size: clamp(11.5px, 1.05vw, 13px);
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.3;
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pml-stage-count-box {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 12.5px;
+    color: #334155;
+    font-weight: 500;
+    min-width: 78px;
+}
+
+.pml-stage-count {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--stage-color);
+    line-height: 1.1;
+}
+
+/* Posisi Ganjil (Jalur Atas - dotY = 114px) */
+.pml-stage--odd .pml-stage-circle {
+    top: 12px;
+}
+.pml-stage--odd .pml-stage-stem {
+    top: 68px;
+}
+.pml-stage--odd .pml-stage-dot {
+    top: 114px;
+}
+.pml-stage--odd .pml-stage-meta {
+    top: 130px;
+}
+
+/* Posisi Genap (Jalur Bawah - dotY = 178px) */
+.pml-stage--even .pml-stage-circle {
+    top: 76px;
+}
+.pml-stage--even .pml-stage-stem {
+    top: 132px;
+}
+.pml-stage--even .pml-stage-dot {
+    top: 178px;
+}
+.pml-stage--even .pml-stage-meta {
+    top: 194px;
+}
+
+/* ==========================================================================
+   Bagian Daftar & Tabel Pemeliharaan
+   ========================================================================== */
+.pml-list-card {
+    padding: 20px 22px 18px;
+}
+
+.pml-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.pml-list-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #52525b;
+}
+
+.pml-list-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pml-btn-filter {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1.5px solid var(--pml-green);
+    color: var(--pml-green);
+}
+
+.pml-btn-filter.has-filter::after {
+    display: none;
+}
+
+.pml-filter-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #dc2626;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    display: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.pml-filter-badge.show {
+    display: inline-block;
+}
+
+.pml-btn-add {
+    background: var(--pml-green);
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 8px;
+}
+
+.pml-btn-add:hover {
+    background: var(--pml-green-hover);
+}
+
+/* Tabel Modern Konsisten dengan Monitoring & KIB Data Aset */
+.pml-table-wrapper {
+    border-radius: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.pml-table {
+    white-space: normal;
+}
+
+.pml-table th:nth-child(3) {
+    text-align: left;
+}
+
+.pml-table td.pml-cell-name {
+    text-align: left;
+    font-weight: 600;
+    color: var(--color-slate-900, #0f172a);
+    white-space: normal;
+    min-width: 165px;
+}
+
+.pml-table td.pml-cell-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-maroon-primary, #852019);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.pml-kondisi-stack {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.pml-status-mini {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.pml-status-mini--perlu {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+.pml-status-mini--sedang {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+.pml-status-mini--selesai {
+    background: #ffedd5;
+    color: #c2410c;
+    border-color: #fed7aa;
+}
+.pml-status-mini--digunakan {
+    background: #dcfce7;
+    color: #15803d;
+    border-color: #bbf7d0;
+}
+.pml-status-mini--disimpan {
+    background: #f3e8ff;
+    color: #7e22ce;
+    border-color: #e9d5ff;
+}
+
+.pml-act-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.pml-btn-book {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.pml-btn-book:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #94a3b8;
+    transform: translateY(-1px);
+}
+
+.pml-btn-proses {
+    height: 30px;
+    padding: 0 13px;
+    border: none;
+    border-radius: 7px;
+    background: var(--pml-green);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(22, 163, 74, 0.25);
+    transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    white-space: nowrap;
+}
+
+.pml-btn-proses:hover {
+    background: var(--pml-green-hover);
+    box-shadow: 0 3px 8px rgba(22, 163, 74, 0.32);
+    transform: translateY(-1px);
+}
+
+.pml-done-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.pml-btn-delete {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #dc2626;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.pml-btn-delete:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Modal Filter Data & Modal Proses Pemeliharaan
+   ========================================================================== */
+.pml-modal-dialog--filter {
+    max-width: 510px;
+}
+
+.pml-modal-dialog--proses {
+    max-width: 560px;
+    border-radius: 16px;
+    font-family: var(--pml-font);
+}
+
+.pml-modal-icon-wrench {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.pml-modal-dialog--proses .kib-modal-header {
+    padding: 18px 24px 16px;
+}
+
+.pml-modal-dialog--proses .kib-modal-title {
+    font-size: 17.5px;
+    font-weight: 800;
+    color: var(--color-slate-900, #0f172a);
+    letter-spacing: -0.015em;
+}
+
+.pml-modal-dialog--proses .kib-modal-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    font-size: 17px;
+}
+
+.pml-modal-dialog--proses .kib-modal-close:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff;
+}
+
+.pml-modal-dialog--riwayat {
+    max-width: 620px;
+    border-radius: 16px;
+    font-family: var(--pml-font);
+}
+
+.pml-modal-close-solid {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: #dc2626;
+    border: 1px solid #dc2626;
+    color: #ffffff;
+}
+
+.pml-modal-close-solid:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: #ffffff;
+}
+
+.pml-icon-green {
+    color: var(--pml-green);
+}
+
+.pml-placeholder-italic::placeholder {
+    font-style: italic;
+}
+
+.pml-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 14px;
+}
+
+.pml-date-range-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 4px;
+}
+
+.pml-date-range-input {
+    font-size: 11.5px;
+    padding: 0 6px;
+    min-width: 0;
+}
+
+.pml-date-sep {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.pml-filter-footer-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.pml-btn-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ffffff;
+    border: 1.5px solid #dc2626;
+    color: #dc2626;
+    padding: 0 18px;
+    height: 38px;
+    border-radius: 7px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.pml-btn-reset:hover {
+    background: #fef2f2;
+}
+
+.pml-btn-apply {
+    background: var(--pml-blue-apply);
+    border: none;
+    color: #ffffff;
+    font-weight: 700;
+    padding: 0 22px;
+    height: 38px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.pml-btn-apply:hover {
+    background: #2368aa;
+}
+
+/* Modal Proses Form Fields */
+.pml-proses-body {
+    padding: 20px 24px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pml-form-row {
+    display: grid;
+    gap: 14px;
+    align-items: start;
+}
+
+.pml-form-row--aset {
+    grid-template-columns: 55fr 45fr;
+}
+
+.pml-form-row--three {
+    grid-template-columns: 1.25fr 1fr 0.7fr;
+}
+
+.pml-form-row--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pml-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.pml-form-group--full {
+    width: 100%;
+}
+
+.pml-input,
+.pml-select {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 9px;
+    font-family: var(--pml-font);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-slate-900, #0f172a);
+    box-sizing: border-box;
+    transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.pml-input::placeholder {
+    color: #94a3b8;
+    font-style: normal;
+    font-weight: 400;
+}
+
+.pml-input:hover:not([readonly]):not(:focus),
+.pml-select:hover:not(:disabled):not(:focus) {
+    border-color: #cbd5e1;
+}
+
+.pml-input:focus,
+.pml-select:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: var(--color-maroon-primary, #852019);
+    box-shadow: 0 0 0 3px rgba(133, 32, 25, 0.12);
+}
+
+.pml-input--readonly {
+    background: #f1f5f9;
+    border: 1.5px dashed #cbd5e1;
+    color: #334155;
+    font-weight: 600;
+    cursor: default;
+}
+
+.pml-modal-dialog--proses .mon-aset-search-input {
+    width: 100%;
+    padding-left: 34px;
+    padding-right: 58px;
+}
+
+.pml-modal-dialog--proses .mon-aset-search-input:disabled {
+    background: #f1f5f9;
+    border: 1.5px dashed #cbd5e1;
+    color: #334155;
+    font-weight: 600;
+    cursor: not-allowed;
+}
+
+.pml-select-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.pml-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 32px;
+    cursor: pointer;
+}
+
+.pml-select:disabled {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #e2e8f0;
+    opacity: 0.85;
+    cursor: not-allowed;
+}
+
+.pml-select-chevron {
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #64748b;
+    pointer-events: none;
+}
+
+.pml-input--jumlah {
+    text-align: center;
+    font-weight: 700;
+}
+
+.pml-quota-hint {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+.pml-date-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pml-date-preview {
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.pml-input.has-error,
+.pml-select.has-error {
+    border-color: #dc2626;
+    background: #fef2f2;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
+}
+
+/* Upload Area Dokumentasi */
+.pml-upload-box {
+    position: relative;
+    min-height: 144px;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+    border: 1.5px dashed #cbd5e1;
+}
+
+.pml-upload-box:hover,
+.pml-upload-box:focus-visible,
+.pml-upload-box.is-dragover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    outline: none;
+}
+
+.pml-upload-file-input {
+    display: none;
+}
+
+.pml-upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #64748b;
+    text-align: center;
+    pointer-events: none;
+}
+
+.pml-upload-placeholder i {
+    font-size: 40px;
+    color: #94a3b8;
+}
+
+.pml-upload-placeholder span {
+    font-size: 12.5px;
+    font-weight: 500;
+    font-style: normal;
+}
+
+.pml-upload-placeholder.hidden {
+    display: none;
+}
+
+.pml-upload-previews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.pml-upload-previews:empty {
+    display: none;
+}
+
+.pml-thumb-card {
+    position: relative;
+    width: 84px;
+    height: 84px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #94a3b8;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.pml-thumb-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.pml-thumb-remove {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(220, 38, 38, 0.92);
+    color: #ffffff;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.pml-submit-row {
+    display: flex;
+    justify-content: center;
+    padding-top: 6px;
+}
+
+.pml-btn-submit {
+    min-width: 168px;
+    height: 40px;
+    padding: 0 26px;
+    border: none;
+    border-radius: 9px;
+    background: var(--pml-blue-submit);
+    color: #ffffff;
+    font-family: var(--pml-font);
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(47, 109, 240, 0.25);
+    transition: background-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+}
+
+.pml-btn-submit:hover:not(:disabled) {
+    background: #2558cc;
+    box-shadow: 0 6px 16px rgba(47, 109, 240, 0.34);
+    transform: translateY(-1px);
+}
+
+.pml-btn-submit:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* Modal Riwayat Per Aset */
+.pml-modal-icon-book {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #111827;
+    border: 1px solid #cbd5e1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.pml-riwayat-subtitle {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.pml-riwayat-body {
+    padding: 18px 22px;
+    overflow-y: auto;
+    max-height: 68vh;
+}
+
+.pml-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pml-history-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #f8fafc;
+}
+
+.pml-history-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.pml-history-date {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.pml-history-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    font-size: 12.5px;
+    color: #475569;
+}
+
+.pml-history-photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.pml-history-photo-link,
+.pml-history-photo-btn {
+    display: block;
+    width: 68px;
+    height: 68px;
+    padding: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pml-history-photo-btn:hover {
+    transform: translateY(-1px);
+    border-color: #2f6df0;
+    box-shadow: 0 4px 10px rgba(47, 109, 240, 0.2);
+}
+
+.pml-history-photo-link img,
+.pml-history-photo-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.pml-modal-dialog--foto {
+    max-width: 720px;
+    border-radius: 16px;
+    font-family: var(--pml-font);
+}
+
+.pml-foto-body {
+    padding: 18px 22px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    max-height: 76vh;
+    overflow: auto;
+}
+
+.pml-foto-preview-img {
+    max-width: 100%;
+    max-height: 68vh;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+    object-fit: contain;
+    background: #ffffff;
+}
+
+/* ==========================================================================
+   Responsif Mobile (< 600px) & Tablet
+   ========================================================================== */
+@media (max-width: 768px) {
+    .pml-timeline-card {
+        padding: 16px 14px;
+        border-radius: 14px;
+    }
+
+    .pml-list-card {
+        padding: 16px 14px;
+    }
+}
+
+@media (max-width: 640px) {
+    .pml-timeline-stage-wrap {
+        min-width: 640px;
+    }
+}
+
+@media (max-width: 600px) {
+    .pml-filter-grid,
+    .pml-form-row--aset,
+    .pml-form-row--three,
+    .pml-form-row--two {
+        grid-template-columns: 1fr;
+    }
+
+    .pml-btn-book,
+    .pml-btn-delete,
+    .pml-btn-proses,
+    .pml-btn-filter,
+    .pml-btn-add {
+        min-height: 44px;
+    }
+
+    .pml-btn-book,
+    .pml-btn-delete {
+        width: 44px;
+    }
+
+    .pml-btn-filter {
+        width: 44px;
+        height: 44px;
+    }
+
+    .pml-proses-body {
+        padding: 14px 16px 18px;
+    }
+}
+
+/* Toast SweetAlert2 Ringkas */
+.pml-swal-toast {
+    width: auto !important;
+    max-width: 340px !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.16), 0 4px 10px -4px rgba(15, 23, 42, 0.08) !important;
+}
+
+.pml-swal-toast .swal2-title {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    margin: 0 0 0 8px !important;
+    color: #0f172a !important;
+}
+
+.pml-swal-toast .swal2-icon {
+    transform: scale(0.72);
+    margin: -4px 0 -4px -4px !important;
+    flex-shrink: 0;
+}
+

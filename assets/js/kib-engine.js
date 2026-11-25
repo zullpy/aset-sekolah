@@ -68,20 +68,6 @@ class KibEngine {
     }
 
     // Helper membaca CSRF token
-    formatPenempatan(val) {
-        const map = {
-            'kelas-1': 'Kelas 1',
-            'kelas-2': 'Kelas 2',
-            'kelas-3': 'Kelas 3',
-            'kelas-4': 'Kelas 4',
-            'kelas-5': 'Kelas 5',
-            'kelas-6': 'Kelas 6',
-            'umum': 'Aset Umum'
-        };
-        const key = String(val || 'umum').trim().toLowerCase();
-        return map[key] || val || 'Aset Umum';
-    }
-
     getCsrfToken() {
         const meta = document.querySelector('meta[name="csrf-token"]');
         if (meta && meta.content) return meta.content;
@@ -1519,8 +1505,6 @@ class KibEngine {
 
             if (f.name === 'lampiran' && raw && raw !== '-') {
                 val = `<button type="button" class="btn-kib-lampiran" onclick="window.__kibEngine.previewLampiran('${this.escapeHtml(raw)}')"><i class="ph-bold ph-paperclip"></i><span>${this.escapeHtml(raw)}</span></button>`;
-            } else if (f.name === 'penempatan') {
-                val = this.escapeHtml(this.formatPenempatan(val));
             } else {
                 val = this.escapeHtml(val);
             }
@@ -1785,16 +1769,19 @@ class KibEngine {
         const fSumber = this.state.filters.sumber;
 
         const filtered = this.state.data.filter(item => {
+            const getSearchable = () => Object.values(item)
+                .map(v => (v === null || v === undefined ? '' : String(v)))
+                .join(' ')
+                .toLowerCase();
+
             // 1. Live Search Bar (cocokkan pada field nama, kode, jenis, merk, spesifikasi, lokasi)
             if (qSearch) {
-                const combined = Object.values(item).join(' ').toLowerCase();
-                if (!combined.includes(qSearch)) return false;
+                if (!getSearchable().includes(qSearch)) return false;
             }
 
             // 2. Filter Modal: Kata Kunci
             if (fKeyword) {
-                const combined = Object.values(item).join(' ').toLowerCase();
-                if (!combined.includes(fKeyword)) return false;
+                if (!getSearchable().includes(fKeyword)) return false;
             }
 
             // 3. Filter Modal: Jenis Aset / Buku
@@ -1874,9 +1861,6 @@ class KibEngine {
                         renderedVal = `<span class="badge-kib ${badgeClass}">${this.escapeHtml(rawVal)}</span>`;
                     } else if (col.key === 'sumber') {
                         renderedVal = `<span class="badge-kib badge-kib--sumber">${this.escapeHtml(rawVal)}</span>`;
-                    } else if (col.key === 'penempatan') {
-                        const penempatanLabel = this.formatPenempatan(rawVal);
-                        renderedVal = `<span class="badge-kib badge-kib--sumber">${this.highlightMatch(penempatanLabel, qSearch || fKeyword)}</span>`;
                     } else if (col.key === 'lampiran') {
                         if (rawVal && rawVal !== '-' && rawVal !== 'null') {
                             renderedVal = `

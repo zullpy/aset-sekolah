@@ -20,7 +20,6 @@ if ($action !== 'download') {
 }
 
 const KIB_MAX_FILE_BYTES = 5242880; // 5 MB
-const KIB_PENEMPATAN_VALUES = ['kelas-1', 'kelas-2', 'kelas-3', 'kelas-4', 'kelas-5', 'kelas-6', 'umum'];
 
 // Pemetaan ID KIB dengan nama tabel dan konfigurasi kolom
 $kibConfigs = [
@@ -31,10 +30,9 @@ $kibConfigs = [
         'kode'     => 'KIB A',
         'warna'    => '#852019',
         'file'     => 'kib-a.php',
-        'fields'   => ['kode', 'nama', 'no_reg', 'penempatan', 'luas', 'tahun', 'lokasi', 'status_tanah', 'sertifikat', 'penggunaan', 'sumber', 'harga', 'lampiran'],
+        'fields'   => ['kode', 'nama', 'no_reg', 'luas', 'tahun', 'lokasi', 'status_tanah', 'sertifikat', 'penggunaan', 'sumber', 'harga', 'lampiran'],
         'required' => [
             'nama'         => 'Nama Aset',
-            'penempatan'   => 'Penempatan',
             'luas'         => 'Luas (m²)',
             'tahun'        => 'Tahun Perolehan',
             'lokasi'       => 'Lokasi Aset',
@@ -52,11 +50,10 @@ $kibConfigs = [
         'kode'     => 'KIB B',
         'warna'    => '#f97316',
         'file'     => 'kib-b.php',
-        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'penempatan', 'merk', 'spesifikasi', 'bahan', 'no_pabrik', 'tahun', 'jumlah', 'harga', 'sumber', 'lampiran'],
+        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'merk', 'spesifikasi', 'bahan', 'no_pabrik', 'tahun', 'jumlah', 'harga', 'sumber', 'lampiran'],
         'required' => [
             'jenis'       => 'Jenis Aset',
             'nama'        => 'Nama Aset',
-            'penempatan'  => 'Penempatan',
             'merk'        => 'Merk',
             'spesifikasi' => 'Spesifikasi',
             'bahan'       => 'Bahan',
@@ -73,10 +70,9 @@ $kibConfigs = [
         'kode'     => 'KIB C',
         'warna'    => '#eab308',
         'file'     => 'kib-c.php',
-        'fields'   => ['kode', 'nama', 'no_reg', 'penempatan', 'konstruksi', 'luas', 'lokasi', 'tgl_izin', 'status_tanah', 'tahun', 'harga', 'sumber', 'lampiran'],
+        'fields'   => ['kode', 'nama', 'no_reg', 'konstruksi', 'luas', 'lokasi', 'tgl_izin', 'status_tanah', 'tahun', 'harga', 'sumber', 'lampiran'],
         'required' => [
             'nama'         => 'Nama Aset',
-            'penempatan'   => 'Penempatan',
             'konstruksi'   => 'Konstruksi',
             'luas'         => 'Luas (m²)',
             'lokasi'       => 'Lokasi Aset',
@@ -94,10 +90,9 @@ $kibConfigs = [
         'kode'     => 'KIB D',
         'warna'    => '#22c55e',
         'file'     => 'kib-d.php',
-        'fields'   => ['kode', 'nama', 'no_reg', 'penempatan', 'konstruksi', 'ukuran', 'luas', 'tahun', 'dokumen', 'harga', 'sumber', 'lampiran'],
+        'fields'   => ['kode', 'nama', 'no_reg', 'konstruksi', 'ukuran', 'luas', 'tahun', 'dokumen', 'harga', 'sumber', 'lampiran'],
         'required' => [
             'nama'       => 'Nama Aset',
-            'penempatan' => 'Penempatan',
             'konstruksi' => 'Konstruksi',
             'ukuran'     => 'Ukuran (m)',
             'dokumen'    => 'No & Tanggal Dokumen',
@@ -113,11 +108,10 @@ $kibConfigs = [
         'kode'     => 'KIB E',
         'warna'    => '#06b6d4',
         'file'     => 'kib-e.php',
-        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'penempatan', 'spesifikasi_judul', 'spesifikasi_pengarang', 'spesifikasi_penerbit', 'spesifikasi_tahun', 'tahun', 'jumlah', 'harga_satuan', 'harga_total', 'sumber', 'lampiran'],
+        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'spesifikasi_judul', 'spesifikasi_pengarang', 'spesifikasi_penerbit', 'spesifikasi_tahun', 'tahun', 'jumlah', 'harga_satuan', 'harga_total', 'sumber', 'lampiran'],
         'required' => [
             'jenis'                 => 'Jenis Aset',
             'nama'                  => 'Nama Buku',
-            'penempatan'            => 'Penempatan',
             'spesifikasi_judul'     => 'Judul Buku',
             'spesifikasi_pengarang' => 'Penulis',
             'spesifikasi_penerbit'  => 'Penerbit',
@@ -135,11 +129,10 @@ $kibConfigs = [
         'kode'     => 'KIB F',
         'warna'    => '#8b5cf6',
         'file'     => 'kib-f.php',
-        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'penempatan', 'tingkat', 'beton', 'luas', 'letak_bangunan', 'dokumen', 'tgl_mulai', 'status_tanah', 'biaya', 'persen_fisik', 'status_pengerjaan', 'sumber', 'keterangan', 'lampiran'],
+        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'tingkat', 'beton', 'luas', 'letak_bangunan', 'dokumen', 'tgl_mulai', 'status_tanah', 'biaya', 'persen_fisik', 'status_pengerjaan', 'sumber', 'keterangan', 'lampiran'],
         'required' => [
             'jenis'          => 'Jenis Aset',
             'nama'           => 'Nama Aset',
-            'penempatan'     => 'Penempatan',
             'tingkat'        => 'Tingkat / Tidak',
             'beton'          => 'Beton / Tidak',
             'letak_bangunan' => 'Letak Bangunan',
@@ -456,23 +449,117 @@ try {
                 ];
             }
 
-            // Ambil 8 aktivitas terbaru
-            $stmtAct = $pdo->query("SELECT id, teks, pelaku, waktu, warna, created_at FROM kib_activities ORDER BY id DESC LIMIT 8");
+            // Ambil ringkasan kondisi & sebaran lokasi dari monitoring_aset untuk Dashboard
+            $monitoringSummary = [
+                'total_unit'   => 0,
+                'baik'         => 0,
+                'rusak_ringan' => 0,
+                'rusak_berat'  => 0,
+                'hilang'       => 0,
+            ];
+            $stmtMonKondisi = $pdo->query("SELECT kondisi, COALESCE(SUM(jumlah), 0) AS total_unit FROM monitoring_aset GROUP BY kondisi");
+            while ($mk = $stmtMonKondisi->fetch(PDO::FETCH_ASSOC)) {
+                $qty = (int) $mk['total_unit'];
+                $monitoringSummary['total_unit'] += $qty;
+                switch ($mk['kondisi']) {
+                    case 'Baik':
+                        $monitoringSummary['baik'] += $qty;
+                        break;
+                    case 'Rusak Ringan':
+                        $monitoringSummary['rusak_ringan'] += $qty;
+                        break;
+                    case 'Rusak Berat':
+                        $monitoringSummary['rusak_berat'] += $qty;
+                        break;
+                    case 'Hilang':
+                        $monitoringSummary['hilang'] += $qty;
+                        break;
+                }
+            }
+
+            $locDefs = [
+                'kelas-1' => ['label' => 'Kelas 1',   'warna' => '#ef4444', 'url' => 'monitoring/kelas-1.php'],
+                'kelas-2' => ['label' => 'Kelas 2',   'warna' => '#f97316', 'url' => 'monitoring/kelas-2.php'],
+                'kelas-3' => ['label' => 'Kelas 3',   'warna' => '#22c55e', 'url' => 'monitoring/kelas-3.php'],
+                'kelas-4' => ['label' => 'Kelas 4',   'warna' => '#3b82f6', 'url' => 'monitoring/kelas-4.php'],
+                'kelas-5' => ['label' => 'Kelas 5',   'warna' => '#8b5cf6', 'url' => 'monitoring/kelas-5.php'],
+                'kelas-6' => ['label' => 'Kelas 6',   'warna' => '#475569', 'url' => 'monitoring/kelas-6.php'],
+                'umum'    => ['label' => 'Aset Umum', 'warna' => '#14b8a6', 'url' => 'monitoring/aset-umum.php'],
+            ];
+            $locCounts = [];
+            $stmtMonLoc = $pdo->query("SELECT penempatan, COALESCE(SUM(jumlah), 0) AS total_unit, COUNT(*) AS total_entri FROM monitoring_aset GROUP BY penempatan");
+            while ($ml = $stmtMonLoc->fetch(PDO::FETCH_ASSOC)) {
+                $locCounts[$ml['penempatan']] = [
+                    'jumlah' => (int) $ml['total_unit'],
+                    'entri'  => (int) $ml['total_entri'],
+                ];
+            }
+            $monitoringLocations = [];
+            foreach ($locDefs as $locKey => $locMeta) {
+                $monitoringLocations[] = [
+                    'id'     => $locKey,
+                    'label'  => $locMeta['label'],
+                    'jumlah' => $locCounts[$locKey]['jumlah'] ?? 0,
+                    'entri'  => $locCounts[$locKey]['entri'] ?? 0,
+                    'warna'  => $locMeta['warna'],
+                    'url'    => $locMeta['url'],
+                ];
+            }
+
+            // Ambil 5 aktivitas terbaru untuk ringkasan Dashboard
+            $stmtAct = $pdo->query("SELECT id, teks, pelaku, waktu, warna, created_at FROM kib_activities ORDER BY id DESC LIMIT 5");
             $activities = $stmtAct->fetchAll(PDO::FETCH_ASSOC);
+            $totalActivities = (int) $pdo->query("SELECT COUNT(*) FROM kib_activities")->fetchColumn();
 
             json_success('Seluruh dataset KIB berhasil dimuat dari database.', [
-                'datasets'    => $allData,
-                'summary'     => $summary,
-                'totalAset'   => $totalUnitAll,
-                'activities'  => $activities,
+                'datasets'            => $allData,
+                'summary'             => $summary,
+                'totalAset'           => $totalUnitAll,
+                'monitoringSummary'   => $monitoringSummary,
+                'monitoringLocations' => $monitoringLocations,
+                'activities'          => $activities,
+                'totalActivities'     => $totalActivities,
             ]);
             break;
 
-        // Ambil aktivitas terbaru
+        // Ambil daftar aktivitas (mendukung limit, offset, dan pencarian untuk modal Lihat Semua)
         case 'activities':
-            $stmtAct = $pdo->query("SELECT id, teks, pelaku, waktu, warna, created_at FROM kib_activities ORDER BY id DESC LIMIT 8");
-            $activities = $stmtAct->fetchAll(PDO::FETCH_ASSOC);
-            json_success('Data aktivitas berhasil dimuat.', ['activities' => $activities]);
+            $limit  = (int) ($_GET['limit'] ?? 30);
+            $offset = (int) ($_GET['offset'] ?? 0);
+            $q      = trim((string) ($_GET['q'] ?? ''));
+
+            $limit  = max(1, min(100, $limit));
+            $offset = max(0, $offset);
+
+            if ($q !== '') {
+                $like = '%' . $q . '%';
+                $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM kib_activities WHERE teks LIKE ? OR pelaku LIKE ?");
+                $stmtTotal->execute([$like, $like]);
+                $total = (int) $stmtTotal->fetchColumn();
+
+                $stmtAct = $pdo->prepare("SELECT id, teks, pelaku, waktu, warna, created_at FROM kib_activities WHERE teks LIKE ? OR pelaku LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?");
+                $stmtAct->bindValue(1, $like, PDO::PARAM_STR);
+                $stmtAct->bindValue(2, $like, PDO::PARAM_STR);
+                $stmtAct->bindValue(3, $limit, PDO::PARAM_INT);
+                $stmtAct->bindValue(4, $offset, PDO::PARAM_INT);
+                $stmtAct->execute();
+                $activities = $stmtAct->fetchAll(PDO::FETCH_ASSOC);
+            } else {
+                $total = (int) $pdo->query("SELECT COUNT(*) FROM kib_activities")->fetchColumn();
+                $stmtAct = $pdo->prepare("SELECT id, teks, pelaku, waktu, warna, created_at FROM kib_activities ORDER BY id DESC LIMIT ? OFFSET ?");
+                $stmtAct->bindValue(1, $limit, PDO::PARAM_INT);
+                $stmtAct->bindValue(2, $offset, PDO::PARAM_INT);
+                $stmtAct->execute();
+                $activities = $stmtAct->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            json_success('Data aktivitas berhasil dimuat.', [
+                'activities' => $activities,
+                'total'      => $total,
+                'limit'      => $limit,
+                'offset'     => $offset,
+                'hasMore'    => ($offset + count($activities)) < $total,
+            ]);
             break;
 
         // Pratinjau Kode Aset & No Registrasi berikutnya (tanpa mengubah counter)
@@ -599,20 +686,6 @@ try {
                 }
             }
 
-            // Default dan validasi kolom penempatan
-            if (!isset($dataToSave['penempatan']) || $dataToSave['penempatan'] === '') {
-                $dataToSave['penempatan'] = 'umum';
-            } else {
-                $normPenempatan = strtolower($dataToSave['penempatan']);
-                if ($normPenempatan === 'aset-umum') {
-                    $normPenempatan = 'umum';
-                }
-                if (!in_array($normPenempatan, KIB_PENEMPATAN_VALUES, true)) {
-                    json_error('Lokasi penempatan aset tidak valid.', ['field' => 'penempatan'], 422);
-                }
-                $dataToSave['penempatan'] = $normPenempatan;
-            }
-
             // Validasi field wajib per KIB
             foreach ($cfg['required'] as $reqField => $reqLabel) {
                 if (!isset($dataToSave[$reqField]) || $dataToSave[$reqField] === '') {
@@ -693,17 +766,69 @@ try {
             $actor = $currentUser['nama_lengkap'] ?? $currentUser['username'] ?? 'Administrator';
 
             if ($id > 0) {
-                $setParts = [];
-                $params   = [];
-                foreach ($dataToSave as $col => $val) {
-                    $setParts[] = "{$col} = ?";
-                    $params[]   = $val;
+                if (in_array('jumlah', $cfg['fields'], true)) {
+                    $newTotalQty = (int) ($dataToSave['jumlah'] ?? 1);
+                    try {
+                        $stmtMonTotal = $pdo->prepare("SELECT COALESCE(SUM(jumlah), 0) FROM monitoring_aset WHERE kib = ? AND aset_id = ?");
+                        $stmtMonTotal->execute([$kibId, $id]);
+                        $usedInMonitoring = (int) $stmtMonTotal->fetchColumn();
+                        if ($usedInMonitoring > $newTotalQty) {
+                            json_error(
+                                "Jumlah tidak boleh kurang dari {$usedInMonitoring} karena sudah tercatat pada Monitoring (total {$usedInMonitoring} unit).",
+                                ['field' => 'jumlah'],
+                                422
+                            );
+                        }
+                    } catch (Throwable $monChkErr) {
+                        // Abaikan jika tabel monitoring_aset belum tersedia
+                    }
                 }
-                $params[] = $id;
 
-                $sql = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id = ?";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute($params);
+                $pdo->beginTransaction();
+                try {
+                    $setParts = [];
+                    $params   = [];
+                    foreach ($dataToSave as $col => $val) {
+                        $setParts[] = "{$col} = ?";
+                        $params[]   = $val;
+                    }
+                    $params[] = $id;
+
+                    $sql = "UPDATE {$table} SET " . implode(', ', $setParts) . " WHERE id = ?";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute($params);
+
+                    // Sinkronkan nama_aset dan jenis_aset ke tabel monitoring_aset bila sudah ada
+                    $jenisSync = match ($kibId) {
+                        'kib-a' => 'Tanah',
+                        'kib-c' => 'Gedung & Bangunan',
+                        'kib-d' => 'Jalan, Irigasi & Jaringan',
+                        default => (string) ($dataToSave['jenis'] ?? $existingRow['jenis'] ?? ''),
+                    };
+                    try {
+                        $stmtSyncMon = $pdo->prepare("UPDATE monitoring_aset SET nama_aset = ?, jenis_aset = ? WHERE kib = ? AND aset_id = ?");
+                        $stmtSyncMon->execute([$dataToSave['nama'], $jenisSync, $kibId, $id]);
+                    } catch (Throwable $syncErr) {
+                        // Abaikan jika tabel monitoring_aset belum tersedia sebelum migrasi dijalankan
+                    }
+
+                    $actTeks = "Data aset \"{$dataToSave['nama']}\" diperbarui di {$cfg['kode']}";
+                    $stmtLog = $pdo->prepare("INSERT INTO kib_activities (teks, pelaku, waktu, warna) VALUES (?, ?, 'Baru saja', '#3b82f6')");
+                    $stmtLog->execute([$actTeks, $actor]);
+
+                    $pdo->commit();
+                } catch (Throwable $txErr) {
+                    if ($pdo->inTransaction()) {
+                        $pdo->rollBack();
+                    }
+                    if ($uploadedNewFile !== null) {
+                        $newFilePath = get_kib_upload_dir($kibId) . '/' . basename($uploadedNewFile);
+                        if (is_file($newFilePath)) {
+                            @unlink($newFilePath);
+                        }
+                    }
+                    throw $txErr;
+                }
 
                 if ($uploadedNewFile !== null && !empty($existingRow['lampiran']) && $existingRow['lampiran'] !== $uploadedNewFile) {
                     $oldFilePath = get_kib_upload_dir($kibId) . '/' . basename((string) $existingRow['lampiran']);
@@ -711,24 +836,6 @@ try {
                         @unlink($oldFilePath);
                     }
                 }
-
-                // Sinkronkan penempatan, nama_aset, dan jenis_aset ke tabel monitoring_aset bila sudah ada
-                $jenisSync = match ($kibId) {
-                    'kib-a' => 'Tanah',
-                    'kib-c' => 'Gedung & Bangunan',
-                    'kib-d' => 'Jalan, Irigasi & Jaringan',
-                    default => (string) ($dataToSave['jenis'] ?? $existingRow['jenis'] ?? ''),
-                };
-                try {
-                    $stmtSyncMon = $pdo->prepare("UPDATE monitoring_aset SET penempatan = ?, nama_aset = ?, jenis_aset = ? WHERE kib = ? AND aset_id = ?");
-                    $stmtSyncMon->execute([$dataToSave['penempatan'], $dataToSave['nama'], $jenisSync, $kibId, $id]);
-                } catch (Throwable $syncErr) {
-                    // Abaikan jika tabel monitoring_aset belum tersedia sebelum migrasi dijalankan
-                }
-
-                $actTeks = "Data aset \"{$dataToSave['nama']}\" diperbarui di {$cfg['kode']}";
-                $stmtLog = $pdo->prepare("INSERT INTO kib_activities (teks, pelaku, waktu, warna) VALUES (?, ?, 'Baru saja', '#3b82f6')");
-                $stmtLog->execute([$actTeks, $actor]);
 
                 $updatedItem = array_merge($existingRow, $dataToSave, ['id' => $id]);
 

@@ -32,8 +32,29 @@ $activeSubmenu = ($monitoringPenempatan === 'umum') ? 'aset-umum' : $monitoringP
 require_once __DIR__ . '/header.php';
 
 $currentUser     = current_user();
-$currentUserName = $currentUser['nama_lengkap'] ?? $currentUser['username'] ?? 'Administrator';
+$rawNamaLengkap  = trim((string) ($currentUser['nama_lengkap'] ?? ''));
+$rawUsername     = trim((string) ($currentUser['username'] ?? ''));
+$connFile        = dirname(__DIR__) . '/config/conn.php';
+if (!empty($currentUser['id']) && file_exists($connFile)) {
+    require_once $connFile;
+    if (isset($pdo) && $pdo instanceof PDO) {
+        $stmtActor = $pdo->prepare("SELECT nama_lengkap, username FROM users WHERE id = ? LIMIT 1");
+        $stmtActor->execute([(int) $currentUser['id']]);
+        if ($actorRow = $stmtActor->fetch(PDO::FETCH_ASSOC)) {
+            $dbNama = trim((string) ($actorRow['nama_lengkap'] ?? ''));
+            $dbUser = trim((string) ($actorRow['username'] ?? ''));
+            if ($dbNama !== '') {
+                $rawNamaLengkap = $dbNama;
+            }
+            if ($dbUser !== '') {
+                $rawUsername = $dbUser;
+            }
+        }
+    }
+}
+$currentUserName = $rawNamaLengkap !== '' ? $rawNamaLengkap : ($rawUsername !== '' ? $rawUsername : 'Administrator');
 $isReadonlyInit  = ($monitoringPenempatan === 'semua');
+$isClassInit     = str_starts_with($monitoringPenempatan, 'kelas-');
 ?>
 
 <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/dashboard.css'); ?>">
@@ -225,12 +246,17 @@ $isReadonlyInit  = ($monitoringPenempatan === 'semua');
                     <label class="kib-label" for="monFilterKib">KIB</label>
                     <select id="monFilterKib" class="kib-select">
                         <option value="">Semua KIB</option>
-                        <option value="kib-a">KIB A</option>
-                        <option value="kib-b">KIB B</option>
-                        <option value="kib-c">KIB C</option>
-                        <option value="kib-d">KIB D</option>
-                        <option value="kib-e">KIB E</option>
-                        <option value="kib-f">KIB F</option>
+                        <?php if ($isClassInit): ?>
+                            <option value="kib-b">KIB B</option>
+                            <option value="kib-e">KIB E</option>
+                        <?php else: ?>
+                            <option value="kib-a">KIB A</option>
+                            <option value="kib-b">KIB B</option>
+                            <option value="kib-c">KIB C</option>
+                            <option value="kib-d">KIB D</option>
+                            <option value="kib-e">KIB E</option>
+                            <option value="kib-f">KIB F</option>
+                        <?php endif; ?>
                     </select>
                 </div>
 
@@ -293,16 +319,48 @@ $isReadonlyInit  = ($monitoringPenempatan === 'semua');
                         <input type="text" id="monFieldLokasiDisplay" class="kib-input kib-input--readonly" readonly tabindex="-1">
                     </div>
                     <div class="kib-form-group" style="--field-span: 8;">
-                        <label class="kib-label required" for="monFieldAset">Nama Aset</label>
-                        <div class="kib-select-wrapper">
-                            <select id="monFieldAset" class="kib-select" required>
-                                <option value="">Pilih Nama Aset</option>
-                            </select>
-                            <i class="ph-bold ph-caret-down kib-select-chevron" aria-hidden="true"></i>
+                        <label class="kib-label required" for="monFieldAsetSearch">Nama Aset</label>
+                        <div class="mon-aset-combobox" id="monAsetCombobox">
+                            <input type="hidden" id="monFieldAset" value="">
+                            <div class="mon-aset-input-wrap">
+                                <i class="ph-bold ph-magnifying-glass mon-aset-search-icon" aria-hidden="true"></i>
+                                <input
+                                    type="text"
+                                    id="monFieldAsetSearch"
+                                    class="kib-input mon-aset-search-input"
+                                    placeholder="<?php echo $isClassInit ? 'Cari aset KIB B / KIB E (nama, kode, jenis)...' : 'Cari aset KIB A-F (nama, kode, jenis)...'; ?>"
+                                    autocomplete="off"
+                                    role="combobox"
+                                    aria-autocomplete="list"
+                                    aria-expanded="false"
+                                    aria-controls="monAsetDropdown"
+                                >
+                                <button
+                                    type="button"
+                                    id="monFieldAsetClear"
+                                    class="mon-aset-clear-btn"
+                                    title="Hapus pilihan"
+                                    aria-label="Hapus pilihan"
+                                    tabindex="-1"
+                                >
+                                    <i class="ph-bold ph-x"></i>
+                                </button>
+                                <button
+                                    type="button"
+                                    id="monFieldAsetToggle"
+                                    class="mon-aset-toggle-btn"
+                                    title="Tampilkan daftar aset"
+                                    aria-label="Tampilkan daftar aset"
+                                    tabindex="-1"
+                                >
+                                    <i class="ph-bold ph-caret-down"></i>
+                                </button>
+                            </div>
+                            <div class="mon-aset-dropdown" id="monAsetDropdown" role="listbox" aria-label="Daftar Nama Aset"></div>
                         </div>
                         <span class="kib-field-error" id="errMon_aset_key"></span>
                         <div class="mon-empty-asset-hint" id="monEmptyAssetHint">
-                            Belum ada aset KIB dengan penempatan di lokasi ini. Silakan atur kolom <strong>Penempatan</strong> pada halaman <a href="<?php echo htmlspecialchars($kibPath . 'kib-b.php'); ?>">Data Aset (KIB A-F)</a>.
+                            Belum ada aset terdaftar pada Data Aset. Silakan tambahkan aset terlebih dahulu di halaman <a href="<?php echo htmlspecialchars($kibPath . 'kib-b.php'); ?>">Data Aset (KIB B / KIB E)</a>.
                         </div>
                     </div>
 
@@ -322,6 +380,7 @@ $isReadonlyInit  = ($monitoringPenempatan === 'semua');
                     <div class="kib-form-group" style="--field-span: 3;">
                         <label class="kib-label required" for="monFieldJumlah">Jumlah</label>
                         <input type="number" id="monFieldJumlah" class="kib-input" min="1" value="1" inputmode="numeric" required>
+                        <span class="mon-quota-hint" id="monFieldJumlahHint"></span>
                         <span class="kib-field-error" id="errMon_jumlah"></span>
                     </div>
                     <div class="kib-form-group" style="--field-span: 3;">
@@ -344,10 +403,22 @@ $isReadonlyInit  = ($monitoringPenempatan === 'semua');
                     </div>
                     <div class="kib-form-group" style="--field-span: 3;">
                         <label class="kib-label" for="monFieldPetugas">Petugas</label>
-                        <input type="text" id="monFieldPetugas" class="kib-input" placeholder="Nama petugas">
+                        <input type="text" id="monFieldPetugas" class="kib-input kib-input--readonly" value="<?php echo htmlspecialchars($currentUserName); ?>" readonly tabindex="-1">
                     </div>
 
-                    <div class="kib-form-group" style="--field-span: 12;">
+                    <div class="kib-form-group" style="--field-span: 4;">
+                        <label class="kib-label" for="monFieldPerluPemeliharaan">Perlu Pemeliharaan?</label>
+                        <div class="kib-select-wrapper">
+                            <select id="monFieldPerluPemeliharaan" class="kib-select">
+                                <option value="Tidak">Tidak</option>
+                                <option value="Ya">Ya (Masuk Antrean Pemeliharaan)</option>
+                            </select>
+                            <i class="ph-bold ph-caret-down kib-select-chevron" aria-hidden="true"></i>
+                        </div>
+                        <span class="mon-quota-hint show" id="monFieldPerluHint">Aktif bila Kondisi Rusak Ringan atau Rusak Berat.</span>
+                    </div>
+
+                    <div class="kib-form-group" style="--field-span: 8;">
                         <label class="kib-label" for="monFieldCatatan">Catatan / Keterangan Kondisi</label>
                         <textarea id="monFieldCatatan" class="kib-textarea" rows="3" placeholder="Masukkan catatan kondisi fisik atau tindak lanjut yang diperlukan"></textarea>
                     </div>

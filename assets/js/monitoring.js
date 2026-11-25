@@ -31,6 +31,7 @@ class MonitoringEngine {
             items: [],
             summary: {
                 total_aset_terdaftar: 0,
+                total_unit_sekolah: 0,
                 total_entri: 0,
                 total_unit: 0,
                 baik: 0,
@@ -53,7 +54,15 @@ class MonitoringEngine {
         };
 
         this.editingId = null;
+        this.assetDropdownOpen = false;
+        this.assetActiveIndex = -1;
+        this.filteredAssetOptions = [];
+        this.selectedAssetLabel = '';
         this.init();
+    }
+
+    isClassLocation(penempatan = this.state.penempatan) {
+        return String(penempatan || '').startsWith('kelas-');
     }
 
     normalizePenempatan(val) {
@@ -184,10 +193,13 @@ class MonitoringEngine {
             btnApplyFilter.addEventListener('click', () => this.applyFilters());
         }
 
-        // Select Nama Aset -> autofill KIB, Kode, Jenis, Jumlah default
-        const asetSelect = document.getElementById('monFieldAset');
-        if (asetSelect) {
-            asetSelect.addEventListener('change', () => this.handleAssetSelectChange());
+        // Combobox pencarian Nama Aset -> autofill KIB, Kode, Jenis, Jumlah default
+        this.bindAssetComboboxEvents();
+
+        // Kondisi berubah -> aktif/nonaktif opsi Perlu Pemeliharaan?
+        const kondisiEl = document.getElementById('monFieldKondisi');
+        if (kondisiEl) {
+            kondisiEl.addEventListener('change', () => this.syncPerluPemeliharaanState());
         }
 
         // Form submit tambah/edit monitoring
@@ -215,6 +227,10 @@ class MonitoringEngine {
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
+                if (this.assetDropdownOpen) {
+                    this.closeAssetDropdown();
+                    return;
+                }
                 this.closeModal('monModalFilter');
                 this.closeModal('monModalForm');
             }
@@ -272,11 +288,50 @@ class MonitoringEngine {
             thLokasi.style.display = readonly ? '' : 'none';
         }
 
+        // Sinkronisasi opsi KIB pada Modal Filter & placeholder combobox
+        this.syncFilterKibOptions();
+        const asetSearchInput = document.getElementById('monFieldAsetSearch');
+        if (asetSearchInput) {
+            asetSearchInput.placeholder = this.isClassLocation()
+                ? 'Cari aset KIB B / KIB E (nama, kode, jenis)...'
+                : 'Cari aset KIB A-F (nama, kode, jenis)...';
+        }
+
         // Sinkronisasi active state submenu sidebar
         document.querySelectorAll('[data-monitoring-subitem]').forEach(li => {
             const loc = li.getAttribute('data-monitoring-subitem');
             li.classList.toggle('active', loc === this.state.penempatan);
         });
+    }
+
+    syncFilterKibOptions() {
+        const kibSelect = document.getElementById('monFilterKib');
+        if (!kibSelect) return;
+
+        const allowed = this.isClassLocation()
+            ? [
+                { val: 'kib-b', label: 'KIB B' },
+                { val: 'kib-e', label: 'KIB E' }
+            ]
+            : [
+                { val: 'kib-a', label: 'KIB A' },
+                { val: 'kib-b', label: 'KIB B' },
+                { val: 'kib-c', label: 'KIB C' },
+                { val: 'kib-d', label: 'KIB D' },
+                { val: 'kib-e', label: 'KIB E' },
+                { val: 'kib-f', label: 'KIB F' }
+            ];
+
+        const prevVal = this.state.filters.kib || '';
+        const isStillAllowed = allowed.some(k => k.val === prevVal);
+        if (prevVal && !isStillAllowed) {
+            this.state.filters.kib = '';
+            this.updateFilterButtonIndicator();
+        }
+
+        kibSelect.innerHTML = '<option value="">Semua KIB</option>' +
+            allowed.map(k => `<option value="${k.val}">${k.label}</option>`).join('');
+        kibSelect.value = isStillAllowed ? prevVal : '';
     }
 
     async loadLocationData(penempatan) {
@@ -367,7 +422,9 @@ class MonitoringEngine {
 
         const s = this.state.summary || {};
         const totalUnit = Number(s.total_unit || 0);
+        const totalEntri = Number(s.total_entri || 0);
         const totalTerdaftar = Number(s.total_aset_terdaftar || 0);
+        const totalUnitSekolah = Number(s.total_unit_sekolah || 0);
         const baik = Number(s.baik || 0);
         const ringan = Number(s.rusak_ringan || 0);
         const berat = Number(s.rusak_berat || 0);
@@ -375,11 +432,15 @@ class MonitoringEngine {
         const pct = (val) => totalUnit > 0 ? Math.round((val / totalUnit) * 100) : 0;
         const meta = this.getLocationMeta(this.state.penempatan);
 
+        const totalDesc = this.isReadonlyMode()
+            ? `dari ${totalUnitSekolah.toLocaleString('id-ID')} unit KIB (${totalTerdaftar} aset)`
+            : `${totalEntri} catatan monitoring di ${meta.label}`;
+
         const cards = [
             {
                 label: 'Total Aset',
                 value: totalUnit,
-                desc: `${totalTerdaftar} aset KIB terdaftar di ${meta.label}`,
+                desc: totalDesc,
                 color: 'blue',
                 icon: 'ph-bold ph-chart-bar'
             },
@@ -680,42 +741,378 @@ class MonitoringEngine {
         btn.classList.toggle('has-filter', activeCount > 0);
     }
 
-    populateAssetDropdown(selectedKey = '') {
-        const selectEl = document.getElementById('monFieldAset');
-        const emptyHint = document.getElementById('monEmptyAssetHint');
-        if (!selectEl) return;
+    formatAssetDisplayLabel(asset) {
+        if (!asset) return '';
+        return `[${asset.kib_label}] ${asset.nama} (${asset.kode})`;
+    }
+
+    bindAssetComboboxEvents() {
+        const combobox = document.getElementById('monAsetCombobox');
+        const hiddenInput = document.getElementById('monFieldAset');
+        const searchInput = document.getElementById('monFieldAsetSearch');
+        const clearBtn = document.getElementById('monFieldAsetClear');
+        const toggleBtn = document.getElementById('monFieldAsetToggle');
+        const dropdown = document.getElementById('monAsetDropdown');
+
+        if (!combobox || !hiddenInput || !searchInput || !dropdown) return;
+
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.disabled) return;
+            const val = searchInput.value.trim();
+            const query = (val === this.selectedAssetLabel) ? '' : val;
+            this.openAssetDropdown(query);
+        });
+
+        searchInput.addEventListener('click', () => {
+            if (searchInput.disabled) return;
+            if (!this.assetDropdownOpen) {
+                const val = searchInput.value.trim();
+                const query = (val === this.selectedAssetLabel) ? '' : val;
+                this.openAssetDropdown(query);
+            }
+        });
+
+        searchInput.addEventListener('input', () => {
+            if (searchInput.disabled) return;
+            const rawVal = searchInput.value;
+            const trimmed = rawVal.trim();
+
+            if (trimmed !== this.selectedAssetLabel) {
+                if (hiddenInput.value !== '') {
+                    hiddenInput.value = '';
+                    this.selectedAssetLabel = '';
+                    this.handleAssetSelectChange();
+                }
+            }
+            this.updateAssetClearButton();
+            this.openAssetDropdown(trimmed);
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            if (searchInput.disabled) return;
+            const len = this.filteredAssetOptions.length;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!this.assetDropdownOpen) {
+                    const val = searchInput.value.trim();
+                    const query = (val === this.selectedAssetLabel) ? '' : val;
+                    this.openAssetDropdown(query);
+                    return;
+                }
+                if (len > 0) {
+                    this.assetActiveIndex = (this.assetActiveIndex + 1) % len;
+                    this.updateAssetActiveOption();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (!this.assetDropdownOpen) {
+                    const val = searchInput.value.trim();
+                    const query = (val === this.selectedAssetLabel) ? '' : val;
+                    this.openAssetDropdown(query);
+                    return;
+                }
+                if (len > 0) {
+                    this.assetActiveIndex = (this.assetActiveIndex <= 0 ? len - 1 : this.assetActiveIndex - 1);
+                    this.updateAssetActiveOption();
+                }
+            } else if (e.key === 'Enter') {
+                if (this.assetDropdownOpen) {
+                    e.preventDefault();
+                    const targetOpt = this.filteredAssetOptions[this.assetActiveIndex] ||
+                        (len === 1 ? this.filteredAssetOptions[0] : null);
+                    if (targetOpt) {
+                        this.selectAssetOption(`${targetOpt.kib}:${targetOpt.aset_id}`);
+                    }
+                }
+            } else if (e.key === 'Escape') {
+                if (this.assetDropdownOpen) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.closeAssetDropdown();
+                }
+            } else if (e.key === 'Tab') {
+                this.closeAssetDropdown();
+            }
+        });
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (searchInput.disabled) return;
+                this.clearAssetSelection();
+                searchInput.focus();
+                this.openAssetDropdown('');
+            });
+        }
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (searchInput.disabled) return;
+                if (this.assetDropdownOpen) {
+                    this.closeAssetDropdown();
+                } else {
+                    searchInput.focus();
+                    const val = searchInput.value.trim();
+                    const query = (val === this.selectedAssetLabel) ? '' : val;
+                    this.openAssetDropdown(query);
+                }
+            });
+        }
+
+        dropdown.addEventListener('mousedown', (e) => {
+            const optEl = e.target.closest('[data-asset-key]');
+            if (!optEl) return;
+            e.preventDefault();
+            this.selectAssetOption(optEl.getAttribute('data-asset-key'));
+        });
+
+        document.addEventListener('click', (e) => {
+            if (this.assetDropdownOpen && !combobox.contains(e.target)) {
+                this.closeAssetDropdown();
+            }
+        });
+    }
+
+    updateAssetClearButton() {
+        const searchInput = document.getElementById('monFieldAsetSearch');
+        const hiddenInput = document.getElementById('monFieldAset');
+        const clearBtn = document.getElementById('monFieldAsetClear');
+        if (!clearBtn) return;
+        const hasValue = Boolean((searchInput && searchInput.value.trim()) || (hiddenInput && hiddenInput.value));
+        clearBtn.classList.toggle('visible', hasValue && !(searchInput && searchInput.disabled));
+    }
+
+    openAssetDropdown(query = '') {
+        const searchInput = document.getElementById('monFieldAsetSearch');
+        const dropdown = document.getElementById('monAsetDropdown');
+        const combobox = document.getElementById('monAsetCombobox');
+        if (!searchInput || !dropdown || !combobox || searchInput.disabled) return;
+
+        this.assetDropdownOpen = true;
+        combobox.classList.add('is-open');
+        searchInput.setAttribute('aria-expanded', 'true');
+        this.renderAssetDropdown(query);
+    }
+
+    closeAssetDropdown() {
+        const searchInput = document.getElementById('monFieldAsetSearch');
+        const dropdown = document.getElementById('monAsetDropdown');
+        const combobox = document.getElementById('monAsetCombobox');
+        this.assetDropdownOpen = false;
+        this.assetActiveIndex = -1;
+        if (combobox) combobox.classList.remove('is-open');
+        if (searchInput) searchInput.setAttribute('aria-expanded', 'false');
+        if (dropdown) dropdown.innerHTML = '';
+    }
+
+    renderAssetDropdown(query = '') {
+        const dropdown = document.getElementById('monAsetDropdown');
+        const hiddenInput = document.getElementById('monFieldAset');
+        if (!dropdown) return;
 
         const opts = this.state.assetOptions || [];
-        if (opts.length === 0) {
-            selectEl.innerHTML = '<option value="">Tidak ada aset terdaftar di lokasi ini</option>';
-            selectEl.disabled = true;
-            if (emptyHint) emptyHint.classList.add('show');
-        } else {
-            selectEl.disabled = false;
-            if (emptyHint) emptyHint.classList.remove('show');
-            selectEl.innerHTML = '<option value="">Pilih Nama Aset</option>' + opts.map(a => {
-                const key = `${a.kib}:${a.aset_id}`;
-                const label = `[${a.kib_label}] ${a.nama} (${a.kode})`;
-                return `<option value="${this.escapeHtml(key)}">${this.escapeHtml(label)}</option>`;
-            }).join('');
-            if (selectedKey) {
-                selectEl.value = selectedKey;
-            }
+        const q = String(query || '').trim().toLowerCase();
+        const terms = q ? q.split(/\s+/).filter(Boolean) : [];
+
+        this.filteredAssetOptions = opts.filter(a => {
+            if (terms.length === 0) return true;
+            const hay = `${a.kib_label} ${a.kib} ${a.nama} ${a.kode} ${a.jenis}`.toLowerCase();
+            return terms.every(t => hay.includes(t));
+        });
+
+        const selectedKey = hiddenInput ? hiddenInput.value : '';
+        if (this.filteredAssetOptions.length === 0) {
+            this.assetActiveIndex = -1;
+            dropdown.innerHTML = `<div class="mon-aset-empty">Tidak ada aset yang cocok dengan "${this.escapeHtml(query)}".</div>`;
+            return;
+        }
+
+        const selectedIdx = this.filteredAssetOptions.findIndex(a => `${a.kib}:${a.aset_id}` === selectedKey);
+        this.assetActiveIndex = selectedIdx >= 0 ? selectedIdx : 0;
+
+        dropdown.innerHTML = this.filteredAssetOptions.map((a, idx) => {
+            const key = `${a.kib}:${a.aset_id}`;
+            const totalQty = Math.max(1, Number(a.jumlah_total ?? a.jumlah ?? 1));
+            const maxQuota = this.getAssetMaxQuota(a);
+            const isSelected = key === selectedKey;
+            const isActive = idx === this.assetActiveIndex;
+            const isFull = maxQuota === 0;
+            const quotaLabel = totalQty > 1
+                ? (isFull ? `Total ${totalQty} • Kuota penuh` : `Total ${totalQty} • Sisa ${maxQuota}`)
+                : (isFull ? 'Sudah termonitor' : 'Tersedia 1 unit');
+
+            return `
+                <div
+                    class="mon-aset-option${isSelected ? ' is-selected' : ''}${isActive ? ' is-active' : ''}${isFull ? ' is-full' : ''}"
+                    role="option"
+                    aria-selected="${isSelected ? 'true' : 'false'}"
+                    data-asset-key="${this.escapeHtml(key)}"
+                    data-idx="${idx}"
+                >
+                    <div class="mon-aset-option-top">
+                        <span class="mon-aset-option-kib">${this.escapeHtml(a.kib_label)}</span>
+                        <span class="mon-aset-option-name">${this.highlightMatch(a.nama, query)}</span>
+                        <span class="mon-aset-option-code">${this.highlightMatch(a.kode, query)}</span>
+                    </div>
+                    <div class="mon-aset-option-meta">
+                        <span>${this.highlightMatch(a.jenis || '-', query)}</span>
+                        <span class="mon-aset-option-quota${isFull ? ' is-full' : ''}">${this.escapeHtml(quotaLabel)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        this.scrollActiveAssetOption();
+    }
+
+    updateAssetActiveOption() {
+        const dropdown = document.getElementById('monAsetDropdown');
+        if (!dropdown) return;
+        dropdown.querySelectorAll('.mon-aset-option').forEach((el, idx) => {
+            el.classList.toggle('is-active', idx === this.assetActiveIndex);
+        });
+        this.scrollActiveAssetOption();
+    }
+
+    scrollActiveAssetOption() {
+        const dropdown = document.getElementById('monAsetDropdown');
+        if (!dropdown || this.assetActiveIndex < 0) return;
+        const activeEl = dropdown.querySelector(`.mon-aset-option[data-idx="${this.assetActiveIndex}"]`);
+        if (activeEl) {
+            activeEl.scrollIntoView({ block: 'nearest' });
         }
     }
 
-    handleAssetSelectChange() {
+    selectAssetOption(key) {
+        const hiddenInput = document.getElementById('monFieldAset');
+        const searchInput = document.getElementById('monFieldAsetSearch');
+        const found = (this.state.assetOptions || []).find(a => `${a.kib}:${a.aset_id}` === key);
+
+        if (!found) return;
+        const label = this.formatAssetDisplayLabel(found);
+        this.selectedAssetLabel = label;
+
+        if (hiddenInput) hiddenInput.value = key;
+        if (searchInput) {
+            searchInput.value = label;
+            searchInput.classList.remove('has-error');
+        }
+        const errEl = document.getElementById('errMon_aset_key');
+        if (errEl) {
+            errEl.textContent = '';
+            errEl.classList.remove('show');
+        }
+
+        this.updateAssetClearButton();
+        this.closeAssetDropdown();
+        this.handleAssetSelectChange();
+    }
+
+    clearAssetSelection() {
+        const hiddenInput = document.getElementById('monFieldAset');
+        const searchInput = document.getElementById('monFieldAsetSearch');
+        this.selectedAssetLabel = '';
+        if (hiddenInput) hiddenInput.value = '';
+        if (searchInput) searchInput.value = '';
+        this.updateAssetClearButton();
+        this.handleAssetSelectChange();
+    }
+
+    populateAssetDropdown(selectedKey = '') {
+        const hiddenInput = document.getElementById('monFieldAset');
+        const searchInput = document.getElementById('monFieldAsetSearch');
+        const toggleBtn = document.getElementById('monFieldAsetToggle');
+        const emptyHint = document.getElementById('monEmptyAssetHint');
+        if (!hiddenInput || !searchInput) return;
+
+        const opts = this.state.assetOptions || [];
+        this.closeAssetDropdown();
+
+        if (emptyHint) {
+            const kibLink = `${this.config.kibBaseUrl}kib-b.php`;
+            if (this.isClassLocation()) {
+                emptyHint.innerHTML = `Belum ada aset KIB B atau KIB E terdaftar pada Data Aset. Silakan tambahkan aset terlebih dahulu di halaman <a href="${this.escapeHtml(kibLink)}">Data Aset (KIB B / KIB E)</a>.`;
+            } else {
+                emptyHint.innerHTML = `Belum ada aset terdaftar pada Data Aset. Silakan tambahkan aset terlebih dahulu di halaman <a href="${this.escapeHtml(kibLink)}">Data Aset (KIB A-F)</a>.`;
+            }
+        }
+
+        if (opts.length === 0) {
+            hiddenInput.value = '';
+            searchInput.value = '';
+            this.selectedAssetLabel = '';
+            searchInput.placeholder = this.isClassLocation()
+                ? 'Belum ada aset KIB B / KIB E terdaftar'
+                : 'Belum ada aset terdaftar';
+            searchInput.disabled = true;
+            if (toggleBtn) toggleBtn.disabled = true;
+            if (emptyHint) emptyHint.classList.add('show');
+        } else {
+            searchInput.disabled = false;
+            if (toggleBtn) toggleBtn.disabled = false;
+            searchInput.placeholder = this.isClassLocation()
+                ? 'Cari aset KIB B / KIB E (nama, kode, jenis)...'
+                : 'Cari aset KIB A-F (nama, kode, jenis)...';
+            if (emptyHint) emptyHint.classList.remove('show');
+
+            if (selectedKey) {
+                const found = opts.find(a => `${a.kib}:${a.aset_id}` === selectedKey);
+                if (found) {
+                    const label = this.formatAssetDisplayLabel(found);
+                    hiddenInput.value = selectedKey;
+                    searchInput.value = label;
+                    this.selectedAssetLabel = label;
+                } else {
+                    hiddenInput.value = '';
+                    searchInput.value = '';
+                    this.selectedAssetLabel = '';
+                }
+            } else {
+                hiddenInput.value = '';
+                searchInput.value = '';
+                this.selectedAssetLabel = '';
+            }
+        }
+        this.updateAssetClearButton();
+    }
+
+    getAssetMaxQuota(found) {
+        if (!found) return null;
+        const totalQty = Math.max(1, Number(found.jumlah_total ?? found.jumlah ?? 1));
+        const usedTotal = Math.max(0, Number(found.jumlah_termonitor ?? 0));
+        let editingOwnQty = 0;
+        if (this.editingId) {
+            const currentItem = this.state.items.find(d => d.id === this.editingId);
+            if (currentItem && currentItem.kib === found.kib && Number(currentItem.aset_id) === Number(found.aset_id)) {
+                editingOwnQty = Math.max(0, Number(currentItem.jumlah || 0));
+            }
+        }
+        const usedOther = Math.max(0, usedTotal - editingOwnQty);
+        return Math.max(0, totalQty - usedOther);
+    }
+
+    handleAssetSelectChange(preserveJumlah = false) {
         const selectEl = document.getElementById('monFieldAset');
         const kibInput = document.getElementById('monFieldKibDisplay');
         const kodeInput = document.getElementById('monFieldKodeDisplay');
         const jenisInput = document.getElementById('monFieldJenisDisplay');
         const jumlahInput = document.getElementById('monFieldJumlah');
+        const jumlahHint = document.getElementById('monFieldJumlahHint');
 
         const val = selectEl ? selectEl.value : '';
         if (!val) {
             if (kibInput) kibInput.value = '';
             if (kodeInput) kodeInput.value = '';
             if (jenisInput) jenisInput.value = '';
+            if (jumlahInput) jumlahInput.removeAttribute('max');
+            if (jumlahHint) {
+                jumlahHint.textContent = '';
+                jumlahHint.classList.remove('show', 'is-full');
+            }
             return;
         }
 
@@ -724,11 +1121,31 @@ class MonitoringEngine {
         const found = (this.state.assetOptions || []).find(a => a.kib === kibId && a.aset_id === asetId);
         if (!found) return;
 
+        const totalQty = Math.max(1, Number(found.jumlah_total ?? found.jumlah ?? 1));
+        const maxAllowed = this.getAssetMaxQuota(found);
+
         if (kibInput) kibInput.value = found.kib_label;
         if (kodeInput) kodeInput.value = found.kode;
         if (jenisInput) jenisInput.value = found.jenis;
-        if (jumlahInput && (!this.editingId || !jumlahInput.value)) {
-            jumlahInput.value = String(found.jumlah || 1);
+        if (jumlahInput) {
+            if (maxAllowed !== null && maxAllowed > 0) {
+                jumlahInput.setAttribute('max', String(maxAllowed));
+            } else {
+                jumlahInput.removeAttribute('max');
+            }
+            if (!preserveJumlah && !this.editingId) {
+                jumlahInput.value = String(maxAllowed > 0 ? maxAllowed : 1);
+            }
+        }
+        if (jumlahHint) {
+            jumlahHint.classList.add('show');
+            if (maxAllowed === 0) {
+                jumlahHint.classList.add('is-full');
+                jumlahHint.textContent = `Total di KIB: ${totalQty} unit (kuota sudah termonitor penuh di seluruh lokasi)`;
+            } else {
+                jumlahHint.classList.remove('is-full');
+                jumlahHint.textContent = `Total di KIB: ${totalQty} unit • Maksimal input: ${maxAllowed} unit`;
+            }
         }
     }
 
@@ -744,7 +1161,7 @@ class MonitoringEngine {
 
     showFieldError(fieldId, msg) {
         const errEl = document.getElementById(`errMon_${fieldId}`);
-        const inputEl = document.getElementById(fieldId === 'aset_key' ? 'monFieldAset' :
+        const inputEl = document.getElementById(fieldId === 'aset_key' ? 'monFieldAsetSearch' :
             fieldId === 'jumlah' ? 'monFieldJumlah' :
             fieldId === 'kondisi' ? 'monFieldKondisi' :
             fieldId === 'tgl_update' ? 'monFieldTglUpdate' : '');
@@ -780,6 +1197,9 @@ class MonitoringEngine {
         if (petugasEl) petugasEl.value = this.config.currentUserName || 'Administrator';
         if (jumlahEl) jumlahEl.value = '1';
         if (kondisiEl) kondisiEl.value = 'Baik';
+        const perluEl = document.getElementById('monFieldPerluPemeliharaan');
+        if (perluEl) perluEl.value = 'Tidak';
+        this.syncPerluPemeliharaanState();
 
         await this.refreshAssetOptions();
         this.populateAssetDropdown('');
@@ -813,6 +1233,7 @@ class MonitoringEngine {
         await this.refreshAssetOptions();
         const key = `${item.kib}:${item.aset_id}`;
         this.populateAssetDropdown(key);
+        this.handleAssetSelectChange(true);
 
         if (kibEl) kibEl.value = item.kib_label;
         if (kodeEl) kodeEl.value = item.kode_aset;
@@ -820,10 +1241,35 @@ class MonitoringEngine {
         if (jumlahEl) jumlahEl.value = String(item.jumlah || 1);
         if (kondisiEl) kondisiEl.value = item.kondisi || 'Baik';
         if (tglEl) tglEl.value = item.tgl_update || this.getTodayIso();
-        if (petugasEl) petugasEl.value = item.petugas || this.config.currentUserName || '';
+        if (petugasEl) petugasEl.value = item.petugas || this.config.currentUserName || 'Administrator';
+        const perluEl = document.getElementById('monFieldPerluPemeliharaan');
+        if (perluEl) perluEl.value = item.perlu_pemeliharaan === 'Ya' ? 'Ya' : 'Tidak';
+        this.syncPerluPemeliharaanState();
         if (catatanEl) catatanEl.value = item.catatan || '';
 
         this.openModal('monModalForm');
+    }
+
+    syncPerluPemeliharaanState() {
+        const kondisiEl = document.getElementById('monFieldKondisi');
+        const perluEl = document.getElementById('monFieldPerluPemeliharaan');
+        const hintEl = document.getElementById('monFieldPerluHint');
+        if (!kondisiEl || !perluEl) return;
+
+        const kondisi = kondisiEl.value;
+        const canNeedMaint = (kondisi === 'Rusak Ringan' || kondisi === 'Rusak Berat');
+        if (canNeedMaint) {
+            perluEl.disabled = false;
+            if (hintEl) {
+                hintEl.textContent = 'Pilih "Ya" agar aset otomatis masuk antrean Pemeliharaan.';
+            }
+        } else {
+            perluEl.value = 'Tidak';
+            perluEl.disabled = true;
+            if (hintEl) {
+                hintEl.textContent = 'Aktif bila Kondisi Rusak Ringan atau Rusak Berat.';
+            }
+        }
     }
 
     async handleFormSubmit(e) {
@@ -837,6 +1283,9 @@ class MonitoringEngine {
         const kondisiVal = document.getElementById('monFieldKondisi')?.value || '';
         const tglVal = document.getElementById('monFieldTglUpdate')?.value || '';
         const petugasVal = (document.getElementById('monFieldPetugas')?.value || '').trim();
+        const perluVal = (kondisiVal === 'Rusak Ringan' || kondisiVal === 'Rusak Berat')
+            ? (document.getElementById('monFieldPerluPemeliharaan')?.value === 'Ya' ? 'Ya' : 'Tidak')
+            : 'Tidak';
         const catatanVal = (document.getElementById('monFieldCatatan')?.value || '').trim();
 
         let valid = true;
@@ -847,6 +1296,16 @@ class MonitoringEngine {
         if (isNaN(jumlahVal) || jumlahVal < 1) {
             this.showFieldError('jumlah', 'Jumlah minimal 1.');
             valid = false;
+        } else if (asetKey && asetKey.includes(':')) {
+            const [chkKib, chkIdStr] = asetKey.split(':');
+            const foundOpt = (this.state.assetOptions || []).find(a => a.kib === chkKib && a.aset_id === parseInt(chkIdStr, 10));
+            const maxAllowed = this.getAssetMaxQuota(foundOpt);
+            if (maxAllowed !== null && jumlahVal > maxAllowed) {
+                this.showFieldError('jumlah', maxAllowed === 0
+                    ? 'Kuota unit aset ini sudah termonitor penuh di seluruh lokasi.'
+                    : `Jumlah melebihi sisa kuota aset (maksimal ${maxAllowed} unit).`);
+                valid = false;
+            }
         }
         if (!kondisiVal) {
             this.showFieldError('kondisi', 'Kondisi wajib dipilih.');
@@ -876,6 +1335,7 @@ class MonitoringEngine {
         fd.append('aset_id', asetId);
         fd.append('jumlah', String(jumlahVal));
         fd.append('kondisi', kondisiVal);
+        fd.append('perlu_pemeliharaan', perluVal);
         fd.append('tgl_update', tglVal);
         fd.append('petugas', petugasVal);
         fd.append('catatan', catatanVal);
@@ -949,6 +1409,7 @@ class MonitoringEngine {
             ['Jenis Aset', item.jenis_aset || '-'],
             ['Jumlah Unit', String(item.jumlah)],
             ['Kondisi', item.kondisi],
+            ['Perlu Pemeliharaan?', item.perlu_pemeliharaan === 'Ya' ? 'Ya' : 'Tidak'],
             ['Tanggal Update', this.formatDateId(item.tgl_update)],
             ['Petugas', item.petugas || '-'],
             ['Catatan', item.catatan || '-']
@@ -1042,6 +1503,9 @@ class MonitoringEngine {
     closeModal(id) {
         const modal = document.getElementById(id);
         if (!modal) return;
+        if (id === 'monModalForm') {
+            this.closeAssetDropdown();
+        }
         modal.classList.remove('show');
         modal.setAttribute('aria-hidden', 'true');
         if (document.querySelectorAll('.kib-modal-overlay.show').length === 0) {

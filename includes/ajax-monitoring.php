@@ -9,8 +9,9 @@ require_once dirname(__DIR__) . '/config/app.php';
 require_once dirname(__DIR__) . '/config/conn.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/ajax.php';
+require_once __DIR__ . '/pemeliharaan-helper.php';
 
-require_auth();
+require_auth(['administrator', 'operator']);
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -45,6 +46,14 @@ function normalize_penempatan(string $raw, bool $allowSemua = false): ?string
         return 'semua';
     }
     return isset(MONITORING_LOCATIONS[$val]) ? $val : null;
+}
+
+function allowed_kibs_for_penempatan(string $penempatan): array
+{
+    if (str_starts_with($penempatan, 'kelas-')) {
+        return ['kib-b', 'kib-e'];
+    }
+    return array_keys(MONITORING_KIB_TABLES);
 }
 
 function parse_monitoring_date(string $raw): ?string
@@ -86,16 +95,31 @@ function parse_aset_jumlah_int($raw): int
     return max(1, $val);
 }
 
-function fetch_assets_by_penempatan(PDO $pdo, string $penempatan): array
+function fetch_all_monitoring_assets(PDO $pdo, string $penempatan = 'umum'): array
 {
+    $allowedKibs = allowed_kibs_for_penempatan($penempatan);
+
+    $usedMap = [];
+    $stmtUsed = $pdo->query("SELECT kib, aset_id, COALESCE(SUM(jumlah), 0) AS used_qty FROM monitoring_aset GROUP BY kib, aset_id");
+    while ($u = $stmtUsed->fetch(PDO::FETCH_ASSOC)) {
+        $usedMap[$u['kib'] . ':' . (int) $u['aset_id']] = (int) $u['used_qty'];
+    }
+
     $options = [];
-    foreach (MONITORING_KIB_TABLES as $kibId => $meta) {
+    foreach ($allowedKibs as $kibId) {
+        if (!isset(MONITORING_KIB_TABLES[$kibId])) {
+            continue;
+        }
+        $meta = MONITORING_KIB_TABLES[$kibId];
         $table = $meta['table'];
         $jenisCol = $meta['has_jenis'] ? 'jenis' : 'NULL AS jenis';
         $jumlahCol = $meta['has_jumlah'] ? 'jumlah' : 'NULL AS jumlah';
 
-        $stmt = $pdo->prepare("SELECT id, kode, nama, {$jenisCol}, {$jumlahCol}, penempatan FROM {$table} WHERE penempatan = ? ORDER BY nama ASC, id ASC");
-        $stmt->execute([$penempatan]);
+        $stmt = $pdo->query("
+            SELECT id, kode, nama, {$jenisCol}, {$jumlahCol}
+            FROM {$table}
+            ORDER BY nama ASC, id ASC
+        ");
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($rows as $row) {
@@ -103,38 +127,60 @@ function fetch_assets_by_penempatan(PDO $pdo, string $penempatan): array
             if ($jenisVal === '') {
                 $jenisVal = $meta['default_jenis'];
             }
+            $asetId = (int) $row['id'];
+            $totalQty = $meta['has_jumlah'] ? parse_aset_jumlah_int($row['jumlah'] ?? 1) : 1;
+            $usedQty = $usedMap[$kibId . ':' . $asetId] ?? 0;
+            $sisaKuota = max(0, $totalQty - $usedQty);
+
             $options[] = [
-                'kib'         => $kibId,
-                'kib_label'   => $meta['label'],
-                'aset_id'     => (int) $row['id'],
-                'kode'        => (string) $row['kode'],
-                'nama'        => (string) $row['nama'],
-                'jenis'       => $jenisVal,
-                'jumlah'      => $meta['has_jumlah'] ? parse_aset_jumlah_int($row['jumlah'] ?? 1) : 1,
-                'penempatan'  => (string) $row['penempatan'],
+                'kib'               => $kibId,
+                'kib_label'         => $meta['label'],
+                'aset_id'           => $asetId,
+                'kode'              => (string) $row['kode'],
+                'nama'              => (string) $row['nama'],
+                'jenis'             => $jenisVal,
+                'jumlah'            => $totalQty,
+                'jumlah_total'      => $totalQty,
+                'jumlah_termonitor' => $usedQty,
+                'sisa_kuota'        => $sisaKuota,
             ];
         }
     }
     return $options;
 }
 
-function count_registered_assets(PDO $pdo, string $penempatan): int
+function get_registered_asset_stats(PDO $pdo, string $penempatan = 'semua'): array
 {
-    $total = 0;
-    foreach (MONITORING_KIB_TABLES as $meta) {
+    $allowedKibs = allowed_kibs_for_penempatan($penempatan);
+    $asetCount = 0;
+    $unitTotal = 0;
+
+    foreach ($allowedKibs as $kibId) {
+        if (!isset(MONITORING_KIB_TABLES[$kibId])) {
+            continue;
+        }
+        $meta = MONITORING_KIB_TABLES[$kibId];
         $table = $meta['table'];
-        if ($penempatan === 'semua') {
-            $total += (int) $pdo->query("SELECT COUNT(*) FROM {$table}")->fetchColumn();
+        if ($meta['has_jumlah']) {
+            $rows = $pdo->query("SELECT jumlah FROM {$table}")->fetchAll(PDO::FETCH_COLUMN);
+            $asetCount += count($rows);
+            foreach ($rows as $j) {
+                $unitTotal += parse_aset_jumlah_int($j);
+            }
         } else {
-            $stmt = $pdo->prepare("SELECT COUNT(*) FROM {$table} WHERE penempatan = ?");
-            $stmt->execute([$penempatan]);
-            $total += (int) $stmt->fetchColumn();
+            $cnt = (int) $pdo->query("SELECT COUNT(*) FROM {$table}")->fetchColumn();
+            $asetCount += $cnt;
+            $unitTotal += $cnt;
         }
     }
-    return $total;
+
+    return [
+        'aset_count' => $asetCount,
+        'unit_total' => $unitTotal,
+    ];
 }
 
-function find_asset_in_penempatan(PDO $pdo, string $kibId, int $asetId, string $penempatan): ?array
+function find_monitoring_asset(PDO $pdo, string $kibId, int $asetId): ?array
 {
     if (!isset(MONITORING_KIB_TABLES[$kibId]) || $asetId <= 0) {
         return null;
@@ -144,8 +190,13 @@ function find_asset_in_penempatan(PDO $pdo, string $kibId, int $asetId, string $
     $jenisCol = $meta['has_jenis'] ? 'jenis' : 'NULL AS jenis';
     $jumlahCol = $meta['has_jumlah'] ? 'jumlah' : 'NULL AS jumlah';
 
-    $stmt = $pdo->prepare("SELECT id, kode, nama, {$jenisCol}, {$jumlahCol}, penempatan FROM {$table} WHERE id = ? AND penempatan = ? LIMIT 1");
-    $stmt->execute([$asetId, $penempatan]);
+    $stmt = $pdo->prepare("
+        SELECT id, kode, nama, {$jenisCol}, {$jumlahCol}
+        FROM {$table}
+        WHERE id = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$asetId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$row) {
         return null;
@@ -155,23 +206,25 @@ function find_asset_in_penempatan(PDO $pdo, string $kibId, int $asetId, string $
     if ($jenisVal === '') {
         $jenisVal = $meta['default_jenis'];
     }
+    $totalQty = $meta['has_jumlah'] ? parse_aset_jumlah_int($row['jumlah'] ?? 1) : 1;
 
     return [
-        'kib'        => $kibId,
-        'kib_label'  => $meta['label'],
-        'aset_id'    => (int) $row['id'],
-        'kode'       => (string) $row['kode'],
-        'nama'       => (string) $row['nama'],
-        'jenis'      => $jenisVal,
-        'jumlah'     => $meta['has_jumlah'] ? parse_aset_jumlah_int($row['jumlah'] ?? 1) : 1,
-        'penempatan' => (string) $row['penempatan'],
+        'kib'          => $kibId,
+        'kib_label'    => $meta['label'],
+        'aset_id'      => (int) $row['id'],
+        'kode'         => (string) $row['kode'],
+        'nama'         => (string) $row['nama'],
+        'jenis'        => $jenisVal,
+        'jumlah'       => $totalQty,
+        'jumlah_total' => $totalQty,
     ];
 }
 
-function build_monitoring_summary(array $items, int $registeredCount): array
+function build_monitoring_summary(array $items, array $kibStats): array
 {
     $summary = [
-        'total_aset_terdaftar' => $registeredCount,
+        'total_aset_terdaftar' => (int) ($kibStats['aset_count'] ?? 0),
+        'total_unit_sekolah'   => (int) ($kibStats['unit_total'] ?? 0),
         'total_entri'          => count($items),
         'total_unit'           => 0,
         'baik'                 => 0,
@@ -234,17 +287,18 @@ try {
                     'kode_aset'        => (string) $row['kode_aset'],
                     'nama_aset'        => (string) $row['nama_aset'],
                     'jenis_aset'       => (string) $row['jenis_aset'],
-                    'jumlah'           => (int) $row['jumlah'],
-                    'kondisi'          => (string) $row['kondisi'],
-                    'catatan'          => (string) ($row['catatan'] ?? ''),
+                    'jumlah'             => (int) $row['jumlah'],
+                    'kondisi'            => (string) $row['kondisi'],
+                    'perlu_pemeliharaan' => (string) ($row['perlu_pemeliharaan'] ?? 'Tidak'),
+                    'catatan'            => (string) ($row['catatan'] ?? ''),
                     'petugas'          => (string) ($row['petugas'] ?? ''),
                     'tgl_update'       => (string) $row['tgl_update'],
                 ];
             }, $rows);
 
-            $registeredCount = count_registered_assets($pdo, $penempatan);
-            $summary = build_monitoring_summary($items, $registeredCount);
-            $assetOptions = ($penempatan === 'semua') ? [] : fetch_assets_by_penempatan($pdo, $penempatan);
+            $kibStats = get_registered_asset_stats($pdo, $penempatan);
+            $summary = build_monitoring_summary($items, $kibStats);
+            $assetOptions = ($penempatan === 'semua') ? [] : fetch_all_monitoring_assets($pdo, $penempatan);
 
             json_success('Data monitoring berhasil dimuat.', [
                 'penempatan'       => $penempatan,
@@ -262,8 +316,8 @@ try {
                 json_error('Parameter penempatan harus salah satu dari Kelas 1-6 atau Aset Umum.', [], 422);
             }
 
-            $assetOptions = fetch_assets_by_penempatan($pdo, $penempatan);
-            json_success('Daftar aset lokasi berhasil dimuat.', [
+            $assetOptions = fetch_all_monitoring_assets($pdo, $penempatan);
+            json_success('Daftar aset KIB berhasil dimuat.', [
                 'penempatan'       => $penempatan,
                 'penempatan_label' => MONITORING_LOCATIONS[$penempatan],
                 'asset_options'    => $assetOptions,
@@ -287,18 +341,25 @@ try {
             $kibId   = strtolower(trim((string) ($_POST['kib'] ?? '')));
             $asetId  = (int) ($_POST['aset_id'] ?? 0);
             $kondisi = trim((string) ($_POST['kondisi'] ?? ''));
+            $perluRaw = trim((string) ($_POST['perlu_pemeliharaan'] ?? 'Tidak'));
+            $perluPemeliharaan = (in_array($kondisi, ['Rusak Ringan', 'Rusak Berat'], true) && $perluRaw === 'Ya') ? 'Ya' : 'Tidak';
             $jumlah  = (int) ($_POST['jumlah'] ?? 0);
             $catatan = trim((string) ($_POST['catatan'] ?? ''));
             $petugas = trim((string) ($_POST['petugas'] ?? ''));
             $tglRaw  = (string) ($_POST['tgl_update'] ?? '');
 
             if (!isset(MONITORING_KIB_TABLES[$kibId]) || $asetId <= 0) {
-                json_error('Silakan pilih Nama Aset yang tersedia pada lokasi ini.', ['field' => 'aset_key'], 422);
+                json_error('Silakan pilih Nama Aset yang tersedia pada Data Aset.', ['field' => 'aset_key'], 422);
             }
 
-            $asset = find_asset_in_penempatan($pdo, $kibId, $asetId, $penempatan);
+            $allowedKibs = allowed_kibs_for_penempatan($penempatan);
+            if (!in_array($kibId, $allowedKibs, true)) {
+                json_error('Untuk lokasi per kelas, hanya aset KIB B dan KIB E yang diperbolehkan.', ['field' => 'aset_key'], 422);
+            }
+
+            $asset = find_monitoring_asset($pdo, $kibId, $asetId);
             if ($asset === null) {
-                json_error('Aset tidak ditemukan pada penempatan ' . MONITORING_LOCATIONS[$penempatan] . '.', ['field' => 'aset_key'], 422);
+                json_error('Aset tidak ditemukan pada Data Aset.', ['field' => 'aset_key'], 422);
             }
 
             if (!in_array($kondisi, MONITORING_CONDITIONS, true)) {
@@ -309,28 +370,60 @@ try {
                 json_error('Jumlah minimal 1.', ['field' => 'jumlah'], 422);
             }
 
+            $stmtUsed = $pdo->prepare("SELECT COALESCE(SUM(jumlah), 0) FROM monitoring_aset WHERE kib = ? AND aset_id = ? AND id <> ?");
+            $stmtUsed->execute([$asset['kib'], $asset['aset_id'], $id]);
+            $usedOther = (int) $stmtUsed->fetchColumn();
+            $maxAllowed = max(0, (int) $asset['jumlah_total'] - $usedOther);
+            if ($jumlah > $maxAllowed) {
+                if ($usedOther > 0) {
+                    $quotaErr = "Jumlah melebihi sisa kuota aset (total di KIB {$asset['jumlah_total']} unit, sudah termonitor {$usedOther} unit di seluruh lokasi, sisa {$maxAllowed} unit).";
+                } else {
+                    $quotaErr = "Jumlah melebihi total aset di KIB (maksimal {$maxAllowed} unit).";
+                }
+                json_error($quotaErr, ['field' => 'jumlah'], 422);
+            }
+
             $tglUpdate = parse_monitoring_date($tglRaw);
             if ($tglUpdate === null) {
                 json_error('Format Tanggal Update tidak valid.', ['field' => 'tgl_update'], 422);
             }
 
             $currentUser = current_user();
-            $defaultActor = $currentUser['nama_lengkap'] ?? $currentUser['username'] ?? 'Administrator';
-            if ($petugas === '') {
+            $defaultActor = trim((string) ($currentUser['nama_lengkap'] ?? ''));
+            if (!empty($currentUser['id'])) {
+                $stmtActor = $pdo->prepare("SELECT nama_lengkap, username FROM users WHERE id = ? LIMIT 1");
+                $stmtActor->execute([(int) $currentUser['id']]);
+                if ($actorRow = $stmtActor->fetch(PDO::FETCH_ASSOC)) {
+                    $dbNama = trim((string) ($actorRow['nama_lengkap'] ?? ''));
+                    $dbUser = trim((string) ($actorRow['username'] ?? ''));
+                    if ($dbNama !== '') {
+                        $defaultActor = $dbNama;
+                    } elseif ($dbUser !== '' && $defaultActor === '') {
+                        $defaultActor = $dbUser;
+                    }
+                }
+            }
+            if ($defaultActor === '') {
+                $defaultActor = trim((string) ($currentUser['username'] ?? '')) ?: 'Administrator';
+            }
+            if ($id === 0 || $petugas === '') {
                 $petugas = $defaultActor;
             }
+
+            $pdo->beginTransaction();
 
             if ($id > 0) {
                 $stmtCheck = $pdo->prepare("SELECT id FROM monitoring_aset WHERE id = ? AND penempatan = ? LIMIT 1");
                 $stmtCheck->execute([$id, $penempatan]);
                 if (!$stmtCheck->fetch()) {
+                    $pdo->rollBack();
                     json_error('Data monitoring tidak ditemukan pada lokasi ini.', [], 404);
                 }
 
                 $stmtUpd = $pdo->prepare("
                     UPDATE monitoring_aset
                     SET kib = ?, aset_id = ?, kode_aset = ?, nama_aset = ?, jenis_aset = ?,
-                        jumlah = ?, kondisi = ?, catatan = ?, petugas = ?, tgl_update = ?
+                        jumlah = ?, kondisi = ?, perlu_pemeliharaan = ?, catatan = ?, petugas = ?, tgl_update = ?
                     WHERE id = ? AND penempatan = ?
                 ");
                 $stmtUpd->execute([
@@ -341,6 +434,7 @@ try {
                     $asset['jenis'],
                     $jumlah,
                     $kondisi,
+                    $perluPemeliharaan,
                     $catatan,
                     $petugas,
                     $tglUpdate,
@@ -358,8 +452,8 @@ try {
             } else {
                 $stmtIns = $pdo->prepare("
                     INSERT INTO monitoring_aset
-                        (penempatan, kib, aset_id, kode_aset, nama_aset, jenis_aset, jumlah, kondisi, catatan, petugas, tgl_update)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        (penempatan, kib, aset_id, kode_aset, nama_aset, jenis_aset, jumlah, kondisi, perlu_pemeliharaan, catatan, petugas, tgl_update)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
                 $stmtIns->execute([
                     $penempatan,
@@ -370,6 +464,7 @@ try {
                     $asset['jenis'],
                     $jumlah,
                     $kondisi,
+                    $perluPemeliharaan,
                     $catatan,
                     $petugas,
                     $tglUpdate,
@@ -384,23 +479,39 @@ try {
                 $msg = "Data monitoring aset di {$locLabel} berhasil ditambahkan.";
             }
 
+            pml_sync_from_monitoring($pdo, [
+                'id'                 => $savedId,
+                'penempatan'         => $penempatan,
+                'kib'                => $asset['kib'],
+                'aset_id'            => $asset['aset_id'],
+                'kode_aset'          => $asset['kode'],
+                'nama_aset'          => $asset['nama'],
+                'jumlah'             => $jumlah,
+                'kondisi'            => $kondisi,
+                'perlu_pemeliharaan' => $perluPemeliharaan,
+                'tgl_update'         => $tglUpdate,
+            ], $defaultActor);
+
+            $pdo->commit();
+
             json_success($msg, [
                 'id'   => $savedId,
                 'item' => [
-                    'id'               => $savedId,
-                    'penempatan'       => $penempatan,
-                    'penempatan_label' => MONITORING_LOCATIONS[$penempatan],
-                    'kib'              => $asset['kib'],
-                    'kib_label'        => $asset['kib_label'],
-                    'aset_id'          => $asset['aset_id'],
-                    'kode_aset'        => $asset['kode'],
-                    'nama_aset'        => $asset['nama'],
-                    'jenis_aset'       => $asset['jenis'],
-                    'jumlah'           => $jumlah,
-                    'kondisi'          => $kondisi,
-                    'catatan'          => $catatan,
-                    'petugas'          => $petugas,
-                    'tgl_update'       => $tglUpdate,
+                    'id'                 => $savedId,
+                    'penempatan'         => $penempatan,
+                    'penempatan_label'   => MONITORING_LOCATIONS[$penempatan],
+                    'kib'                => $asset['kib'],
+                    'kib_label'          => $asset['kib_label'],
+                    'aset_id'            => $asset['aset_id'],
+                    'kode_aset'          => $asset['kode'],
+                    'nama_aset'          => $asset['nama'],
+                    'jenis_aset'         => $asset['jenis'],
+                    'jumlah'             => $jumlah,
+                    'kondisi'            => $kondisi,
+                    'perlu_pemeliharaan' => $perluPemeliharaan,
+                    'catatan'            => $catatan,
+                    'petugas'            => $petugas,
+                    'tgl_update'         => $tglUpdate,
                 ],
             ]);
             break;
@@ -427,15 +538,17 @@ try {
                 json_error('Data monitoring tidak ditemukan pada lokasi ini.', [], 404);
             }
 
+            $pdo->beginTransaction();
+            pml_unlink_monitoring($pdo, $id);
             $stmtDel = $pdo->prepare("DELETE FROM monitoring_aset WHERE id = ? AND penempatan = ?");
             $stmtDel->execute([$id, $penempatan]);
 
-            $currentUser = current_user();
-            $actor = $currentUser['nama_lengkap'] ?? $currentUser['username'] ?? 'Administrator';
+            $actor = pml_resolve_actor_name($pdo);
             $locLabel = MONITORING_LOCATIONS[$penempatan];
             $actTeks = "Data monitoring {$row['nama_aset']} ({$row['kode_aset']}) di {$locLabel} dihapus";
             $stmtLog = $pdo->prepare("INSERT INTO kib_activities (teks, pelaku, waktu, warna) VALUES (?, ?, 'Baru saja', '#ef4444')");
             $stmtLog->execute([$actTeks, $actor]);
+            $pdo->commit();
 
             json_success("Data monitoring \"{$row['nama_aset']}\" berhasil dihapus.", [
                 'id'         => $id,
@@ -448,6 +561,9 @@ try {
             break;
     }
 } catch (Throwable $e) {
+    if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     error_log('AJAX Monitoring Error: ' . $e->getMessage());
     json_error('Terjadi kesalahan pada database monitoring: ' . $e->getMessage(), [], 500);
 }

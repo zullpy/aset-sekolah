@@ -88,7 +88,6 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <th rowspan="2" class="th-center">Persentase Fisik</th>
                                 <th rowspan="2" class="th-center">Status Pengerjaan</th>
                                 <th rowspan="2" class="th-center">Sumber</th>
-                                <th rowspan="2" class="th-center">Penempatan</th>
                                 <th rowspan="2">Keterangan</th>
                                 <th rowspan="2" class="th-center">Lampiran</th>
                                 <th rowspan="2" class="th-center">Aksi</th>
@@ -168,7 +167,6 @@ window.__kibEngine = new KibEngine({
             }
         },
         { key: 'sumber', align: 'center' },
-        { key: 'penempatan', align: 'center' },
         { key: 'keterangan' },
         { key: 'lampiran', align: 'center' }
     ],
@@ -182,10 +180,9 @@ window.__kibEngine = new KibEngine({
         { name: 'letak_bangunan', label: 'Letak Bangunan', span: 4, required: true, placeholder: 'Masukkan lokasi aset' },
         { name: 'dokumen', label: 'Tanggal & No Dokumen', span: 5, required: true, placeholder: 'Masukkan tanggal & nomor dokumen' },
         { name: 'tgl_mulai', label: 'Tanggal Mulai', span: 3, type: 'date', required: true, placeholder: 'dd/mm/yy' },
-        { name: 'status_tanah', label: 'Status Tanah', span: 3, required: true, type: 'select', default: 'Hak Guna Bangunan', options: ['Hak Milik', 'Hak Guna Bangunan', 'Hak Pakai', 'Hak Pengelolaan'] },
-        { name: 'sumber', label: 'Sumber', span: 3, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
-        { name: 'biaya', label: 'Biaya (Rp.)', span: 3, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
-        { name: 'penempatan', label: 'Penempatan', span: 3, required: true, type: 'select', default: 'umum', options: [{ value: 'kelas-1', label: 'Kelas 1' }, { value: 'kelas-2', label: 'Kelas 2' }, { value: 'kelas-3', label: 'Kelas 3' }, { value: 'kelas-4', label: 'Kelas 4' }, { value: 'kelas-5', label: 'Kelas 5' }, { value: 'kelas-6', label: 'Kelas 6' }, { value: 'umum', label: 'Aset Umum' }] },
+        { name: 'status_tanah', label: 'Status Tanah', span: 4, required: true, type: 'select', default: 'Hak Guna Bangunan', options: ['Hak Milik', 'Hak Guna Bangunan', 'Hak Pakai', 'Hak Pengelolaan'] },
+        { name: 'sumber', label: 'Sumber', span: 4, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
+        { name: 'biaya', label: 'Biaya (Rp.)', span: 4, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
         { name: 'persen_fisik', label: 'Persentase Fisik', span: 4, required: true, placeholder: 'ex : 90%' },
         { name: 'keterangan', label: 'Keterangan', span: 8, rowSpan: 2, type: 'textarea', placeholder: 'Masukkan spesifikasi aset' },
         { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
@@ -197,7 +194,7 @@ window.__kibEngine = new KibEngine({
             jenis: 'Pembangunan',
             nama: 'Pembangunan Ruang Perpustakaan',
             no_reg: '000001',
-            tingkat: 'Tidak',
+            tingkat: 'Tidak Bertingkat',
             beton: 'Beton',
             luas: '56',
             letak_bangunan: 'Sebelah Barat Ruang Kelas 6',
@@ -217,7 +214,7 @@ window.__kibEngine = new KibEngine({
             jenis: 'Pembangunan',
             nama: 'Pembangunan Toilet Siswa (4 Pintu)',
             no_reg: '000002',
-            tingkat: 'Tidak',
+            tingkat: 'Tidak Bertingkat',
             beton: 'Beton',
             luas: '24',
             letak_bangunan: 'Belakang Ruang Guru',
@@ -237,7 +234,7 @@ window.__kibEngine = new KibEngine({
             jenis: 'Renovasi',
             nama: 'Renovasi Benteng Pagar Keliling',
             no_reg: '000003',
-            tingkat: 'Tidak',
+            tingkat: 'Tidak Bertingkat',
             beton: 'Beton',
             luas: '-',
             letak_bangunan: 'Sisi Timur Batas Sekolah',
