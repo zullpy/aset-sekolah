@@ -10,6 +10,10 @@ require_once __DIR__ . '/auth.php';
 // Lindungi komponen internal agar hanya dapat diakses pengguna yang sah
 if (empty($skipAuthCheck)) {
     require_auth();
+    if (!headers_sent()) {
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+    }
 }
 
 // Deteksi path dasar aplikasi & URL web

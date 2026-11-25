@@ -54,7 +54,26 @@ const SDNAlert = {
             cancelButtonText: 'Batal',
             reverseButtons: true
         }).then((result) => {
-            if (result.isConfirmed) {
+            if (!result.isConfirmed) return;
+
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+            if (csrfToken) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+                form.style.display = 'none';
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'csrf_token';
+                input.value = csrfToken;
+
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+            } else {
                 window.location.href = url;
             }
         });
