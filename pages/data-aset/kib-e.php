@@ -84,6 +84,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <th rowspan="2" class="th-center">Harga Satuan</th>
                                 <th rowspan="2" class="th-center">Harga Total</th>
                                 <th rowspan="2" class="th-center">Sumber</th>
+                                <th rowspan="2" class="th-center">Penempatan</th>
                                 <th rowspan="2" class="th-center">Lampiran</th>
                                 <th rowspan="2" class="th-center">Aksi</th>
                             </tr>
@@ -151,6 +152,7 @@ window.__kibEngine = new KibEngine({
         { key: 'harga_satuan', align: 'center' },
         { key: 'harga_total', align: 'center' },
         { key: 'sumber', align: 'center' },
+        { key: 'penempatan', align: 'center' },
         { key: 'lampiran', align: 'center' }
     ],
     formFields: [
@@ -163,11 +165,12 @@ window.__kibEngine = new KibEngine({
         { name: 'spesifikasi_penerbit', label: 'Penerbit', span: 4, required: true, placeholder: 'Masukkan penerbit buku' },
         { name: 'spesifikasi_tahun', label: 'Tahun Terbit', span: 4, required: true, placeholder: 'ex : 2024' },
         { name: 'sumber', label: 'Sumber', span: 4, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
-        { name: 'tahun', label: 'Tahun Perolehan', span: 4, required: true, placeholder: 'ex : 2024' },
-        { name: 'jumlah', label: 'Jumlah', span: 4, type: 'number', narrow: true, default: 1, min: 1, required: true },
-        { name: 'harga_satuan', label: 'Harga Satuan (Rp.)', span: 4, type: 'currency', required: true, placeholder: 'ex : 100.000' },
-        { name: 'harga_total', label: 'Harga Total (Rp.)', span: 4, type: 'currency', readonly: true, computed: 'jumlah * harga_satuan', placeholder: 'Otomatis' },
-        { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
+        { name: 'tahun', label: 'Tahun Perolehan', span: 3, required: true, placeholder: 'ex : 2024' },
+        { name: 'jumlah', label: 'Jumlah', span: 3, type: 'number', narrow: true, default: 1, min: 1, required: true },
+        { name: 'harga_satuan', label: 'Harga Satuan (Rp.)', span: 3, type: 'currency', required: true, placeholder: 'ex : 100.000' },
+        { name: 'harga_total', label: 'Harga Total (Rp.)', span: 3, type: 'currency', readonly: true, computed: 'jumlah * harga_satuan', placeholder: 'Otomatis' },
+        { name: 'penempatan', label: 'Penempatan', span: 6, required: true, type: 'select', default: 'umum', options: [{ value: 'kelas-1', label: 'Kelas 1' }, { value: 'kelas-2', label: 'Kelas 2' }, { value: 'kelas-3', label: 'Kelas 3' }, { value: 'kelas-4', label: 'Kelas 4' }, { value: 'kelas-5', label: 'Kelas 5' }, { value: 'kelas-6', label: 'Kelas 6' }, { value: 'umum', label: 'Aset Umum' }] },
+        { name: 'lampiran', label: 'Lampiran', span: 6, type: 'file' }
     ],
     initialData: [
         {

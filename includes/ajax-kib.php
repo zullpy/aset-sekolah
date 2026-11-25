@@ -20,6 +20,7 @@ if ($action !== 'download') {
 }
 
 const KIB_MAX_FILE_BYTES = 5242880; // 5 MB
+const KIB_PENEMPATAN_VALUES = ['kelas-1', 'kelas-2', 'kelas-3', 'kelas-4', 'kelas-5', 'kelas-6', 'umum'];
 
 // Pemetaan ID KIB dengan nama tabel dan konfigurasi kolom
 $kibConfigs = [
@@ -30,9 +31,10 @@ $kibConfigs = [
         'kode'     => 'KIB A',
         'warna'    => '#852019',
         'file'     => 'kib-a.php',
-        'fields'   => ['kode', 'nama', 'no_reg', 'luas', 'tahun', 'lokasi', 'status_tanah', 'sertifikat', 'penggunaan', 'sumber', 'harga', 'lampiran'],
+        'fields'   => ['kode', 'nama', 'no_reg', 'penempatan', 'luas', 'tahun', 'lokasi', 'status_tanah', 'sertifikat', 'penggunaan', 'sumber', 'harga', 'lampiran'],
         'required' => [
             'nama'         => 'Nama Aset',
+            'penempatan'   => 'Penempatan',
             'luas'         => 'Luas (m²)',
             'tahun'        => 'Tahun Perolehan',
             'lokasi'       => 'Lokasi Aset',
@@ -50,10 +52,11 @@ $kibConfigs = [
         'kode'     => 'KIB B',
         'warna'    => '#f97316',
         'file'     => 'kib-b.php',
-        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'merk', 'spesifikasi', 'bahan', 'no_pabrik', 'tahun', 'jumlah', 'harga', 'sumber', 'lampiran'],
+        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'penempatan', 'merk', 'spesifikasi', 'bahan', 'no_pabrik', 'tahun', 'jumlah', 'harga', 'sumber', 'lampiran'],
         'required' => [
             'jenis'       => 'Jenis Aset',
             'nama'        => 'Nama Aset',
+            'penempatan'  => 'Penempatan',
             'merk'        => 'Merk',
             'spesifikasi' => 'Spesifikasi',
             'bahan'       => 'Bahan',
@@ -70,9 +73,10 @@ $kibConfigs = [
         'kode'     => 'KIB C',
         'warna'    => '#eab308',
         'file'     => 'kib-c.php',
-        'fields'   => ['kode', 'nama', 'no_reg', 'konstruksi', 'luas', 'lokasi', 'tgl_izin', 'status_tanah', 'tahun', 'harga', 'sumber', 'lampiran'],
+        'fields'   => ['kode', 'nama', 'no_reg', 'penempatan', 'konstruksi', 'luas', 'lokasi', 'tgl_izin', 'status_tanah', 'tahun', 'harga', 'sumber', 'lampiran'],
         'required' => [
             'nama'         => 'Nama Aset',
+            'penempatan'   => 'Penempatan',
             'konstruksi'   => 'Konstruksi',
             'luas'         => 'Luas (m²)',
             'lokasi'       => 'Lokasi Aset',
@@ -90,9 +94,10 @@ $kibConfigs = [
         'kode'     => 'KIB D',
         'warna'    => '#22c55e',
         'file'     => 'kib-d.php',
-        'fields'   => ['kode', 'nama', 'no_reg', 'konstruksi', 'ukuran', 'luas', 'tahun', 'dokumen', 'harga', 'sumber', 'lampiran'],
+        'fields'   => ['kode', 'nama', 'no_reg', 'penempatan', 'konstruksi', 'ukuran', 'luas', 'tahun', 'dokumen', 'harga', 'sumber', 'lampiran'],
         'required' => [
             'nama'       => 'Nama Aset',
+            'penempatan' => 'Penempatan',
             'konstruksi' => 'Konstruksi',
             'ukuran'     => 'Ukuran (m)',
             'dokumen'    => 'No & Tanggal Dokumen',
@@ -108,10 +113,11 @@ $kibConfigs = [
         'kode'     => 'KIB E',
         'warna'    => '#06b6d4',
         'file'     => 'kib-e.php',
-        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'spesifikasi_judul', 'spesifikasi_pengarang', 'spesifikasi_penerbit', 'spesifikasi_tahun', 'tahun', 'jumlah', 'harga_satuan', 'harga_total', 'sumber', 'lampiran'],
+        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'penempatan', 'spesifikasi_judul', 'spesifikasi_pengarang', 'spesifikasi_penerbit', 'spesifikasi_tahun', 'tahun', 'jumlah', 'harga_satuan', 'harga_total', 'sumber', 'lampiran'],
         'required' => [
             'jenis'                 => 'Jenis Aset',
             'nama'                  => 'Nama Buku',
+            'penempatan'            => 'Penempatan',
             'spesifikasi_judul'     => 'Judul Buku',
             'spesifikasi_pengarang' => 'Penulis',
             'spesifikasi_penerbit'  => 'Penerbit',
@@ -129,10 +135,11 @@ $kibConfigs = [
         'kode'     => 'KIB F',
         'warna'    => '#8b5cf6',
         'file'     => 'kib-f.php',
-        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'tingkat', 'beton', 'luas', 'letak_bangunan', 'dokumen', 'tgl_mulai', 'status_tanah', 'biaya', 'persen_fisik', 'status_pengerjaan', 'sumber', 'keterangan', 'lampiran'],
+        'fields'   => ['kode', 'jenis', 'nama', 'no_reg', 'penempatan', 'tingkat', 'beton', 'luas', 'letak_bangunan', 'dokumen', 'tgl_mulai', 'status_tanah', 'biaya', 'persen_fisik', 'status_pengerjaan', 'sumber', 'keterangan', 'lampiran'],
         'required' => [
             'jenis'          => 'Jenis Aset',
             'nama'           => 'Nama Aset',
+            'penempatan'     => 'Penempatan',
             'tingkat'        => 'Tingkat / Tidak',
             'beton'          => 'Beton / Tidak',
             'letak_bangunan' => 'Letak Bangunan',
@@ -592,6 +599,20 @@ try {
                 }
             }
 
+            // Default dan validasi kolom penempatan
+            if (!isset($dataToSave['penempatan']) || $dataToSave['penempatan'] === '') {
+                $dataToSave['penempatan'] = 'umum';
+            } else {
+                $normPenempatan = strtolower($dataToSave['penempatan']);
+                if ($normPenempatan === 'aset-umum') {
+                    $normPenempatan = 'umum';
+                }
+                if (!in_array($normPenempatan, KIB_PENEMPATAN_VALUES, true)) {
+                    json_error('Lokasi penempatan aset tidak valid.', ['field' => 'penempatan'], 422);
+                }
+                $dataToSave['penempatan'] = $normPenempatan;
+            }
+
             // Validasi field wajib per KIB
             foreach ($cfg['required'] as $reqField => $reqLabel) {
                 if (!isset($dataToSave[$reqField]) || $dataToSave[$reqField] === '') {
@@ -689,6 +710,20 @@ try {
                     if (is_file($oldFilePath)) {
                         @unlink($oldFilePath);
                     }
+                }
+
+                // Sinkronkan penempatan, nama_aset, dan jenis_aset ke tabel monitoring_aset bila sudah ada
+                $jenisSync = match ($kibId) {
+                    'kib-a' => 'Tanah',
+                    'kib-c' => 'Gedung & Bangunan',
+                    'kib-d' => 'Jalan, Irigasi & Jaringan',
+                    default => (string) ($dataToSave['jenis'] ?? $existingRow['jenis'] ?? ''),
+                };
+                try {
+                    $stmtSyncMon = $pdo->prepare("UPDATE monitoring_aset SET penempatan = ?, nama_aset = ?, jenis_aset = ? WHERE kib = ? AND aset_id = ?");
+                    $stmtSyncMon->execute([$dataToSave['penempatan'], $dataToSave['nama'], $jenisSync, $kibId, $id]);
+                } catch (Throwable $syncErr) {
+                    // Abaikan jika tabel monitoring_aset belum tersedia sebelum migrasi dijalankan
                 }
 
                 $actTeks = "Data aset \"{$dataToSave['nama']}\" diperbarui di {$cfg['kode']}";
@@ -799,6 +834,13 @@ try {
 
             $stmtDel = $pdo->prepare("DELETE FROM {$table} WHERE id = ?");
             $stmtDel->execute([$id]);
+
+            try {
+                $stmtDelMon = $pdo->prepare("DELETE FROM monitoring_aset WHERE kib = ? AND aset_id = ?");
+                $stmtDelMon->execute([$kibId, $id]);
+            } catch (Throwable $delMonErr) {
+                // Abaikan jika tabel monitoring_aset belum tersedia
+            }
 
             if (!empty($item['lampiran'])) {
                 $fileToDel = get_kib_upload_dir($kibId) . '/' . basename((string) $item['lampiran']);

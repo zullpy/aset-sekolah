@@ -27,15 +27,16 @@ if (empty($activeMenu)) {
         elseif ($currentScript === 'kib-d.php') $activeSubmenu = 'kib-d';
         elseif ($currentScript === 'kib-e.php') $activeSubmenu = 'kib-e';
         elseif ($currentScript === 'kib-f.php') $activeSubmenu = 'kib-f';
-    } elseif (str_contains($currentScript, 'monitoring')) {
+    } elseif (str_contains($currentUri, '/pages/monitoring/') || str_contains($currentScript, 'monitoring')) {
         $activeMenu = 'monitoring';
-        if (str_contains($currentUri, 'ruang=kelas-1') || str_contains($currentScript, 'kelas-1')) $activeSubmenu = 'kelas-1';
-        elseif (str_contains($currentUri, 'ruang=kelas-2') || str_contains($currentScript, 'kelas-2')) $activeSubmenu = 'kelas-2';
-        elseif (str_contains($currentUri, 'ruang=kelas-3') || str_contains($currentScript, 'kelas-3')) $activeSubmenu = 'kelas-3';
-        elseif (str_contains($currentUri, 'ruang=kelas-4') || str_contains($currentScript, 'kelas-4')) $activeSubmenu = 'kelas-4';
-        elseif (str_contains($currentUri, 'ruang=kelas-5') || str_contains($currentScript, 'kelas-5')) $activeSubmenu = 'kelas-5';
-        elseif (str_contains($currentUri, 'ruang=kelas-6') || str_contains($currentScript, 'kelas-6')) $activeSubmenu = 'kelas-6';
-        elseif (str_contains($currentUri, 'ruang=aset-umum') || str_contains($currentScript, 'aset-umum')) $activeSubmenu = 'aset-umum';
+        if ($currentScript === 'kelas-1.php' || str_contains($currentUri, 'ruang=kelas-1')) $activeSubmenu = 'kelas-1';
+        elseif ($currentScript === 'kelas-2.php' || str_contains($currentUri, 'ruang=kelas-2')) $activeSubmenu = 'kelas-2';
+        elseif ($currentScript === 'kelas-3.php' || str_contains($currentUri, 'ruang=kelas-3')) $activeSubmenu = 'kelas-3';
+        elseif ($currentScript === 'kelas-4.php' || str_contains($currentUri, 'ruang=kelas-4')) $activeSubmenu = 'kelas-4';
+        elseif ($currentScript === 'kelas-5.php' || str_contains($currentUri, 'ruang=kelas-5')) $activeSubmenu = 'kelas-5';
+        elseif ($currentScript === 'kelas-6.php' || str_contains($currentUri, 'ruang=kelas-6')) $activeSubmenu = 'kelas-6';
+        elseif ($currentScript === 'aset-umum.php' || $currentScript === 'umum.php' || str_contains($currentUri, 'ruang=aset-umum') || str_contains($currentUri, 'ruang=umum')) $activeSubmenu = 'aset-umum';
+        elseif ($currentScript === 'semua.php') $activeSubmenu = 'semua';
     } elseif (in_array($currentScript, ['pemeliharaan.php', 'rawat.php', 'perbaikan.php', 'maintenance.php', 'peminjaman.php'])) {
         $activeMenu = 'pemeliharaan';
     } elseif (in_array($currentScript, ['laporan.php', 'report.php', 'cetak.php'])) {
@@ -56,14 +57,19 @@ if ($docRoot !== '' && str_starts_with($projectDir, $docRoot)) {
 }
 
 $scriptUri  = $_SERVER['PHP_SELF'] ?? $_SERVER['SCRIPT_NAME'] ?? '';
-$isInSubSub = (strpos($scriptUri, '/pages/data-aset/') !== false);
+$isInSubSub = (strpos($scriptUri, '/pages/data-aset/') !== false) || (strpos($scriptUri, '/pages/monitoring/') !== false);
 $isInPages  = (strpos($scriptUri, '/pages/') !== false);
 $isInSubdir = $isInPages || (strpos($scriptUri, '/includes/') !== false);
 
-$pagesPath  = $isInSubSub ? '../' : ($isInPages ? './' : ($appUrlPath . 'pages/'));
-$kibPath    = $isInSubSub ? './' : ($isInPages ? 'data-aset/' : ($appUrlPath . 'pages/data-aset/'));
-$basePath   = $basePath ?? $pagesPath;
-$homePath   = $homePath ?? ($appUrlPath . 'index.php');
+$pagesPath      = $isInSubSub ? '../' : ($isInPages ? './' : ($appUrlPath . 'pages/'));
+$kibPath        = $isInSubSub
+    ? ((strpos($scriptUri, '/pages/data-aset/') !== false) ? './' : '../data-aset/')
+    : ($isInPages ? 'data-aset/' : ($appUrlPath . 'pages/data-aset/'));
+$monitoringPath = $isInSubSub
+    ? ((strpos($scriptUri, '/pages/monitoring/') !== false) ? './' : '../monitoring/')
+    : ($isInPages ? 'monitoring/' : ($appUrlPath . 'pages/monitoring/'));
+$basePath       = $basePath ?? $pagesPath;
+$homePath       = $homePath ?? ($appUrlPath . 'index.php');
 
 if (!isset($assetsPath)) {
     if ($isInSubSub) {
@@ -171,38 +177,38 @@ $logoSrc       = file_exists($logoLocalFile)
                 <i class="ph-bold ph-caret-down sidebar-caret"></i>
             </button>
             <ul class="sidebar-submenu">
-                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-1') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'monitoring.php?ruang=kelas-1'); ?>" class="sidebar-sublink">
+                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-1') ? 'active' : ''; ?>" data-monitoring-subitem="kelas-1">
+                    <a href="<?php echo htmlspecialchars($monitoringPath . 'kelas-1.php'); ?>" class="sidebar-sublink">
                         <span>Kelas 1</span>
                     </a>
                 </li>
-                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-2') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'monitoring.php?ruang=kelas-2'); ?>" class="sidebar-sublink">
+                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-2') ? 'active' : ''; ?>" data-monitoring-subitem="kelas-2">
+                    <a href="<?php echo htmlspecialchars($monitoringPath . 'kelas-2.php'); ?>" class="sidebar-sublink">
                         <span>Kelas 2</span>
                     </a>
                 </li>
-                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-3') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'monitoring.php?ruang=kelas-3'); ?>" class="sidebar-sublink">
+                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-3') ? 'active' : ''; ?>" data-monitoring-subitem="kelas-3">
+                    <a href="<?php echo htmlspecialchars($monitoringPath . 'kelas-3.php'); ?>" class="sidebar-sublink">
                         <span>Kelas 3</span>
                     </a>
                 </li>
-                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-4') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'monitoring.php?ruang=kelas-4'); ?>" class="sidebar-sublink">
+                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-4') ? 'active' : ''; ?>" data-monitoring-subitem="kelas-4">
+                    <a href="<?php echo htmlspecialchars($monitoringPath . 'kelas-4.php'); ?>" class="sidebar-sublink">
                         <span>Kelas 4</span>
                     </a>
                 </li>
-                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-5') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'monitoring.php?ruang=kelas-5'); ?>" class="sidebar-sublink">
+                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-5') ? 'active' : ''; ?>" data-monitoring-subitem="kelas-5">
+                    <a href="<?php echo htmlspecialchars($monitoringPath . 'kelas-5.php'); ?>" class="sidebar-sublink">
                         <span>Kelas 5</span>
                     </a>
                 </li>
-                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-6') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'monitoring.php?ruang=kelas-6'); ?>" class="sidebar-sublink">
+                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-6') ? 'active' : ''; ?>" data-monitoring-subitem="kelas-6">
+                    <a href="<?php echo htmlspecialchars($monitoringPath . 'kelas-6.php'); ?>" class="sidebar-sublink">
                         <span>Kelas 6</span>
                     </a>
                 </li>
-                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'aset-umum') ? 'active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($basePath . 'monitoring.php?ruang=aset-umum'); ?>" class="sidebar-sublink">
+                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'aset-umum') ? 'active' : ''; ?>" data-monitoring-subitem="umum">
+                    <a href="<?php echo htmlspecialchars($monitoringPath . 'aset-umum.php'); ?>" class="sidebar-sublink">
                         <span>Aset Umum</span>
                     </a>
                 </li>

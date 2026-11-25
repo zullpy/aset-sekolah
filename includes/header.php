@@ -29,7 +29,7 @@ if ($docRoot !== '' && str_starts_with($projectDir, $docRoot)) {
 }
 
 $scriptUri  = $_SERVER['PHP_SELF'] ?? $_SERVER['SCRIPT_NAME'] ?? '';
-$isInSubSub = (strpos($scriptUri, '/pages/data-aset/') !== false);
+$isInSubSub = (strpos($scriptUri, '/pages/data-aset/') !== false) || (strpos($scriptUri, '/pages/monitoring/') !== false);
 $isInPages  = (strpos($scriptUri, '/pages/') !== false);
 $isInSubdir = $isInPages || (strpos($scriptUri, '/includes/') !== false);
 

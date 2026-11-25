@@ -68,6 +68,20 @@ class KibEngine {
     }
 
     // Helper membaca CSRF token
+    formatPenempatan(val) {
+        const map = {
+            'kelas-1': 'Kelas 1',
+            'kelas-2': 'Kelas 2',
+            'kelas-3': 'Kelas 3',
+            'kelas-4': 'Kelas 4',
+            'kelas-5': 'Kelas 5',
+            'kelas-6': 'Kelas 6',
+            'umum': 'Aset Umum'
+        };
+        const key = String(val || 'umum').trim().toLowerCase();
+        return map[key] || val || 'Aset Umum';
+    }
+
     getCsrfToken() {
         const meta = document.querySelector('meta[name="csrf-token"]');
         if (meta && meta.content) return meta.content;
@@ -211,8 +225,10 @@ class KibEngine {
 
             if (field.type === 'select') {
                 const optionsHtml = (field.options || []).map(opt => {
-                    const selected = (field.default && field.default === opt) ? 'selected' : '';
-                    return `<option value="${this.escapeHtml(opt)}" ${selected}>${this.escapeHtml(opt)}</option>`;
+                    const optValue = (opt && typeof opt === 'object') ? opt.value : opt;
+                    const optLabel = (opt && typeof opt === 'object') ? opt.label : opt;
+                    const selected = (field.default && field.default === optValue) ? 'selected' : '';
+                    return `<option value="${this.escapeHtml(optValue)}" ${selected}>${this.escapeHtml(optLabel)}</option>`;
                 }).join('');
                 return `
                     <div class="kib-form-group${rowSpanClass}" style="${groupStyle}">
@@ -1503,6 +1519,8 @@ class KibEngine {
 
             if (f.name === 'lampiran' && raw && raw !== '-') {
                 val = `<button type="button" class="btn-kib-lampiran" onclick="window.__kibEngine.previewLampiran('${this.escapeHtml(raw)}')"><i class="ph-bold ph-paperclip"></i><span>${this.escapeHtml(raw)}</span></button>`;
+            } else if (f.name === 'penempatan') {
+                val = this.escapeHtml(this.formatPenempatan(val));
             } else {
                 val = this.escapeHtml(val);
             }
@@ -1856,6 +1874,9 @@ class KibEngine {
                         renderedVal = `<span class="badge-kib ${badgeClass}">${this.escapeHtml(rawVal)}</span>`;
                     } else if (col.key === 'sumber') {
                         renderedVal = `<span class="badge-kib badge-kib--sumber">${this.escapeHtml(rawVal)}</span>`;
+                    } else if (col.key === 'penempatan') {
+                        const penempatanLabel = this.formatPenempatan(rawVal);
+                        renderedVal = `<span class="badge-kib badge-kib--sumber">${this.highlightMatch(penempatanLabel, qSearch || fKeyword)}</span>`;
                     } else if (col.key === 'lampiran') {
                         if (rawVal && rawVal !== '-' && rawVal !== 'null') {
                             renderedVal = `
