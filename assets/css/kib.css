@@ -598,11 +598,37 @@
 /* ==========================================================================
    Modal Dialogs (Filter Data & Tambah/Edit Aset)
    ========================================================================== */
+:root {
+    --kib-modal-overlay-bg: rgba(15, 23, 42, 0.52);
+    --kib-modal-bg: #ffffff;
+    --kib-modal-radius: 16px;
+    --kib-modal-shadow: 0 24px 55px -12px rgba(15, 23, 42, 0.28), 0 0 1px rgba(15, 23, 42, 0.14);
+    --kib-modal-max-width: 740px;
+    --kib-modal-divider: var(--color-slate-200, #e2e8f0);
+    --kib-modal-close-bg: #fef2f2;
+    --kib-modal-close-border: #fecaca;
+    --kib-modal-close-color: #dc2626;
+    --kib-modal-close-hover: #dc2626;
+    --kib-modal-label-color: var(--color-slate-700, #334155);
+    --kib-modal-input-bg: var(--color-slate-50, #f8fafc);
+    --kib-modal-input-border: var(--color-slate-200, #e2e8f0);
+    --kib-modal-input-readonly-bg: var(--color-slate-100, #f1f5f9);
+    --kib-modal-input-text: var(--color-slate-800, #1e293b);
+    --kib-modal-placeholder: var(--color-slate-400, #94a3b8);
+    --kib-modal-focus-ring: var(--color-maroon-primary, #852019);
+    --kib-modal-upload-green: #16a34a;
+    --kib-modal-upload-green-dark: #15803d;
+    --kib-modal-submit-bg: var(--color-maroon-primary, #852019);
+    --kib-modal-submit-hover: var(--color-maroon-dark, #6d1c16);
+    --kib-modal-font: var(--font-main, 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+}
+
 .kib-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.55);
-    backdrop-filter: blur(4px);
+    background: var(--kib-modal-overlay-bg);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -620,7 +646,7 @@
 }
 
 .kib-modal-dialog {
-    background: #ffffff;
+    background: var(--kib-modal-bg);
     border-radius: 14px;
     box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.2), 0 0 1px rgba(15, 23, 42, 0.2);
     width: 100%;
@@ -630,7 +656,7 @@
     transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
     margin: auto;
 }
 
@@ -643,7 +669,11 @@
 }
 
 .kib-modal-dialog--form {
-    max-width: 520px;
+    max-width: var(--kib-modal-max-width);
+    border-radius: var(--kib-modal-radius);
+    box-shadow: var(--kib-modal-shadow);
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    font-family: var(--kib-modal-font);
 }
 
 .kib-modal-dialog form {
@@ -665,10 +695,16 @@
     flex-shrink: 0;
 }
 
+.kib-modal-dialog--form .kib-modal-header {
+    padding: 18px 24px 16px;
+    border-bottom: 1px solid var(--kib-modal-divider);
+    background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+}
+
 .kib-modal-header-left {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 11px;
 }
 
 .kib-modal-icon-green {
@@ -684,12 +720,33 @@
     font-size: 17px;
 }
 
+.kib-modal-icon-maroon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--color-maroon-light, #fbeeed);
+    color: var(--color-maroon-primary, #852019);
+    border: 1px solid #f5c2bf;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
 .kib-modal-title {
     font-size: 16.5px;
     font-weight: 800;
     color: var(--color-slate-900, #0f172a);
     letter-spacing: 0.2px;
     margin: 0;
+}
+
+.kib-modal-dialog--form .kib-modal-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-slate-900, #0f172a);
+    letter-spacing: -0.015em;
 }
 
 .kib-modal-close {
@@ -712,6 +769,35 @@
     color: #b91c1c;
 }
 
+.kib-modal-dialog--form .kib-modal-close {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--kib-modal-close-bg);
+    border: 1px solid var(--kib-modal-close-border);
+    color: var(--kib-modal-close-color);
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+.kib-modal-dialog--form .kib-modal-close::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+}
+
+.kib-modal-dialog--form .kib-modal-close:hover {
+    background: var(--kib-modal-close-hover);
+    border-color: var(--kib-modal-close-hover);
+    color: #ffffff;
+}
+
+.kib-modal-dialog--form .kib-modal-close:focus-visible {
+    outline: 2px solid var(--kib-modal-focus-ring);
+    outline-offset: 2px;
+}
+
 /* Modal Body */
 .kib-modal-body {
     padding: 16px 22px;
@@ -723,9 +809,39 @@
     gap: 12px;
 }
 
+.kib-modal-dialog--form .kib-modal-body {
+    padding: 22px 24px 24px;
+    display: block;
+}
+
+.kib-form-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    row-gap: 18px;
+    column-gap: 18px;
+    align-items: start;
+}
+
 .kib-form-group {
     display: flex;
     flex-direction: column;
+    min-width: 0;
+}
+
+.kib-modal-dialog--form .kib-form-group {
+    grid-column: span var(--field-span, 12);
+    gap: 6px;
+}
+
+.kib-modal-dialog--form .kib-form-group--row-span-2 {
+    grid-row: span 2;
+    align-self: stretch;
+}
+
+.kib-modal-dialog--form .kib-form-group--row-span-2 .kib-textarea {
+    flex: 1;
+    min-height: 112px;
+    height: 100%;
 }
 
 .kib-label {
@@ -734,6 +850,15 @@
     color: var(--color-slate-700, #334155);
     margin-bottom: 4px;
     display: block;
+}
+
+.kib-modal-dialog--form .kib-label {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--kib-modal-label-color);
+    margin-bottom: 0;
+    line-height: 1.3;
+    text-align: left;
 }
 
 .kib-label.required::after {
@@ -779,6 +904,246 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
+/* Gaya Input Modern selaras Tema Web SDN Budi Karya */
+.kib-modal-dialog--form .kib-input,
+.kib-modal-dialog--form .kib-select,
+.kib-modal-dialog--form .kib-textarea {
+    background: var(--kib-modal-input-bg);
+    border: 1.5px solid var(--kib-modal-input-border);
+    border-radius: 9px;
+    height: 38px;
+    padding: 0 12px;
+    font-family: var(--kib-modal-font);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--kib-modal-input-text);
+    box-shadow: none;
+    transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.kib-modal-dialog--form .kib-textarea {
+    height: auto;
+    min-height: 106px;
+    padding: 9px 12px;
+    line-height: 1.5;
+}
+
+.kib-modal-dialog--form .kib-input::placeholder,
+.kib-modal-dialog--form .kib-textarea::placeholder {
+    font-style: normal;
+    color: var(--kib-modal-placeholder);
+    font-size: 12.5px;
+    font-weight: 400;
+}
+
+.kib-modal-dialog--form .kib-input:hover:not([readonly]):not(:focus),
+.kib-modal-dialog--form .kib-select:hover:not(:focus),
+.kib-modal-dialog--form .kib-textarea:hover:not(:focus) {
+    border-color: var(--color-slate-300, #cbd5e1);
+}
+
+.kib-modal-dialog--form .kib-input:focus,
+.kib-modal-dialog--form .kib-select:focus,
+.kib-modal-dialog--form .kib-textarea:focus {
+    background: #ffffff;
+    border-color: var(--kib-modal-focus-ring);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(133, 32, 25, 0.12);
+}
+
+.kib-modal-dialog--form .kib-input--readonly,
+.kib-modal-dialog--form .kib-input[readonly] {
+    background: var(--kib-modal-input-readonly-bg);
+    color: var(--color-slate-700, #334155);
+    border: 1.5px dashed #cbd5e1;
+    cursor: default;
+    font-family: var(--kib-modal-font);
+    font-weight: 600;
+    opacity: 1;
+    -webkit-text-fill-color: var(--color-slate-700, #334155);
+}
+
+.kib-modal-dialog--form .kib-input--readonly::placeholder,
+.kib-modal-dialog--form .kib-input[readonly]::placeholder {
+    font-family: var(--kib-modal-font);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--kib-modal-placeholder);
+    -webkit-text-fill-color: var(--kib-modal-placeholder);
+}
+
+.kib-modal-dialog--form .kib-input--narrow {
+    width: 96px;
+    max-width: 100%;
+    padding: 0 6px 0 10px;
+    text-align: center;
+}
+
+.kib-modal-dialog--form input[type="number"]::-webkit-inner-spin-button,
+.kib-modal-dialog--form input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    cursor: pointer;
+    height: 28px;
+}
+
+.kib-modal-dialog--form .kib-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.kib-modal-dialog--form .kib-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: none;
+    padding-right: 32px;
+    color: var(--kib-modal-input-text);
+    cursor: pointer;
+}
+
+.kib-modal-dialog--form .kib-select-chevron {
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: var(--color-slate-500, #64748b);
+    pointer-events: none;
+}
+
+/* Date input wrapper (tampil konsisten dd/mm/yy + native picker trigger) */
+.kib-date-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.kib-date-wrapper .kib-input--date {
+    padding-right: 34px;
+}
+
+.kib-date-picker-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: transparent;
+    color: var(--color-slate-500, #64748b);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.kib-date-picker-btn:hover {
+    background: var(--color-slate-200, #e2e8f0);
+    color: var(--kib-modal-focus-ring);
+}
+
+.kib-date-native-hidden {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    opacity: 0;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+}
+
+/* Tombol Upload File + (Modern selaras aksi hijau KIB) */
+.kib-upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+    width: 100%;
+}
+
+.kib-upload-input-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.kib-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 38px;
+    max-width: 100%;
+    padding: 0 14px;
+    background: #f0fdf4;
+    border: 1.5px dashed var(--kib-modal-upload-green);
+    border-radius: 9px;
+    color: var(--kib-modal-upload-green-dark);
+    font-family: var(--kib-modal-font);
+    font-size: 13px;
+    font-weight: 700;
+    font-style: normal;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(22, 163, 74, 0.08);
+    transition: background-color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.12s ease;
+    text-align: center;
+}
+
+.kib-upload-btn-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.kib-upload-btn:hover {
+    background: #dcfce7;
+    border-style: solid;
+    border-color: var(--kib-modal-upload-green-dark);
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.16);
+}
+
+.kib-upload-btn:focus-visible {
+    outline: 2px solid var(--kib-modal-focus-ring);
+    outline-offset: 2px;
+}
+
+.kib-upload-btn-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.kib-upload-btn.has-file {
+    font-style: normal;
+    font-weight: 700;
+    background: #dcfce7;
+    border-style: solid;
+    justify-content: flex-start;
+}
+
+.kib-upload-hint {
+    color: #64748b;
+    font-size: 11px;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
 .kib-select {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 256 256'%3E%3Cpath fill='%2364748b' d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3E%3C/path%3E%3C/svg%3E");
@@ -809,17 +1174,18 @@
 
 .kib-input.has-error,
 .kib-select.has-error,
-.kib-textarea.has-error {
-    border-color: #ef4444;
-    background: #fffdfd;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+.kib-textarea.has-error,
+.kib-upload-btn.has-error {
+    border-color: #ef4444 !important;
+    background: #fef2f2 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12) !important;
 }
 
 .kib-field-error {
     font-size: 11.5px;
     font-weight: 600;
     color: #dc2626;
-    margin-top: 4px;
+    margin-top: 2px;
     display: none;
     line-height: 1.3;
 }
@@ -845,6 +1211,16 @@
 
 .kib-modal-footer--center {
     justify-content: center;
+}
+
+.kib-modal-submit-row {
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid var(--color-slate-100, #f1f5f9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
 }
 
 .btn-kib-modal-reset {
@@ -896,28 +1272,211 @@
 }
 
 .btn-kib-modal-submit {
-    min-width: 160px;
-    height: 38px;
-    padding: 0 22px;
-    border-radius: 8px;
-    background: #2563eb;
+    min-width: 164px;
+    height: 42px;
+    padding: 0 26px;
+    border-radius: 10px;
+    background: var(--kib-modal-submit-bg);
     color: #ffffff;
     border: none;
-    font-family: inherit;
-    font-size: 13.5px;
+    font-family: var(--kib-modal-font);
+    font-size: 14px;
     font-weight: 700;
+    letter-spacing: 0.2px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(133, 32, 25, 0.28);
+    transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
+}
+
+.btn-kib-modal-submit:hover:not(:disabled) {
+    background: var(--kib-modal-submit-hover);
+    box-shadow: 0 6px 18px rgba(133, 32, 25, 0.36);
+    transform: translateY(-1px);
+}
+
+.btn-kib-modal-submit:focus-visible {
+    outline: 2px solid var(--kib-modal-focus-ring);
+    outline-offset: 2px;
+}
+
+.btn-kib-modal-submit:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+/* Modal Preview Lampiran Dokumen */
+.kib-modal-dialog--preview {
+    max-width: 920px;
+    width: 94vw;
+    height: min(88dvh, 760px);
+    border-radius: var(--kib-modal-radius);
+    box-shadow: var(--kib-modal-shadow);
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    font-family: var(--kib-modal-font);
+}
+
+.kib-modal-dialog--preview .kib-modal-header {
+    padding: 14px 20px;
+    gap: 12px;
+    border-bottom: 1px solid var(--kib-modal-divider);
+    background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+}
+
+.kib-modal-dialog--preview .kib-modal-header-left {
+    min-width: 0;
+    flex: 1;
+}
+
+.kib-preview-title-wrap {
+    min-width: 0;
+}
+
+.kib-preview-filename {
+    margin: 2px 0 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-slate-500, #64748b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kib-preview-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn-kib-preview-tab,
+.btn-kib-preview-download {
+    height: 34px;
+    padding: 0 13px;
+    border-radius: 8px;
+    font-family: var(--kib-modal-font);
+    font-size: 12.5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
     transition: all 0.15s ease;
 }
 
-.btn-kib-modal-submit:hover {
-    background: #1d4ed8;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
-    transform: translateY(-1px);
+.btn-kib-preview-tab {
+    background: #ffffff;
+    color: var(--color-slate-700, #334155);
+    border: 1px solid var(--color-slate-300, #cbd5e1);
+}
+
+.btn-kib-preview-tab:hover {
+    background: #f8fafc;
+    border-color: var(--color-slate-400, #94a3b8);
+    color: var(--color-slate-900, #0f172a);
+}
+
+.btn-kib-preview-download {
+    background: var(--kib-modal-submit-bg);
+    color: #ffffff;
+    border: 1px solid var(--kib-modal-submit-bg);
+}
+
+.btn-kib-preview-download:hover {
+    background: var(--kib-modal-submit-hover);
+    border-color: var(--kib-modal-submit-hover);
+}
+
+.kib-preview-body {
+    padding: 0;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: #f1f5f9;
+    overflow: hidden;
+}
+
+.kib-preview-frame {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    border: none;
+    display: block;
+    background: #525659;
+}
+
+.kib-preview-image-wrap {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.kib-preview-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+    background: #ffffff;
+}
+
+.kib-preview-state {
+    margin: auto;
+    padding: 36px 24px;
+    max-width: 420px;
+    text-align: center;
+    color: var(--color-slate-600, #475569);
+}
+
+.kib-preview-state h4 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-slate-800, #1e293b);
+}
+
+.kib-preview-state p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--color-slate-500, #64748b);
+}
+
+.kib-preview-empty-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 14px;
+    border-radius: 14px;
+    background: var(--color-maroon-light, #fbeeed);
+    border: 1px solid #f5c2bf;
+    color: var(--color-maroon-primary, #852019);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+}
+
+.kib-preview-spin {
+    font-size: 30px;
+    color: var(--color-maroon-primary, #852019);
+    display: inline-block;
+    margin-bottom: 10px;
+    animation: kibPreviewSpin 0.9s linear infinite;
+}
+
+@keyframes kibPreviewSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* Responsif */
@@ -930,7 +1489,7 @@
 
     .kib-header-actions {
         width: 100%;
-        justify-content: flex-start;
+        justify-content: flex-end;
     }
 
     .kib-toolbar {
@@ -952,15 +1511,102 @@
         max-width: 100%;
     }
 
+    .kib-modal-dialog--form {
+        width: 92vw;
+        max-width: var(--kib-modal-max-width);
+    }
+
     .kib-modal-body {
         padding: 16px 14px;
+    }
+
+    .kib-modal-dialog--form .kib-modal-body {
+        padding: 20px;
+    }
+
+    .kib-form-grid {
+        row-gap: 16px;
+        column-gap: 14px;
     }
 
     .kib-modal-footer {
         padding: 12px 14px 14px;
     }
+}
+
+@media (max-width: 600px) {
+    .kib-modal-overlay {
+        padding: 12px;
+    }
+
+    .kib-modal-dialog--form {
+        width: 92vw;
+        max-width: 92vw;
+    }
+
+    .kib-modal-dialog--form .kib-modal-header {
+        padding: 16px 18px 14px;
+    }
+
+    .kib-modal-dialog--form .kib-modal-title {
+        font-size: 16.5px;
+    }
+
+    .kib-modal-dialog--form .kib-modal-body {
+        padding: 18px;
+    }
+
+    .kib-form-grid {
+        grid-template-columns: 1fr;
+        row-gap: 16px;
+        column-gap: 0;
+    }
+
+    .kib-modal-dialog--form .kib-form-group,
+    .kib-modal-dialog--form .kib-form-group--row-span-2 {
+        grid-column: 1 / -1 !important;
+        grid-row: auto !important;
+    }
+
+    .kib-modal-dialog--form .kib-input,
+    .kib-modal-dialog--form .kib-select,
+    .kib-modal-dialog--form .kib-upload-btn {
+        height: 40px;
+        font-size: 14px;
+    }
+
+    .kib-modal-dialog--form .kib-input--narrow {
+        width: 110px;
+    }
+
+    .kib-modal-submit-row {
+        margin-top: 22px;
+        padding-top: 16px;
+    }
 
     .btn-kib-modal-submit {
         width: 100%;
+        height: 44px;
+    }
+
+    .kib-modal-dialog--preview {
+        width: 96vw;
+        height: 86dvh;
+    }
+
+    .kib-modal-dialog--preview .kib-modal-header {
+        padding: 12px 14px;
+    }
+
+    .btn-kib-preview-tab span,
+    .btn-kib-preview-download span {
+        display: none;
+    }
+
+    .btn-kib-preview-tab,
+    .btn-kib-preview-download {
+        width: 34px;
+        padding: 0;
+        justify-content: center;
     }
 }

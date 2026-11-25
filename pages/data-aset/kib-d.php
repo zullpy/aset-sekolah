@@ -144,17 +144,17 @@ window.__kibEngine = new KibEngine({
         { key: 'lampiran', align: 'center' }
     ],
     formFields: [
-        { name: 'kode', label: 'Kode Aset', required: true, placeholder: 'Contoh: KIB-D/2021/001' },
-        { name: 'nama', label: 'Nama Aset', required: true, placeholder: 'Contoh: Jalan Paving Blok Halaman' },
-        { name: 'no_reg', label: 'No Registrasi', required: true, placeholder: 'Contoh: 000001' },
-        { name: 'konstruksi', label: 'Konstruksi', required: true, placeholder: 'Contoh: Paving Blok' },
-        { name: 'ukuran', label: 'Ukuran', required: true, placeholder: 'Contoh: 45 × 2 m' },
-        { name: 'luas', label: 'Luas (m²)', placeholder: 'Contoh: 90' },
-        { name: 'tahun', label: 'Tahun Perolehan', required: true, placeholder: 'Contoh: 2021' },
-        { name: 'dokumen', label: 'No. & Tanggal Dokumen', required: true, placeholder: 'Contoh: 600/012/Disdik/2021, 14 Juni 2021' },
-        { name: 'harga', label: 'Harga / Nilai Perolehan', required: true, placeholder: 'Contoh: Rp 28.500.000' },
-        { name: 'sumber', label: 'Sumber', required: true, type: 'select', options: ['APBD', 'BOS', 'DAK Fisik', 'Hibah', 'Swadaya', 'Lainnya'] },
-        { name: 'lampiran', label: 'Lampiran / Dokumen', type: 'file' }
+        { name: 'kode', label: 'Kode Aset', span: 4, readonly: true, placeholder: 'Otomatis' },
+        { name: 'nama', label: 'Nama Aset', span: 4, required: true, placeholder: 'Masukkan nama aset' },
+        { name: 'no_reg', label: 'No Registrasi', span: 4, readonly: true, placeholder: 'Otomatis' },
+        { name: 'konstruksi', label: 'Konstruksi', span: 5, required: true, placeholder: 'ex : Paving Blok / Semen' },
+        { name: 'ukuran', label: 'Ukuran (m)', span: 4, required: true, placeholder: 'ex : 15 × 0,5' },
+        { name: 'luas', label: 'Luas (m²)', span: 3, placeholder: 'ex : 5 / 4,5' },
+        { name: 'dokumen', label: 'No & Tanggal Dokumen', span: 5, required: true, placeholder: 'Masukkan nomor & tanggal dokumen' },
+        { name: 'tahun', label: 'Tahun Perolehan', span: 4, required: true, placeholder: 'ex : 2024' },
+        { name: 'sumber', label: 'Sumber', span: 3, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
+        { name: 'harga', label: 'Harga (Rp.)', span: 4, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
+        { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
     ],
     initialData: [
         {

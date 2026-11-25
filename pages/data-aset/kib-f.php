@@ -77,6 +77,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <th rowspan="2">Kode Aset</th>
                                 <th rowspan="2">Jenis Aset</th>
                                 <th rowspan="2">Nama Aset</th>
+                                <th rowspan="2" class="th-center">No Registrasi</th>
                                 <th colspan="2" class="th-center">Konstruksi Bangunan</th>
                                 <th rowspan="2" class="th-center">Luas (m²)</th>
                                 <th rowspan="2">Letak Bangunan</th>
@@ -143,6 +144,7 @@ window.__kibEngine = new KibEngine({
         { key: 'kode' },
         { key: 'jenis' },
         { key: 'nama' },
+        { key: 'no_reg', align: 'center' },
         { key: 'tingkat', align: 'center' },
         { key: 'beton', align: 'center' },
         { key: 'luas', align: 'center' },
@@ -169,22 +171,21 @@ window.__kibEngine = new KibEngine({
         { key: 'lampiran', align: 'center' }
     ],
     formFields: [
-        { name: 'kode', label: 'Kode Aset', required: true, placeholder: 'Contoh: KIB-F/2024/001' },
-        { name: 'jenis', label: 'Jenis Aset', required: true, type: 'select', options: ['Pembangunan', 'Renovasi', 'Penambahan Fasilitas', 'Lainnya'] },
-        { name: 'nama', label: 'Nama Aset / Proyek Konstruksi', required: true, placeholder: 'Contoh: Pembangunan Ruang Perpustakaan' },
-        { name: 'tingkat', label: 'Tingkat Bangunan', required: true, type: 'select', options: ['Tidak', 'Bertingkat'] },
-        { name: 'beton', label: 'Konstruksi Beton', required: true, type: 'select', options: ['Beton', 'Bukan Beton'] },
-        { name: 'luas', label: 'Luas (m²)', placeholder: 'Contoh: 56' },
-        { name: 'letak_bangunan', label: 'Letak / Lokasi Bangunan', required: true, placeholder: 'Contoh: Sebelah Barat Ruang Kelas 6' },
-        { name: 'dokumen', label: 'Tanggal & No. Dokumen', required: true, placeholder: 'Contoh: 600/045/Disdik/2024, 10 Maret 2024' },
-        { name: 'tgl_mulai', label: 'Tanggal Mulai Pengerjaan', required: true, placeholder: 'Contoh: 15 Maret 2024' },
-        { name: 'status_tanah', label: 'Status Tanah', required: true, type: 'select', options: ['Hak Pakai', 'Hak Milik', 'Hak Guna Bangunan', 'Lainnya'] },
-        { name: 'biaya', label: 'Biaya / Nilai Kontrak', required: true, placeholder: 'Contoh: Rp 120.000.000' },
-        { name: 'persen_fisik', label: 'Persentase Fisik (%)', required: true, placeholder: 'Contoh: 65%' },
-        { name: 'status_pengerjaan', label: 'Status Pengerjaan', required: true, placeholder: 'Contoh: Dalam Pengerjaan' },
-        { name: 'sumber', label: 'Sumber Dana', required: true, type: 'select', options: ['APBD', 'DAK Fisik', 'BOS', 'Hibah', 'Swadaya', 'Lainnya'] },
-        { name: 'keterangan', label: 'Keterangan', placeholder: 'Keterangan progress pengerjaan...' },
-        { name: 'lampiran', label: 'Lampiran / Dokumen Kontrak', type: 'file' }
+        { name: 'kode', label: 'Kode Aset', span: 4, readonly: true, placeholder: 'Otomatis' },
+        { name: 'jenis', label: 'Jenis Aset', span: 4, required: true, type: 'select', default: 'Alat Peraga', options: ['Alat Peraga', 'Pembangunan', 'Renovasi', 'Penambahan Fasilitas', 'Lainnya'] },
+        { name: 'nama', label: 'Nama Aset', span: 4, required: true, placeholder: 'Masukkan nama aset' },
+        { name: 'tingkat', label: 'Tingkat / Tidak', span: 4, required: true, type: 'select', default: 'Tingkat', options: ['Tingkat', 'Tidak Bertingkat'] },
+        { name: 'beton', label: 'Beton / Tidak', span: 4, required: true, type: 'select', default: 'Beton', options: ['Beton', 'Tidak Beton'] },
+        { name: 'luas', label: 'Luas (m²)', span: 4, placeholder: 'ex : 5 / 4,5' },
+        { name: 'letak_bangunan', label: 'Letak Bangunan', span: 4, required: true, placeholder: 'Masukkan lokasi aset' },
+        { name: 'dokumen', label: 'Tanggal & No Dokumen', span: 5, required: true, placeholder: 'Masukkan tanggal & nomor dokumen' },
+        { name: 'tgl_mulai', label: 'Tanggal Mulai', span: 3, type: 'date', required: true, placeholder: 'dd/mm/yy' },
+        { name: 'status_tanah', label: 'Status Tanah', span: 4, required: true, type: 'select', default: 'Hak Guna Bangunan', options: ['Hak Milik', 'Hak Guna Bangunan', 'Hak Pakai', 'Hak Pengelolaan'] },
+        { name: 'sumber', label: 'Sumber', span: 4, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
+        { name: 'biaya', label: 'Biaya (Rp.)', span: 4, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
+        { name: 'persen_fisik', label: 'Persentase Fisik', span: 4, required: true, placeholder: 'ex : 90%' },
+        { name: 'keterangan', label: 'Keterangan', span: 8, rowSpan: 2, type: 'textarea', placeholder: 'Masukkan spesifikasi aset' },
+        { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
     ],
     initialData: [
         {
@@ -192,6 +193,7 @@ window.__kibEngine = new KibEngine({
             kode: 'KIB-F/2024/001',
             jenis: 'Pembangunan',
             nama: 'Pembangunan Ruang Perpustakaan',
+            no_reg: '000001',
             tingkat: 'Tidak',
             beton: 'Beton',
             luas: '56',
@@ -211,6 +213,7 @@ window.__kibEngine = new KibEngine({
             kode: 'KIB-F/2023/002',
             jenis: 'Pembangunan',
             nama: 'Pembangunan Toilet Siswa (4 Pintu)',
+            no_reg: '000002',
             tingkat: 'Tidak',
             beton: 'Beton',
             luas: '24',
@@ -230,6 +233,7 @@ window.__kibEngine = new KibEngine({
             kode: 'KIB-F/2024/003',
             jenis: 'Renovasi',
             nama: 'Renovasi Benteng Pagar Keliling',
+            no_reg: '000003',
             tingkat: 'Tidak',
             beton: 'Beton',
             luas: '-',

@@ -146,18 +146,18 @@ window.__kibEngine = new KibEngine({
         { key: 'lampiran', align: 'center' }
     ],
     formFields: [
-        { name: 'kode', label: 'Kode Aset', required: true, placeholder: 'Contoh: KIB-A/1997/001' },
-        { name: 'nama', label: 'Nama Aset', required: true, placeholder: 'Contoh: Tanah Bangunan' },
-        { name: 'no_reg', label: 'No Registrasi', required: true, placeholder: 'Contoh: 000001' },
-        { name: 'luas', label: 'Luas (m²)', required: true, placeholder: 'Contoh: 1.500' },
-        { name: 'tahun', label: 'Tahun Perolehan', required: true, placeholder: 'Contoh: 1997' },
-        { name: 'lokasi', label: 'Lokasi Aset', required: true, placeholder: 'Contoh: Kp. Cilaku 012/004 Ds. Nangerang' },
-        { name: 'status_tanah', label: 'Status Tanah', required: true, type: 'select', options: ['Hak Pakai', 'Hak Milik', 'Hak Guna Bangunan', 'Lainnya'] },
-        { name: 'sertifikat', label: 'Sertifikat', required: true, placeholder: 'Contoh: 00021/Nangerang/1997' },
-        { name: 'penggunaan', label: 'Penggunaan', required: true, placeholder: 'Contoh: Bangunan Sekolah SDN Budi Karya' },
-        { name: 'sumber', label: 'Sumber', required: true, type: 'select', options: ['APBD', 'BOS', 'Hibah', 'DAK Fisik', 'Swadaya', 'Lainnya'] },
-        { name: 'harga', label: 'Harga / Nilai Perolehan', required: true, placeholder: 'Contoh: Rp 250.000.000' },
-        { name: 'lampiran', label: 'Lampiran / Dokumen', type: 'file' }
+        { name: 'kode', label: 'Kode Aset', span: 4, readonly: true, placeholder: 'Otomatis' },
+        { name: 'nama', label: 'Nama Aset', span: 4, required: true, placeholder: 'Masukkan nama aset' },
+        { name: 'no_reg', label: 'No Registrasi', span: 4, readonly: true, placeholder: 'Otomatis' },
+        { name: 'luas', label: 'Luas (m²)', span: 2, required: true, placeholder: 'ex : 5 / 4,5' },
+        { name: 'tahun', label: 'Tahun Perolehan', span: 3, required: true, placeholder: 'ex : 2024' },
+        { name: 'lokasi', label: 'Lokasi Aset', span: 7, required: true, placeholder: 'Masukkan lokasi aset' },
+        { name: 'status_tanah', label: 'Status Tanah', span: 4, required: true, type: 'select', default: 'Hak Guna Bangunan', options: ['Hak Milik', 'Hak Guna Bangunan', 'Hak Pakai', 'Hak Pengelolaan'] },
+        { name: 'sertifikat', label: 'No Sertifikat', span: 4, required: true, placeholder: 'Masukkan nomor sertifikat' },
+        { name: 'penggunaan', label: 'Penggunaan', span: 4, required: true, placeholder: 'Masukkan jenis penggunaan' },
+        { name: 'sumber', label: 'Sumber', span: 4, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
+        { name: 'harga', label: 'Harga (Rp.)', span: 4, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
+        { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
     ],
     initialData: [
         {

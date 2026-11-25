@@ -149,19 +149,19 @@ window.__kibEngine = new KibEngine({
         { key: 'lampiran', align: 'center' }
     ],
     formFields: [
-        { name: 'kode', label: 'Kode Aset', required: true, placeholder: 'Contoh: KIB-B/2024/001' },
-        { name: 'jenis', label: 'Jenis Aset', required: true, type: 'select', options: ['Elektronik', 'Meubelair', 'Alat Peraga', 'Mesin', 'Kendaraan', 'Lainnya'] },
-        { name: 'nama', label: 'Nama Aset', required: true, placeholder: 'Contoh: Laptop ASUS Expertbook' },
-        { name: 'no_reg', label: 'No Registrasi', required: true, placeholder: 'Contoh: 000001' },
-        { name: 'merk', label: 'Merk', required: true, placeholder: 'Contoh: ASUS B1400' },
-        { name: 'spesifikasi', label: 'Spesifikasi', required: true, placeholder: 'Contoh: 14 Inchi / Core i5' },
-        { name: 'bahan', label: 'Bahan', required: true, placeholder: 'Contoh: Plastik / Logam / Kayu' },
-        { name: 'no_pabrik', label: 'No Pabrik / Serial', placeholder: 'Contoh: SN-ASUS-98124' },
-        { name: 'tahun', label: 'Tahun Perolehan', required: true, placeholder: 'Contoh: 2024' },
-        { name: 'jumlah', label: 'Jumlah / Satuan', required: true, placeholder: 'Contoh: 1 Unit / 28 Buah' },
-        { name: 'harga', label: 'Harga / Nilai Perolehan', required: true, placeholder: 'Contoh: Rp 8.500.000' },
-        { name: 'sumber', label: 'Sumber', required: true, type: 'select', options: ['BOS', 'APBD', 'Hibah', 'DAK Fisik', 'Swadaya', 'Lainnya'] },
-        { name: 'lampiran', label: 'Lampiran / Dokumen', type: 'file' }
+        { name: 'kode', label: 'Kode Aset', span: 4, readonly: true, placeholder: 'Otomatis' },
+        { name: 'jenis', label: 'Jenis Aset', span: 4, required: true, type: 'select', default: 'Alat Peraga', options: ['Alat Peraga', 'Elektronik', 'Meubelair', 'Mesin', 'Kendaraan', 'Lainnya'] },
+        { name: 'nama', label: 'Nama Aset', span: 4, required: true, placeholder: 'Masukkan nama aset' },
+        { name: 'no_reg', label: 'No Registrasi', span: 4, readonly: true, placeholder: 'Otomatis' },
+        { name: 'merk', label: 'Merk', span: 4, required: true, placeholder: 'Masukkan merk / tipe aset' },
+        { name: 'spesifikasi', label: 'Spesifikasi', span: 4, required: true, placeholder: 'Masukkan spesifikasi aset' },
+        { name: 'bahan', label: 'Bahan', span: 4, required: true, placeholder: 'ex : Kayu / Plastik' },
+        { name: 'no_pabrik', label: 'No Pabrik / Serial', span: 4, placeholder: 'Masukkan nomor serial' },
+        { name: 'tahun', label: 'Tahun Perolehan', span: 4, required: true, placeholder: 'ex : 2024' },
+        { name: 'sumber', label: 'Sumber', span: 4, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
+        { name: 'harga', label: 'Harga (Rp.)', span: 5, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
+        { name: 'jumlah', label: 'Jumlah', span: 3, type: 'number', narrow: true, default: 1, min: 1, required: true },
+        { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
     ],
     initialData: [
         {

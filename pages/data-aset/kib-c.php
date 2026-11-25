@@ -146,18 +146,18 @@ window.__kibEngine = new KibEngine({
         { key: 'lampiran', align: 'center' }
     ],
     formFields: [
-        { name: 'kode', label: 'Kode Aset', required: true, placeholder: 'Contoh: KIB-C/1997/001' },
-        { name: 'nama', label: 'Nama Aset / Gedung', required: true, placeholder: 'Contoh: Ruang Kelas 1' },
-        { name: 'no_reg', label: 'No Registrasi', required: true, placeholder: 'Contoh: 000001' },
-        { name: 'konstruksi', label: 'Konstruksi', required: true, placeholder: 'Contoh: Beton' },
-        { name: 'luas', label: 'Luas (m²)', required: true, placeholder: 'Contoh: 56' },
-        { name: 'lokasi', label: 'Lokasi Aset', required: true, placeholder: 'Contoh: Ds. Nangerang Kec. Cigalontang' },
-        { name: 'tgl_izin', label: 'Tanggal Perizinan', required: true, placeholder: 'Contoh: 12 Mei 1997' },
-        { name: 'status_tanah', label: 'Status Tanah', required: true, type: 'select', options: ['Hak Pakai', 'Hak Milik', 'Hak Guna Bangunan', 'Lainnya'] },
-        { name: 'tahun', label: 'Tahun Perolehan', required: true, placeholder: 'Contoh: 1997' },
-        { name: 'harga', label: 'Harga / Nilai Bangunan', required: true, placeholder: 'Contoh: Rp 85.000.000' },
-        { name: 'sumber', label: 'Sumber', required: true, type: 'select', options: ['APBD', 'BOS', 'DAK Fisik', 'Hibah', 'Swadaya', 'Lainnya'] },
-        { name: 'lampiran', label: 'Lampiran / Dokumen', type: 'file' }
+        { name: 'kode', label: 'Kode Aset', span: 4, readonly: true, placeholder: 'Otomatis' },
+        { name: 'nama', label: 'Nama Aset', span: 4, required: true, placeholder: 'Masukkan nama aset' },
+        { name: 'no_reg', label: 'No Registrasi', span: 4, readonly: true, placeholder: 'Otomatis' },
+        { name: 'konstruksi', label: 'Konstruksi', span: 4, required: true, placeholder: 'ex : Beton' },
+        { name: 'luas', label: 'Luas (m²)', span: 2, required: true, placeholder: 'ex : 5 / 4,5' },
+        { name: 'lokasi', label: 'Lokasi Aset', span: 6, required: true, placeholder: 'Masukkan lokasi aset' },
+        { name: 'tgl_izin', label: 'No & Tanggal Perizinan', span: 5, required: true, placeholder: 'Masukkan nomor & tanggal perizinan' },
+        { name: 'status_tanah', label: 'Status Tanah', span: 4, required: true, type: 'select', default: 'Hak Guna Bangunan', options: ['Hak Milik', 'Hak Guna Bangunan', 'Hak Pakai', 'Hak Pengelolaan'] },
+        { name: 'tahun', label: 'Tahun Perolehan', span: 3, required: true, placeholder: 'ex : 2024' },
+        { name: 'sumber', label: 'Sumber', span: 4, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
+        { name: 'harga', label: 'Harga (Rp.)', span: 4, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
+        { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
     ],
     initialData: [
         {

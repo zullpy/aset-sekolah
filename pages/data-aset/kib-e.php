@@ -154,20 +154,20 @@ window.__kibEngine = new KibEngine({
         { key: 'lampiran', align: 'center' }
     ],
     formFields: [
-        { name: 'kode', label: 'Kode Aset', required: true, placeholder: 'Contoh: KIB-E/2023/001' },
-        { name: 'jenis', label: 'Jenis Buku', required: true, type: 'select', options: ['Buku Teks Utama', 'Buku Teks Pendamping', 'Buku Pengayaan', 'Buku Panduan Pendidik', 'Buku Referensi', 'Lainnya'] },
-        { name: 'nama', label: 'Nama Buku', required: true, placeholder: 'Contoh: Bahasa Indonesia: Aku Bisa!' },
-        { name: 'no_reg', label: 'No Registrasi', required: true, placeholder: 'Contoh: 000001' },
-        { name: 'spesifikasi_judul', label: 'Judul Lengkap Buku', required: true, placeholder: 'Contoh: Bahasa Indonesia: Aku Bisa! Kelas I' },
-        { name: 'spesifikasi_pengarang', label: 'Pengarang / Penulis', required: true, placeholder: 'Contoh: Sofie Dewayani' },
-        { name: 'spesifikasi_penerbit', label: 'Penerbit', required: true, placeholder: 'Contoh: Pusat Perbukuan Kemendikbud' },
-        { name: 'spesifikasi_tahun', label: 'Tahun Terbit', required: true, placeholder: 'Contoh: 2023' },
-        { name: 'tahun', label: 'Tahun Perolehan', required: true, placeholder: 'Contoh: 2023' },
-        { name: 'jumlah', label: 'Jumlah (Eks/Buku)', required: true, placeholder: 'Contoh: 45 Eks' },
-        { name: 'harga_satuan', label: 'Harga Satuan', required: true, placeholder: 'Contoh: Rp 22.000' },
-        { name: 'harga_total', label: 'Harga Total', required: true, placeholder: 'Contoh: Rp 990.000' },
-        { name: 'sumber', label: 'Sumber', required: true, type: 'select', options: ['BOS', 'APBD', 'Hibah', 'DAK Fisik', 'Swadaya', 'Lainnya'] },
-        { name: 'lampiran', label: 'Lampiran / Dokumen', type: 'file' }
+        { name: 'kode', label: 'Kode Aset', span: 4, readonly: true, placeholder: 'Otomatis' },
+        { name: 'jenis', label: 'Jenis Aset', span: 4, required: true, type: 'select', default: 'Alat Peraga', options: ['Alat Peraga', 'Buku Teks Utama', 'Buku Teks Pendamping', 'Buku Pengayaan', 'Buku Panduan Pendidik', 'Buku Referensi', 'Lainnya'] },
+        { name: 'nama', label: 'Nama Buku', span: 4, required: true, placeholder: 'Masukkan nama buku' },
+        { name: 'no_reg', label: 'No Registrasi', span: 4, readonly: true, placeholder: 'Otomatis' },
+        { name: 'spesifikasi_judul', label: 'Judul Buku', span: 4, required: true, placeholder: 'Masukkan judul buku' },
+        { name: 'spesifikasi_pengarang', label: 'Penulis', span: 4, required: true, placeholder: 'Masukkan nama penulis' },
+        { name: 'spesifikasi_penerbit', label: 'Penerbit', span: 4, required: true, placeholder: 'Masukkan penerbit buku' },
+        { name: 'spesifikasi_tahun', label: 'Tahun Terbit', span: 4, required: true, placeholder: 'ex : 2024' },
+        { name: 'sumber', label: 'Sumber', span: 4, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
+        { name: 'tahun', label: 'Tahun Perolehan', span: 4, required: true, placeholder: 'ex : 2024' },
+        { name: 'jumlah', label: 'Jumlah', span: 4, type: 'number', narrow: true, default: 1, min: 1, required: true },
+        { name: 'harga_satuan', label: 'Harga Satuan (Rp.)', span: 4, type: 'currency', required: true, placeholder: 'ex : 100.000' },
+        { name: 'harga_total', label: 'Harga Total (Rp.)', span: 4, type: 'currency', readonly: true, computed: 'jumlah * harga_satuan', placeholder: 'Otomatis' },
+        { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
     ],
     initialData: [
         {
