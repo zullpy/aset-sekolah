@@ -301,13 +301,13 @@
 /* Maintenance Tiles */
 .dash-maint-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
 }
 
 .dash-maint-tile {
     border-radius: 10px;
-    padding: 16px 14px;
+    padding: 14px 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -372,6 +372,15 @@
 .dash-maint-tile--orange .dash-maint-icon {
     background: #ffedd5;
     color: #ea580c;
+}
+
+.dash-maint-tile--green {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+.dash-maint-tile--green .dash-maint-icon {
+    background: #dcfce7;
+    color: #16a34a;
 }
 
 .dash-maint-tile--purple {

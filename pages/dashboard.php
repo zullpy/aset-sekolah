@@ -50,7 +50,10 @@ $userRoleDisplay = ucfirst($_SESSION['role'] ?? 'Administrator');
             <!-- Bagian 3: Pemeliharaan & Aktivitas -->
             <div class="dash-bottom-grid">
                 <div class="dash-card">
-                    <h2 class="dash-card-title">Ringkasan Pemeliharaan</h2>
+                    <div class="dash-card-title-row">
+                        <h2 class="dash-card-title">Ringkasan Pemeliharaan</h2>
+                        <a href="<?php echo htmlspecialchars($pagesPath . 'pemeliharaan.php'); ?>" class="dash-link-all">Lihat Semua</a>
+                    </div>
                     <div class="dash-maint-grid" id="maintCards"></div>
                 </div>
                 <div class="dash-card">

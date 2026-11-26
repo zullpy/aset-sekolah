@@ -506,6 +506,36 @@ try {
                 ];
             }
 
+            // Ambil ringkasan pemeliharaan dari tabel pemeliharaan (berdasarkan SUM jumlah_aktif per status)
+            $pemeliharaanSummary = [
+                'perlu_pemeliharaan'      => 0,
+                'sedang_ditindak_lanjut'  => 0,
+                'selesai_ditindak_lanjut' => 0,
+                'digunakan_kembali'       => 0,
+                'disimpan'                => 0,
+            ];
+            $stmtPml = $pdo->query("SELECT status, COALESCE(SUM(jumlah_aktif), 0) AS total_unit FROM pemeliharaan GROUP BY status");
+            while ($pm = $stmtPml->fetch(PDO::FETCH_ASSOC)) {
+                $qty = (int) $pm['total_unit'];
+                switch ($pm['status']) {
+                    case 'Perlu pemeliharaan':
+                        $pemeliharaanSummary['perlu_pemeliharaan'] = $qty;
+                        break;
+                    case 'Sedang ditindak lanjut':
+                        $pemeliharaanSummary['sedang_ditindak_lanjut'] = $qty;
+                        break;
+                    case 'Selesai ditindak lanjut':
+                        $pemeliharaanSummary['selesai_ditindak_lanjut'] = $qty;
+                        break;
+                    case 'Digunakan kembali':
+                        $pemeliharaanSummary['digunakan_kembali'] = $qty;
+                        break;
+                    case 'Disimpan':
+                        $pemeliharaanSummary['disimpan'] = $qty;
+                        break;
+                }
+            }
+
             // Ambil 5 aktivitas terbaru untuk ringkasan Dashboard
             $stmtAct = $pdo->query("SELECT id, teks, pelaku, waktu, warna, created_at FROM kib_activities ORDER BY id DESC LIMIT 5");
             $activities = $stmtAct->fetchAll(PDO::FETCH_ASSOC);
@@ -517,6 +547,7 @@ try {
                 'totalAset'           => $totalUnitAll,
                 'monitoringSummary'   => $monitoringSummary,
                 'monitoringLocations' => $monitoringLocations,
+                'pemeliharaanSummary' => $pemeliharaanSummary,
                 'activities'          => $activities,
                 'totalActivities'     => $totalActivities,
             ]);

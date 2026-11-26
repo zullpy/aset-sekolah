@@ -32,10 +32,11 @@ const DashboardData = {
     ],
 
     pemeliharaan: {
-        perlu: 55,
-        sedang: 10,
-        selesai: 9,
-        disimpan: 4
+        perlu_pemeliharaan: 0,
+        sedang_ditindak_lanjut: 0,
+        selesai_ditindak_lanjut: 0,
+        digunakan_kembali: 0,
+        disimpan: 0
     },
 
     aktivitas: []
@@ -48,6 +49,7 @@ const DashboardData = {
     let liveCategories = null;
     let liveMonitoringSummary = null;
     let liveLocations = null;
+    let livePemeliharaanSummary = null;
     let liveActivities = null;
 
     function escapeHtml(str) {
@@ -119,6 +121,9 @@ const DashboardData = {
                 }
                 if (Array.isArray(res.data.monitoringLocations) && res.data.monitoringLocations.length > 0) {
                     liveLocations = res.data.monitoringLocations;
+                }
+                if (res.data.pemeliharaanSummary && typeof res.data.pemeliharaanSummary === 'object') {
+                    livePemeliharaanSummary = res.data.pemeliharaanSummary;
                 }
                 if (Array.isArray(res.data.activities)) {
                     liveActivities = res.data.activities;
@@ -412,30 +417,37 @@ const DashboardData = {
     }
 
     // =====================================================================
-    // Bagian 3A: Pemeliharaan Tiles
+    // Bagian 3A: Pemeliharaan Tiles (Terintegrasi Data Pemeliharaan)
     // =====================================================================
+    var pmlSummary = livePemeliharaanSummary || D.pemeliharaan;
     var maintItems = [
         {
             label: 'Perlu Pemeliharaan',
-            value: D.pemeliharaan.perlu,
+            value: Number(pmlSummary.perlu_pemeliharaan ?? 0),
             color: 'red',
             icon: 'ph-bold ph-warning-octagon'
         },
         {
             label: 'Sedang Ditindak Lanjut',
-            value: D.pemeliharaan.sedang,
+            value: Number(pmlSummary.sedang_ditindak_lanjut ?? 0),
             color: 'blue',
             icon: 'ph-bold ph-gear'
         },
         {
             label: 'Selesai Ditindak Lanjut',
-            value: D.pemeliharaan.selesai,
+            value: Number(pmlSummary.selesai_ditindak_lanjut ?? 0),
             color: 'orange',
             icon: 'ph-bold ph-wrench'
         },
         {
+            label: 'Digunakan Kembali',
+            value: Number(pmlSummary.digunakan_kembali ?? 0),
+            color: 'green',
+            icon: 'ph-bold ph-arrows-clockwise'
+        },
+        {
             label: 'Disimpan',
-            value: D.pemeliharaan.disimpan,
+            value: Number(pmlSummary.disimpan ?? 0),
             color: 'purple',
             icon: 'ph-bold ph-archive-box'
         }
@@ -447,7 +459,7 @@ const DashboardData = {
             return '<div class="dash-maint-tile dash-maint-tile--' + item.color + '">' +
                 '<div class="dash-maint-icon"><i class="' + item.icon + '"></i></div>' +
                 '<div class="dash-maint-label">' + item.label + '</div>' +
-                '<div class="dash-maint-value">' + item.value + '</div>' +
+                '<div class="dash-maint-value">' + item.value.toLocaleString('id-ID') + '</div>' +
                 '<div class="dash-maint-unit">aset</div>' +
             '</div>';
         }).join('');
