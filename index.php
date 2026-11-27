@@ -21,18 +21,9 @@ if ($docRoot !== '' && str_starts_with($projectDir, $docRoot)) {
 }
 
 $assetsPath     = 'assets/';
-$logoLocalFile  = __DIR__ . '/assets/logo.webp';
-$bgLocalFile    = __DIR__ . '/assets/sekolah.webp';
-
-// Gambar Logo Sekolah
-$logoSrc = file_exists($logoLocalFile)
-    ? ('data:image/webp;base64,' . base64_encode(file_get_contents($logoLocalFile)))
-    : ($appUrlPath . 'assets/logo.webp');
-
-// Gambar Background Sekolah
-$bgSchoolUrl = file_exists($bgLocalFile)
-    ? ('data:image/webp;base64,' . base64_encode(file_get_contents($bgLocalFile)))
-    : ($appUrlPath . 'assets/sekolah.webp');
+$logoUrl        = $assetsPath . 'logo.webp';
+$bgSchoolUrl    = $assetsPath . 'sekolah.webp';
+$logoSrc        = $logoUrl;
 
 // Target URL login
 $loginAdminUrl    = file_exists(__DIR__ . '/pages/login.php') ? 'pages/login.php?role=administrator' : 'login.php?role=administrator';
@@ -42,7 +33,7 @@ $loginOperatorUrl = file_exists(__DIR__ . '/pages/login.php') ? 'pages/login.php
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Pilih peran untuk masuk ke Sistem Inventaris Aset Sekolah SDN Budi Karya">
     <title>Pilih Peran - Sistem Informasi Inventaris Aset SDN Budi Karya</title>
 
@@ -50,15 +41,31 @@ $loginOperatorUrl = file_exists(__DIR__ . '/pages/login.php') ? 'pages/login.php
     <link rel="icon" type="image/webp" href="<?php echo htmlspecialchars($logoSrc); ?>">
     <link rel="apple-touch-icon" href="<?php echo htmlspecialchars($logoSrc); ?>">
 
-    <!-- Google Fonts & Phosphor Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css"/>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"/>
+    <!-- Preload LCP Resources & Primary Fonts -->
+    <link rel="preload" as="image" href="<?php echo htmlspecialchars($logoSrc); ?>" fetchpriority="high">
+    <link rel="preload" as="image" href="<?php echo htmlspecialchars($bgSchoolUrl); ?>" fetchpriority="high">
+    <link rel="preload" as="font" type="font/woff2" href="<?php echo htmlspecialchars($assetsPath . 'fonts/plus-jakarta-sans-600.woff2'); ?>" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="<?php echo htmlspecialchars($assetsPath . 'fonts/plus-jakarta-sans-700.woff2'); ?>" crossorigin>
 
-    <!-- Stylesheet Khusus Index / Role Selection -->
-    <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/index.css'); ?>">
+    <!-- Inline Critical Fonts & Index CSS (Zero Render-Blocking Stylesheet) -->
+    <style>
+        <?php
+        $fontsCssFile = __DIR__ . '/assets/css/fonts.css';
+        $indexCssFile = __DIR__ . '/assets/css/index.css';
+        if (file_exists($fontsCssFile)) {
+            // Sesuaikan relative path font ketika di-inline pada root index.php
+            echo str_replace('../fonts/', $assetsPath . 'fonts/', file_get_contents($fontsCssFile));
+        }
+        if (file_exists($indexCssFile)) {
+            // Sesuaikan relative path image ketika di-inline pada root index.php
+            echo str_replace('../sekolah.webp', $assetsPath . 'sekolah.webp', file_get_contents($indexCssFile));
+        }
+        ?>
+    </style>
+
+    <!-- Asynchronous Phosphor Icons (Non-blocking) -->
+    <link rel="preload" href="<?php echo htmlspecialchars($assetsPath . 'css/phosphor.css'); ?>" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="<?php echo htmlspecialchars($assetsPath . 'css/phosphor.css'); ?>"></noscript>
 </head>
 <body>
 
@@ -67,7 +74,7 @@ $loginOperatorUrl = file_exists(__DIR__ . '/pages/login.php') ? 'pages/login.php
         <!-- Logo & Header Branding -->
         <header class="role-brand-section">
             <div class="role-logo-wrapper">
-                <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="Logo SDN Budi Karya" class="role-logo-img" width="76" height="76" loading="eager">
+                <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="Logo SDN Budi Karya" class="role-logo-img" width="76" height="76" fetchpriority="high" decoding="async">
             </div>
             <h1 class="role-school-title">SDN Budikarya</h1>
             <p class="role-subtitle">Pilih peran untuk masuk ke Sistem Inventaris Aset Sekolah</p>

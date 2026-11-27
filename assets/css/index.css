@@ -27,6 +27,7 @@
 html, body {
     width: 100%;
     min-height: 100vh;
+    overflow-x: hidden;
     font-family: var(--font-main);
     color: #ffffff;
     -webkit-font-smoothing: antialiased;
@@ -225,6 +226,7 @@ html, body {
     justify-content: center;
     gap: 8px;
     width: 100%;
+    min-height: 44px;
     padding: 10px 16px;
     border-radius: 10px;
     background: var(--color-slate-100);
@@ -242,6 +244,10 @@ html, body {
 .role-card:hover .role-card-action {
     background: var(--color-maroon-primary);
     color: #ffffff;
+}
+
+.role-card:active {
+    transform: scale(0.98);
 }
 
 .role-card:hover .role-card-action i {
@@ -300,5 +306,49 @@ html, body {
     .role-card-desc {
         font-size: 12.5px;
         margin-bottom: 16px;
+    }
+
+    .role-card-action {
+        min-height: 44px;
+        font-size: 14px;
+        padding: 12px 16px;
+    }
+}
+
+@media (max-width: 360px) {
+    .role-page-wrapper {
+        padding: 16px 12px;
+    }
+
+    .role-brand-section {
+        margin-bottom: 24px;
+    }
+
+    .role-logo-wrapper {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        margin-bottom: 12px;
+    }
+
+    .role-school-title {
+        font-size: 18px;
+    }
+
+    .role-card {
+        padding: 18px 14px;
+    }
+
+    .role-card-icon-box {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+    .role-card-action {
+        min-height: 44px;
+        font-size: 13px;
+        padding: 10px 12px;
     }
 }

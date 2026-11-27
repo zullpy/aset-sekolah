@@ -88,19 +88,9 @@ if ($isOperatorRole) {
     $operatorKelasId = detect_operator_kelas_id($_SESSION);
 }
 
-// Tentukan data URI agar logo selalu tampil seketika tanpa error path / 404
-$logoLocalFile = dirname(__DIR__) . '/assets/logo.webp';
-$logoSrc       = file_exists($logoLocalFile) 
-    ? ('data:image/webp;base64,' . base64_encode(file_get_contents($logoLocalFile))) 
-    : $logoUrl;
+$logoUrl    = $appUrlPath . 'assets/logo.webp';
+$logoSrc    = $logoUrl;
 ?>
-
-<!-- Phosphor Icons (jika belum dimuat di header) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css"/>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"/>
 
 <!-- Sidebar Stylesheet -->
 <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/sidebar.css'); ?>">

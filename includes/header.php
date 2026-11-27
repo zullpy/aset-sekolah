@@ -45,12 +45,7 @@ if (!isset($assetsPath)) {
     }
 }
 $logoUrl    = $appUrlPath . 'assets/logo.webp';
-
-// Tentukan data URI agar logo selalu tampil seketika tanpa error path / 404
-$logoLocalFile = dirname(__DIR__) . '/assets/logo.webp';
-$logoSrc       = file_exists($logoLocalFile) 
-    ? ('data:image/webp;base64,' . base64_encode(file_get_contents($logoLocalFile))) 
-    : $logoUrl;
+$logoSrc    = $logoUrl;
 
 // Informasi Sekolah & Aplikasi
 $schoolName = 'SDN Budi Karya';
@@ -76,7 +71,7 @@ $tanggalStr = date('j') . ' ' . ($bulanArray[(int)date('n')] ?? date('M')) . ' '
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Sistem Informasi Inventaris dan Manajemen Aset Sekolah SDN Budi Karya">
     <meta name="csrf-token" content="<?php echo htmlspecialchars(get_csrf_token()); ?>">
     <title><?php echo htmlspecialchars($pageTitle); ?></title>
@@ -85,12 +80,14 @@ $tanggalStr = date('j') . ' ' . ($bulanArray[(int)date('n')] ?? date('M')) . ' '
     <link rel="icon" type="image/webp" href="<?php echo htmlspecialchars($logoSrc); ?>">
     <link rel="apple-touch-icon" href="<?php echo htmlspecialchars($logoSrc); ?>">
 
-    <!-- Google Fonts & Phosphor Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css"/>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"/>
+    <!-- Preload LCP Resources & Primary Fonts -->
+    <link rel="preload" as="image" href="<?php echo htmlspecialchars($logoSrc); ?>" fetchpriority="high">
+    <link rel="preload" as="font" type="font/woff2" href="<?php echo htmlspecialchars($assetsPath . 'fonts/plus-jakarta-sans-600.woff2'); ?>" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="<?php echo htmlspecialchars($assetsPath . 'fonts/plus-jakarta-sans-700.woff2'); ?>" crossorigin>
+
+    <!-- Self-Hosted Fonts & Local Phosphor Icons -->
+    <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/fonts.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/phosphor.css'); ?>">
 
     <!-- Header & Layout Stylesheet & SweetAlert2 Theme -->
     <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/header.css?v=' . filemtime(dirname(__DIR__) . '/assets/css/header.css')); ?>">
@@ -131,9 +128,9 @@ $tanggalStr = date('j') . ' ' . ($bulanArray[(int)date('n')] ?? date('M')) . ' '
     </div>
 </header>
 
-<!-- SweetAlert2 Library & Custom Config -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?php echo htmlspecialchars($assetsPath . 'js/sweetalert-init.js'); ?>"></script>
+<!-- SweetAlert2 Library & Custom Config (Deferred to avoid blocking main thread) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+<script src="<?php echo htmlspecialchars($assetsPath . 'js/sweetalert-init.js'); ?>" defer></script>
 
 <!-- Header & Navigation Interactions -->
 <script src="<?php echo htmlspecialchars($assetsPath . 'js/header.js'); ?>" defer></script>

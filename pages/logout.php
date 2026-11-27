@@ -54,21 +54,17 @@ if (is_string($queryToken) && $queryToken !== '' && verify_csrf_token($queryToke
 // Fallback halaman konfirmasi (non-JS / akses URL langsung) agar tetap terlindung dari Logout CSRF
 $currentUser = current_user();
 $displayName = $currentUser['nama_lengkap'] ?? $currentUser['username'] ?? 'Pengguna';
-$logoLocalFile = dirname(__DIR__) . '/assets/logo.webp';
-$logoSrc = file_exists($logoLocalFile)
-    ? ('data:image/webp;base64,' . base64_encode(file_get_contents($logoLocalFile)))
-    : '../assets/logo.webp';
+$logoSrc = '../assets/logo.webp';
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Konfirmasi Keluar - SDN Budikarya</title>
     <link rel="icon" type="image/webp" href="<?php echo htmlspecialchars($logoSrc); ?>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="font" type="font/woff2" href="../assets/fonts/plus-jakarta-sans-600.woff2" crossorigin>
+    <link rel="stylesheet" type="text/css" href="../assets/css/fonts.css">
     <style>
         * { box-sizing: border-box; }
         body {

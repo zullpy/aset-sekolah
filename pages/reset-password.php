@@ -22,18 +22,9 @@ if ($docRoot !== '' && str_starts_with($projectDir, $docRoot)) {
 }
 
 $assetsPath     = '../assets/';
-$logoLocalFile  = dirname(__DIR__) . '/assets/logo.webp';
-$bgLocalFile    = dirname(__DIR__) . '/assets/sekolah.webp';
-
-// Gambar Logo Sekolah
-$logoSrc = file_exists($logoLocalFile)
-    ? ('data:image/webp;base64,' . base64_encode(file_get_contents($logoLocalFile)))
-    : ($appUrlPath . 'assets/logo.webp');
-
-// Gambar Background Sekolah
-$bgSchoolUrl = file_exists($bgLocalFile)
-    ? ('data:image/webp;base64,' . base64_encode(file_get_contents($bgLocalFile)))
-    : ($appUrlPath . 'assets/sekolah.webp');
+$logoUrl        = $assetsPath . 'logo.webp';
+$bgSchoolUrl    = $assetsPath . 'sekolah.webp';
+$logoSrc        = $logoUrl;
 
 $token = trim($_GET['token'] ?? $_POST['token'] ?? '');
 $tokenStatus = 'invalid'; // 'valid', 'expired', 'invalid', 'missing'
@@ -199,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Atur Ulang Kata Sandi - Sistem Informasi Inventaris Aset SDN Budi Karya">
     <meta name="csrf-token" content="<?php echo htmlspecialchars(get_csrf_token()); ?>">
     <title>Atur Ulang Kata Sandi - SDN Budi Karya</title>
@@ -208,16 +199,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
     <link rel="icon" type="image/webp" href="<?php echo htmlspecialchars($logoSrc); ?>">
     <link rel="apple-touch-icon" href="<?php echo htmlspecialchars($logoSrc); ?>">
 
-    <!-- Google Fonts & Phosphor Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css"/>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"/>
+    <!-- Preload LCP Resources & Primary Fonts -->
+    <link rel="preload" as="image" href="<?php echo htmlspecialchars($logoSrc); ?>" fetchpriority="high">
+    <link rel="preload" as="image" href="<?php echo htmlspecialchars($bgSchoolUrl); ?>" fetchpriority="high">
+    <link rel="preload" as="font" type="font/woff2" href="<?php echo htmlspecialchars($assetsPath . 'fonts/plus-jakarta-sans-600.woff2'); ?>" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="<?php echo htmlspecialchars($assetsPath . 'fonts/plus-jakarta-sans-700.woff2'); ?>" crossorigin>
 
-    <!-- Stylesheet Khusus Reset Password & SweetAlert2 Theme -->
+    <!-- Self-Hosted Core Fonts & Reset Password Stylesheet -->
+    <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/fonts.css'); ?>">
     <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/reset-password.css'); ?>">
-    <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/sweetalert-theme.css'); ?>">
+
+    <!-- Asynchronous Non-blocking Stylesheets (Phosphor & SweetAlert) -->
+    <link rel="preload" href="<?php echo htmlspecialchars($assetsPath . 'css/phosphor.css'); ?>" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="<?php echo htmlspecialchars($assetsPath . 'css/sweetalert-theme.css'); ?>" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="<?php echo htmlspecialchars($assetsPath . 'css/phosphor.css'); ?>">
+        <link rel="stylesheet" href="<?php echo htmlspecialchars($assetsPath . 'css/sweetalert-theme.css'); ?>">
+    </noscript>
 </head>
 <body>
 
@@ -360,10 +358,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
     </main>
 </div>
 
-<!-- SweetAlert2 Library & Custom Config -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?php echo htmlspecialchars($assetsPath . 'js/sweetalert-init.js'); ?>"></script>
-<script src="<?php echo htmlspecialchars($assetsPath . 'js/ajax-helper.js'); ?>"></script>
+<!-- SweetAlert2 Library & Custom Config (Deferred to avoid blocking main thread) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+<script src="<?php echo htmlspecialchars($assetsPath . 'js/sweetalert-init.js'); ?>" defer></script>
+<script src="<?php echo htmlspecialchars($assetsPath . 'js/ajax-helper.js'); ?>" defer></script>
 
 <!-- Reset Password Interactions -->
 <script src="<?php echo htmlspecialchars($assetsPath . 'js/reset-password.js'); ?>" defer></script>
