@@ -6,14 +6,14 @@
  */
 
 $monitoringLocations = [
-    'semua'   => ['label' => 'Semua',     'file' => 'semua.php',     'title' => 'MONITORING - Semua Lokasi', 'subtitle' => 'Ringkasan gabungan hasil pemantauan aset dari seluruh lokasi penempatan (read-only)'],
-    'kelas-1' => ['label' => 'Kelas 1',   'file' => 'kelas-1.php',   'title' => 'MONITORING - Kelas 1',      'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 1'],
-    'kelas-2' => ['label' => 'Kelas 2',   'file' => 'kelas-2.php',   'title' => 'MONITORING - Kelas 2',      'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 2'],
-    'kelas-3' => ['label' => 'Kelas 3',   'file' => 'kelas-3.php',   'title' => 'MONITORING - Kelas 3',      'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 3'],
-    'kelas-4' => ['label' => 'Kelas 4',   'file' => 'kelas-4.php',   'title' => 'MONITORING - Kelas 4',      'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 4'],
-    'kelas-5' => ['label' => 'Kelas 5',   'file' => 'kelas-5.php',   'title' => 'MONITORING - Kelas 5',      'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 5'],
-    'kelas-6' => ['label' => 'Kelas 6',   'file' => 'kelas-6.php',   'title' => 'MONITORING - Kelas 6',      'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 6'],
-    'umum'    => ['label' => 'Aset Umum', 'file' => 'aset-umum.php', 'title' => 'MONITORING - Aset Umum',    'subtitle' => 'Pemantauan aset umum (perpustakaan, kantor, lapangan, UKS, dan fasilitas bersama)'],
+    'semua'   => ['label' => 'Semua',     'file' => 'semua.php',     'title' => 'Monitoring - Semua Lokasi', 'subtitle' => 'Ringkasan gabungan hasil pemantauan aset dari seluruh lokasi penempatan (read-only)'],
+    'kelas-1' => ['label' => 'Kelas 1',   'file' => 'kelas-1.php',   'title' => 'Monitoring Kelas 1',        'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 1'],
+    'kelas-2' => ['label' => 'Kelas 2',   'file' => 'kelas-2.php',   'title' => 'Monitoring Kelas 2',        'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 2'],
+    'kelas-3' => ['label' => 'Kelas 3',   'file' => 'kelas-3.php',   'title' => 'Monitoring Kelas 3',        'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 3'],
+    'kelas-4' => ['label' => 'Kelas 4',   'file' => 'kelas-4.php',   'title' => 'Monitoring Kelas 4',        'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 4'],
+    'kelas-5' => ['label' => 'Kelas 5',   'file' => 'kelas-5.php',   'title' => 'Monitoring Kelas 5',        'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 5'],
+    'kelas-6' => ['label' => 'Kelas 6',   'file' => 'kelas-6.php',   'title' => 'Monitoring Kelas 6',        'subtitle' => 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 6'],
+    'umum'    => ['label' => 'Aset Umum', 'file' => 'aset-umum.php', 'title' => 'Monitoring Aset Umum',      'subtitle' => 'Pemantauan aset umum (perpustakaan, kantor, lapangan, UKS, dan fasilitas bersama)'],
 ];
 
 $monitoringPenempatan = $monitoringPenempatan ?? 'kelas-1';
@@ -24,14 +24,30 @@ if (!isset($monitoringLocations[$monitoringPenempatan])) {
     $monitoringPenempatan = 'kelas-1';
 }
 
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/aset-kelas-helper.php';
+require_auth(['administrator', 'operator']);
+
+$currentUser     = current_user();
+$assignedKelasId = (strtolower((string) ($currentUser['role'] ?? '')) === 'operator')
+    ? detect_operator_kelas_id($currentUser)
+    : null;
+
+if ($assignedKelasId !== null) {
+    $expectedPenempatan = 'kelas-' . $assignedKelasId;
+    if ($monitoringPenempatan !== $expectedPenempatan) {
+        $targetFile = $monitoringLocations[$expectedPenempatan]['file'] ?? ('kelas-' . $assignedKelasId . '.php');
+        header('Location: ' . $targetFile);
+        exit;
+    }
+}
+
 $locMeta       = $monitoringLocations[$monitoringPenempatan];
-$pageTitle     = $locMeta['label'] . ' - Monitoring Aset - Sistem Informasi Inventaris Aset SDN Budi Karya';
+$pageTitle     = $locMeta['title'] . ' - Sistem Informasi Inventaris Aset SDN Budi Karya';
 $activeMenu    = 'monitoring';
 $activeSubmenu = ($monitoringPenempatan === 'umum') ? 'aset-umum' : $monitoringPenempatan;
 
 require_once __DIR__ . '/header.php';
-
-$currentUser     = current_user();
 $rawNamaLengkap  = trim((string) ($currentUser['nama_lengkap'] ?? ''));
 $rawUsername     = trim((string) ($currentUser['username'] ?? ''));
 $connFile        = dirname(__DIR__) . '/config/conn.php';
@@ -88,6 +104,27 @@ $isClassInit     = str_starts_with($monitoringPenempatan, 'kelas-');
                     </button>
                 </div>
             </div>
+
+            <?php if (strtolower((string) ($currentUser['role'] ?? '')) !== 'operator'): ?>
+            <!-- Tabs Navigasi Lokasi untuk Administrator -->
+            <div class="mon-location-tabs" role="tablist" aria-label="Pilih Lokasi Monitoring">
+                <a href="<?php echo htmlspecialchars($monitoringPath . 'semua.php'); ?>" class="mon-tab-pill <?php echo ($monitoringPenempatan === 'semua') ? 'is-active' : ''; ?>">
+                    <i class="ph-bold ph-squares-four"></i>
+                    <span>Semua Lokasi</span>
+                </a>
+                <?php for ($k = 1; $k <= 6; $k++): ?>
+                <?php $locKey = 'kelas-' . $k; ?>
+                <a href="<?php echo htmlspecialchars($monitoringPath . 'kelas-' . $k . '.php'); ?>" class="mon-tab-pill <?php echo ($monitoringPenempatan === $locKey) ? 'is-active' : ''; ?>">
+                    <i class="ph-bold ph-chalkboard-teacher"></i>
+                    <span>Kelas <?php echo $k; ?></span>
+                </a>
+                <?php endfor; ?>
+                <a href="<?php echo htmlspecialchars($monitoringPath . 'aset-umum.php'); ?>" class="mon-tab-pill <?php echo ($monitoringPenempatan === 'umum') ? 'is-active' : ''; ?>">
+                    <i class="ph-bold ph-buildings"></i>
+                    <span>Aset Umum</span>
+                </a>
+            </div>
+            <?php endif; ?>
 
             <!-- Banner Mode Read-Only untuk tab Semua -->
             <div class="mon-readonly-banner <?php echo $isReadonlyInit ? 'show' : ''; ?>" id="monReadonlyBanner">
@@ -305,7 +342,7 @@ $isClassInit     = str_starts_with($monitoringPenempatan, 'kelas-');
                 <span class="kib-modal-icon-maroon" aria-hidden="true">
                     <i class="ph-bold ph-desktop"></i>
                 </span>
-                <h3 class="kib-modal-title" id="monFormTitle">Tambah Monitoring</h3>
+                <h3 class="kib-modal-title" id="monFormTitle"><?php echo $isClassInit ? ('Tambah Monitoring - ' . htmlspecialchars($locMeta['label'])) : 'Tambah Monitoring'; ?></h3>
             </div>
             <button type="button" class="kib-modal-close" data-modal-close aria-label="Tutup">
                 <i class="ph-bold ph-x"></i>
@@ -406,19 +443,7 @@ $isClassInit     = str_starts_with($monitoringPenempatan, 'kelas-');
                         <input type="text" id="monFieldPetugas" class="kib-input kib-input--readonly" value="<?php echo htmlspecialchars($currentUserName); ?>" readonly tabindex="-1">
                     </div>
 
-                    <div class="kib-form-group" style="--field-span: 4;">
-                        <label class="kib-label" for="monFieldPerluPemeliharaan">Perlu Pemeliharaan?</label>
-                        <div class="kib-select-wrapper">
-                            <select id="monFieldPerluPemeliharaan" class="kib-select">
-                                <option value="Tidak">Tidak</option>
-                                <option value="Ya">Ya (Masuk Antrean Pemeliharaan)</option>
-                            </select>
-                            <i class="ph-bold ph-caret-down kib-select-chevron" aria-hidden="true"></i>
-                        </div>
-                        <span class="mon-quota-hint show" id="monFieldPerluHint">Aktif bila Kondisi Rusak Ringan atau Rusak Berat.</span>
-                    </div>
-
-                    <div class="kib-form-group" style="--field-span: 8;">
+                    <div class="kib-form-group" style="--field-span: 12;">
                         <label class="kib-label" for="monFieldCatatan">Catatan / Keterangan Kondisi</label>
                         <textarea id="monFieldCatatan" class="kib-textarea" rows="3" placeholder="Masukkan catatan kondisi fisik atau tindak lanjut yang diperlukan"></textarea>
                     </div>
@@ -438,6 +463,7 @@ window.__monitoringEngine = new MonitoringEngine({
     baseMonitoringUrl: <?php echo json_encode($monitoringPath); ?>,
     apiUrl: '../../includes/ajax-monitoring.php',
     kibBaseUrl: <?php echo json_encode($kibPath); ?>,
+    asetKelasUrl: <?php echo json_encode($pagesPath . 'aset-kelas.php'); ?>,
     currentUserName: <?php echo json_encode($currentUserName); ?>,
     defaultRange: 'all'
 });

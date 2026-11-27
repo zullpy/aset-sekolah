@@ -12,6 +12,7 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
 $redirectTarget = '../index.php';
+$backHomeUrl = (strtolower($_SESSION['role'] ?? '') === 'operator') ? 'aset-kelas.php' : 'dashboard.php';
 
 if (!is_logged_in()) {
     if (is_ajax_request()) {
@@ -29,7 +30,7 @@ if ($method === 'POST') {
             json_error('Token keamanan (CSRF) tidak valid. Silakan muat ulang halaman.', [], 403);
         }
         http_response_code(403);
-        exit('<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>403 - Permintaan Ditolak</title></head><body style="font-family:sans-serif;text-align:center;padding:50px;"><h2>403 - Permintaan Ditolak</h2><p>Token keamanan tidak valid. Silakan kembali ke halaman sebelumnya dan coba lagi.</p><a href="dashboard.php">Kembali ke Dashboard</a></body></html>');
+        exit('<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>403 - Permintaan Ditolak</title></head><body style="font-family:sans-serif;text-align:center;padding:50px;"><h2>403 - Permintaan Ditolak</h2><p>Token keamanan tidak valid. Silakan kembali ke halaman sebelumnya dan coba lagi.</p><a href="' . htmlspecialchars($backHomeUrl) . '">Kembali</a></body></html>');
     }
 
     logout_user();
@@ -147,7 +148,7 @@ $logoSrc = file_exists($logoLocalFile)
         <h1>Konfirmasi Keluar</h1>
         <p>Anda masuk sebagai <strong><?php echo htmlspecialchars($displayName); ?></strong>. Apakah Anda yakin ingin keluar dari sistem inventaris?</p>
         <div class="logout-actions">
-            <a href="dashboard.php" class="btn btn-cancel">Batal</a>
+            <a href="<?php echo htmlspecialchars($backHomeUrl); ?>" class="btn btn-cancel">Batal</a>
             <form action="logout.php" method="POST" style="margin: 0;">
                 <?php echo csrf_input(); ?>
                 <button type="submit" class="btn btn-confirm">Ya, Keluar</button>

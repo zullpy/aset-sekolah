@@ -10,7 +10,7 @@ require_once dirname(__DIR__) . '/config/conn.php';
 require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/laporan-helper.php';
 
-require_auth(['administrator', 'operator']);
+require_auth('administrator');
 
 $input = ($_SERVER['REQUEST_METHOD'] === 'POST') ? $_POST : ($_SESSION['laporan_filters'] ?? $_GET);
 

@@ -9,12 +9,15 @@ require_once dirname(__DIR__) . '/config/conn.php';
 require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/ajax.php';
 require_once dirname(__DIR__) . '/includes/pemeliharaan-helper.php';
+require_once dirname(__DIR__) . '/includes/aset-kelas-helper.php';
 
 require_auth(['administrator', 'operator']);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     json_error('Metode request tidak diizinkan.', [], 405);
 }
+
+release_session_lock();
 
 try {
     $id     = (int) ($_GET['id'] ?? 0);
@@ -45,13 +48,39 @@ try {
         json_error('Parameter aset tidak valid.', [], 422);
     }
 
-    $stmtHist = $pdo->prepare("
-        SELECT *
-        FROM pemeliharaan
-        WHERE kib = ? AND aset_id = ?
-        ORDER BY tanggal_update DESC, id DESC
-    ");
-    $stmtHist->execute([$kibId, $asetId]);
+    ensure_klaim_aset_table($pdo);
+    $currentUser = current_user();
+    $isOperatorRole = ($currentUser && ($currentUser['role'] ?? '') === 'operator');
+    $operatorKelasId = $isOperatorRole ? detect_operator_kelas_id($currentUser) : null;
+    $operatorLokasi = ($operatorKelasId !== null) ? pml_penempatan_to_lokasi('kelas-' . $operatorKelasId) : null;
+
+    if ($operatorKelasId !== null) {
+        $stmtCheck = $pdo->prepare("
+            SELECT id FROM klaim_aset WHERE kelas_id = ? AND kib = ? AND aset_id = ?
+            LIMIT 1
+        ");
+        $stmtCheck->execute([$operatorKelasId, $kibId, $asetId]);
+        if (!$stmtCheck->fetch()) {
+            json_error('Data pemeliharaan tidak ditemukan untuk kelas Anda.', [], 404);
+        }
+
+        $stmtHist = $pdo->prepare("
+            SELECT *
+            FROM pemeliharaan
+            WHERE kib = ? AND aset_id = ?
+              AND lokasi IN (?, ?)
+            ORDER BY tanggal_update DESC, id DESC
+        ");
+        $stmtHist->execute([$kibId, $asetId, $operatorLokasi, 'Kelas ' . $operatorKelasId]);
+    } else {
+        $stmtHist = $pdo->prepare("
+            SELECT *
+            FROM pemeliharaan
+            WHERE kib = ? AND aset_id = ?
+            ORDER BY tanggal_update DESC, id DESC
+        ");
+        $stmtHist->execute([$kibId, $asetId]);
+    }
     $rows = $stmtHist->fetchAll(PDO::FETCH_ASSOC);
 
     if ($assetMeta === null) {

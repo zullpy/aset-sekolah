@@ -519,10 +519,64 @@ function goToPage(page) {
     render();
 }
 
-// 6. Toggle Password Row Level
-function toggleRowPassword(id) {
-    state.visiblePasswords[id] = !state.visiblePasswords[id];
-    render();
+// 6. Toggle Password Row Level (On-Demand Secure Reveal)
+async function toggleRowPassword(id) {
+    if (state.visiblePasswords[id]) {
+        delete state.visiblePasswords[id];
+        render();
+        return;
+    }
+
+    const account = AccountData.find(a => a.id === id);
+    if (!account) return;
+
+    if (account.revealedPassword) {
+        state.visiblePasswords[id] = true;
+        render();
+        return;
+    }
+
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const fd = new FormData();
+        fd.append('action', 'reveal_password');
+        fd.append('id', id);
+
+        const res = await fetch('../includes/ajax-akun.php', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-Token': csrfToken
+            },
+            body: fd
+        });
+
+        const data = await res.json();
+        if (data && data.success && data.data && data.data.password) {
+            account.revealedPassword = data.data.password;
+            account.password = data.data.password;
+            state.visiblePasswords[id] = true;
+            render();
+        } else {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tidak Dapat Membuka Password',
+                    text: data?.message || 'Gagal memuat password terenkripsi.',
+                    confirmButtonColor: '#852019'
+                });
+            }
+        }
+    } catch (err) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Kesalahan Sistem',
+                text: 'Terjadi gangguan jaringan saat meminta password.',
+                confirmButtonColor: '#852019'
+            });
+        }
+    }
 }
 window.toggleRowPassword = toggleRowPassword;
 

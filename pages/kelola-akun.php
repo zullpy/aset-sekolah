@@ -7,6 +7,9 @@
 $pageTitle = 'Kelola Akun - Sistem Informasi Inventaris Aset SDN Budi Karya';
 $activeMenu = 'kelola-akun';
 
+require_once __DIR__ . '/../includes/auth.php';
+require_auth('administrator');
+
 require_once __DIR__ . '/../includes/header.php';
 ?>
 

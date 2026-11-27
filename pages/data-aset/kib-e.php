@@ -8,6 +8,9 @@ $pageTitle = 'Data Aset - KIB E - Sistem Informasi Inventaris Aset SDN Budi Kary
 $activeMenu = 'data-aset';
 $activeSubmenu = 'kib-e';
 
+require_once __DIR__ . '/../../includes/auth.php';
+require_auth('administrator');
+
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 
@@ -168,110 +171,6 @@ window.__kibEngine = new KibEngine({
         { name: 'harga_satuan', label: 'Harga Satuan (Rp.)', span: 3, type: 'currency', required: true, placeholder: 'ex : 100.000' },
         { name: 'harga_total', label: 'Harga Total (Rp.)', span: 3, type: 'currency', readonly: true, computed: 'jumlah * harga_satuan', placeholder: 'Otomatis' },
         { name: 'lampiran', label: 'Lampiran', span: 12, type: 'file' }
-    ],
-    initialData: [
-        {
-            id: 1,
-            kode: 'KIB-E/2023/001',
-            jenis: 'Buku Teks Utama',
-            nama: 'Bahasa Indonesia: Aku Bisa!',
-            no_reg: '000001',
-            spesifikasi_judul: 'Bahasa Indonesia: Aku Bisa! Kelas I',
-            spesifikasi_pengarang: 'Sofie Dewayani',
-            spesifikasi_penerbit: 'Pusat Perbukuan Kemendikbud',
-            spesifikasi_tahun: '2023',
-            tahun: '2023',
-            jumlah: '50 Eks',
-            harga_satuan: 'Rp 22.000',
-            harga_total: 'Rp 1.100.000',
-            sumber: 'BOS',
-            lampiran: 'Faktur_Buku_Indo1.pdf'
-        },
-        {
-            id: 2,
-            kode: 'KIB-E/2023/002',
-            jenis: 'Buku Teks Utama',
-            nama: 'IPAS: Belajar Bersama Temanmu',
-            no_reg: '000001',
-            spesifikasi_judul: 'Ilmu Pengetahuan Alam dan Sosial SD Kelas IV',
-            spesifikasi_pengarang: 'Amalia Fitri dkk.',
-            spesifikasi_penerbit: 'Pusat Perbukuan Kemendikbudristek',
-            spesifikasi_tahun: '2023',
-            tahun: '2023',
-            jumlah: '45 Eks',
-            harga_satuan: 'Rp 25.000',
-            harga_total: 'Rp 1.125.000',
-            sumber: 'BOS',
-            lampiran: 'Faktur_Buku_IPAS4.pdf'
-        },
-        {
-            id: 3,
-            kode: 'KIB-E/2022/003',
-            jenis: 'Buku Pengayaan',
-            nama: 'Pengembaraan Timun Mas',
-            no_reg: '000001',
-            spesifikasi_judul: 'Cerita Rakyat Nusantara: Timun Mas',
-            spesifikasi_pengarang: 'Rini Kurniasih',
-            spesifikasi_penerbit: 'Balai Pustaka',
-            spesifikasi_tahun: '2022',
-            tahun: '2022',
-            jumlah: '25 Eks',
-            harga_satuan: 'Rp 18.000',
-            harga_total: 'Rp 450.000',
-            sumber: 'Hibah',
-            lampiran: 'BAST_Hibah_Buku.pdf'
-        },
-        {
-            id: 4,
-            kode: 'KIB-E/2022/004',
-            jenis: 'Buku Panduan Pendidik',
-            nama: 'Panduan Guru Matematika SD',
-            no_reg: '000001',
-            spesifikasi_judul: 'Buku Panduan Guru Matematika SD Kelas I',
-            spesifikasi_pengarang: 'Tim Gakko Tosho',
-            spesifikasi_penerbit: 'Kemendikbudristek',
-            spesifikasi_tahun: '2022',
-            tahun: '2022',
-            jumlah: '12 Eks',
-            harga_satuan: 'Rp 35.000',
-            harga_total: 'Rp 420.000',
-            sumber: 'BOS',
-            lampiran: 'Kuitansi_Buku_Guru.pdf'
-        },
-        {
-            id: 5,
-            kode: 'KIB-E/2021/005',
-            jenis: 'Buku Referensi',
-            nama: 'Kamus Besar Bahasa Indonesia',
-            no_reg: '000001',
-            spesifikasi_judul: 'KBBI Edisi Kelima',
-            spesifikasi_pengarang: 'Badan Pengembangan Bahasa',
-            spesifikasi_penerbit: 'Balai Pustaka',
-            spesifikasi_tahun: '2021',
-            tahun: '2021',
-            jumlah: '4 Eks',
-            harga_satuan: 'Rp 450.000',
-            harga_total: 'Rp 1.800.000',
-            sumber: 'APBD',
-            lampiran: 'SPK_Kamus_2021.pdf'
-        },
-        {
-            id: 6,
-            kode: 'KIB-E/2020/006',
-            jenis: 'Buku Pengayaan',
-            nama: 'Ensiklopedia Cilik Sains',
-            no_reg: '000001',
-            spesifikasi_judul: 'Mengenal Tata Surya dan Antariksa',
-            spesifikasi_pengarang: 'Drs. Hendra Wardhana',
-            spesifikasi_penerbit: 'Erlangga for Kids',
-            spesifikasi_tahun: '2020',
-            tahun: '2020',
-            jumlah: '28 Eks',
-            harga_satuan: 'Rp 120.000',
-            harga_total: 'Rp 3.360.000',
-            sumber: 'BOS',
-            lampiran: 'Faktur_Ensiklopedia.pdf'
-        }
     ]
 });
 </script>

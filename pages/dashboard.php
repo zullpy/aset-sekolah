@@ -7,6 +7,9 @@
 $pageTitle = 'Dashboard - Sistem Informasi Inventaris Aset SDN Budi Karya';
 $activeMenu = 'dashboard';
 
+require_once __DIR__ . '/../includes/auth.php';
+require_auth('administrator');
+
 require_once __DIR__ . '/../includes/header.php';
 
 $userRoleDisplay = ucfirst($_SESSION['role'] ?? 'Administrator');

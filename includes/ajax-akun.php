@@ -9,6 +9,7 @@ require_once dirname(__DIR__) . '/config/app.php';
 require_once dirname(__DIR__) . '/config/conn.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/ajax.php';
+require_once __DIR__ . '/password-vault.php';
 
 // Pastikan hanya Administrator yang memiliki izin mengakses pengelolaan akun
 require_auth('administrator');
@@ -20,7 +21,8 @@ $action = $_GET['action'] ?? $_POST['action'] ?? 'list';
 try {
     switch ($action) {
         case 'list':
-            $stmt = $pdo->query("SELECT id, nama_lengkap AS nama, username, email, role, status, password_plain FROM users ORDER BY id ASC");
+            session_write_close();
+            $stmt = $pdo->query("SELECT id, nama_lengkap AS nama, username, email, role, status FROM users ORDER BY id ASC");
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // Format peran agar sesuai dengan UI ('Administrator' / 'Operator')
@@ -30,13 +32,46 @@ try {
                     'nama'     => $row['nama'],
                     'username' => $row['username'],
                     'email'    => $row['email'],
-                    'password' => !empty($row['password_plain']) ? $row['password_plain'] : 'Password123!',
+                    'password' => '••••••••',
                     'peran'    => ($row['role'] === 'administrator') ? 'Administrator' : 'Operator',
                     'status'   => ($row['status'] === 'Nonaktif') ? 'Nonaktif' : 'Aktif',
                 ];
             }, $rows);
 
             json_success('Data akun berhasil dimuat.', ['users' => $users]);
+            break;
+
+        case 'reveal_password':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                json_error('Metode request tidak diizinkan.', [], 405);
+            }
+
+            if (!verify_csrf_token()) {
+                json_error('Token keamanan CSRF tidak valid. Silakan muat ulang halaman.', [], 403);
+            }
+
+            $id = (int) ($_POST['id'] ?? 0);
+            if ($id <= 0) {
+                json_error('ID pengguna tidak valid.');
+            }
+
+            $stmtReveal = $pdo->prepare("SELECT id, password_enc FROM users WHERE id = ? LIMIT 1");
+            $stmtReveal->execute([$id]);
+            $rowReveal = $stmtReveal->fetch(PDO::FETCH_ASSOC);
+
+            if (!$rowReveal) {
+                json_error('Pengguna tidak ditemukan.', [], 404);
+            }
+
+            $revealed = decrypt_user_password($rowReveal['password_enc'] ?? null);
+            if ($revealed === null) {
+                json_error('Password tidak dapat ditampilkan (belum tersimpan dalam vault terenkripsi). Silakan ubah password akun ini terlebih dahulu.', [], 422);
+            }
+
+            json_success('Password berhasil dibuka.', [
+                'id'       => $id,
+                'password' => $revealed
+            ]);
             break;
 
         case 'create':
@@ -89,12 +124,13 @@ try {
             }
 
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+            $encryptedPassword = encrypt_user_password($password);
 
             $stmtInsert = $pdo->prepare("
-                INSERT INTO users (username, nama_lengkap, email, password, password_plain, role, status)
+                INSERT INTO users (username, nama_lengkap, email, password, password_enc, role, status)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ");
-            $stmtInsert->execute([$username, $nama, $email, $hashedPassword, $password, $role, $statusVal]);
+            $stmtInsert->execute([$username, $nama, $email, $hashedPassword, $encryptedPassword, $role, $statusVal]);
 
             $newId = (int) $pdo->lastInsertId();
 
@@ -104,7 +140,7 @@ try {
                     'nama'     => $nama,
                     'username' => $username,
                     'email'    => $email,
-                    'password' => $password,
+                    'password' => '••••••••',
                     'peran'    => ($role === 'administrator') ? 'Administrator' : 'Operator',
                     'status'   => $statusVal,
                 ]
@@ -174,12 +210,13 @@ try {
                     json_error('Password baru minimal terdiri dari 6 karakter.');
                 }
                 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+                $encryptedPassword = encrypt_user_password($password);
                 $stmtUpdate = $pdo->prepare("
                     UPDATE users
-                    SET nama_lengkap = ?, username = ?, email = ?, role = ?, password = ?, password_plain = ?
+                    SET nama_lengkap = ?, username = ?, email = ?, role = ?, password = ?, password_enc = ?
                     WHERE id = ?
                 ");
-                $stmtUpdate->execute([$nama, $username, $email, $role, $hashedPassword, $password, $id]);
+                $stmtUpdate->execute([$nama, $username, $email, $role, $hashedPassword, $encryptedPassword, $id]);
             } else {
                 $stmtUpdate = $pdo->prepare("
                     UPDATE users

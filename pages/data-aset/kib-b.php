@@ -8,6 +8,9 @@ $pageTitle = 'Data Aset - KIB B - Sistem Informasi Inventaris Aset SDN Budi Kary
 $activeMenu = 'data-aset';
 $activeSubmenu = 'kib-b';
 
+require_once __DIR__ . '/../../includes/auth.php';
+require_auth('administrator');
+
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 
@@ -162,120 +165,6 @@ window.__kibEngine = new KibEngine({
         { name: 'harga', label: 'Harga (Rp.)', span: 3, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
         { name: 'jumlah', label: 'Jumlah', span: 2, type: 'number', narrow: true, default: 1, min: 1, required: true },
         { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
-    ],
-    initialData: [
-        {
-            id: 1,
-            kode: 'KIB-B/2024/001',
-            jenis: 'Elektronik',
-            nama: 'Laptop ASUS Expertbook',
-            no_reg: '000001',
-            merk: 'ASUS B1400',
-            spesifikasi: '14 Inchi / Core i5',
-            bahan: 'Plastik & Logam',
-            no_pabrik: 'SN-ASUS-98124',
-            tahun: '2024',
-            jumlah: '10 Unit',
-            harga: 'Rp 8.500.000',
-            sumber: 'BOS',
-            lampiran: 'Faktur_Asus_2024.pdf'
-        },
-        {
-            id: 2,
-            kode: 'KIB-B/2023/001',
-            jenis: 'Elektronik',
-            nama: 'Printer Epson L3210',
-            no_reg: '000001',
-            merk: 'EcoTank L3210',
-            spesifikasi: 'A4 / Inkjet',
-            bahan: 'Plastik & Komponen',
-            no_pabrik: 'EP-L3210-4491',
-            tahun: '2023',
-            jumlah: '2 Unit',
-            harga: 'Rp 2.450.000',
-            sumber: 'BOS',
-            lampiran: 'Kuitansi_Epson.pdf'
-        },
-        {
-            id: 3,
-            kode: 'KIB-B/2022/002',
-            jenis: 'Meubelair',
-            nama: 'Meja Belajar Siswa',
-            no_reg: '000001',
-            merk: 'Olympic Wooden',
-            spesifikasi: '60 × 50 × 75 cm',
-            bahan: 'Kayu Jati & MDF',
-            no_pabrik: '-',
-            tahun: '2022',
-            jumlah: '45 Buah',
-            harga: 'Rp 350.000',
-            sumber: 'APBD',
-            lampiran: 'BAST_Meubelair_2022.pdf'
-        },
-        {
-            id: 4,
-            kode: 'KIB-B/2022/003',
-            jenis: 'Meubelair',
-            nama: 'Kursi Belajar Siswa',
-            no_reg: '000002',
-            merk: 'Chitose Student',
-            spesifikasi: 'Standard SD',
-            bahan: 'Pipa Besi & Kayu',
-            no_pabrik: '-',
-            tahun: '2022',
-            jumlah: '78 Buah',
-            harga: 'Rp 220.000',
-            sumber: 'APBD',
-            lampiran: 'BAST_Meubelair_2022.pdf'
-        },
-        {
-            id: 5,
-            kode: 'KIB-B/2021/004',
-            jenis: 'Alat Peraga',
-            nama: 'Meja Tenis Meja',
-            no_reg: '000001',
-            merk: 'Double Fish',
-            spesifikasi: '274 × 152 × 76 cm',
-            bahan: 'Partikel Board & Besi',
-            no_pabrik: 'DF-TM-2021-08',
-            tahun: '2021',
-            jumlah: '1 Set',
-            harga: 'Rp 4.200.000',
-            sumber: 'BOS',
-            lampiran: 'Nota_Tenis_Meja.pdf'
-        },
-        {
-            id: 6,
-            kode: 'KIB-B/2020/005',
-            jenis: 'Elektronik',
-            nama: 'Proyektor InFocus IN112x',
-            no_reg: '000001',
-            merk: 'InFocus',
-            spesifikasi: '3800 Lumens SVGA',
-            bahan: 'Komposit / Logam',
-            no_pabrik: 'INF-3800-221',
-            tahun: '2020',
-            jumlah: '2 Unit',
-            harga: 'Rp 5.100.000',
-            sumber: 'BOS',
-            lampiran: 'Faktur_InFocus.pdf'
-        },
-        {
-            id: 7,
-            kode: 'KIB-B/2019/006',
-            jenis: 'Elektronik',
-            nama: 'Komputer Desktop Guru',
-            no_reg: '000001',
-            merk: 'Lenovo ThinkCentre',
-            spesifikasi: 'Core i3 / 8GB RAM / 500GB HDD',
-            bahan: 'Logam & Sirkuit',
-            no_pabrik: 'LNV-TC-5520',
-            tahun: '2019',
-            jumlah: '3 Unit',
-            harga: 'Rp 6.000.000',
-            sumber: 'BOS',
-            lampiran: 'Nota_Lenovo.pdf'
-        }
     ]
 });
 </script>

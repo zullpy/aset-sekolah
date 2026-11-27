@@ -398,6 +398,10 @@ function handle_lampiran_upload(string $kibId, array $file): array
 }
 
 try {
+    if (in_array($action, ['list', 'all', 'summary', 'options'], true)) {
+        session_write_close();
+    }
+
     switch ($action) {
         // Ambil data satu KIB tertentu
         case 'list':

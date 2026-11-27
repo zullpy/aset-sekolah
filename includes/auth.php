@@ -97,8 +97,21 @@ if (!function_exists('current_user')) {
             'id'           => $_SESSION['user_id'] ?? null,
             'username'     => $_SESSION['username'] ?? '',
             'nama_lengkap' => $_SESSION['nama_lengkap'] ?? $_SESSION['username'] ?? '',
-            'role'         => $_SESSION['role'] ?? '',
+            'role'         => strtolower(trim((string) ($_SESSION['role'] ?? ''))),
+            'role_display' => ucfirst(strtolower(trim((string) ($_SESSION['role'] ?? '')))),
         ];
+    }
+}
+
+if (!function_exists('release_session_lock')) {
+    /**
+     * Melepaskan lock session PHP agar request paralel lainnya tidak terblokir
+     */
+    function release_session_lock(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
     }
 }
 

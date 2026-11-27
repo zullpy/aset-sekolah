@@ -9,12 +9,15 @@ require_once dirname(__DIR__) . '/config/conn.php';
 require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/ajax.php';
 require_once dirname(__DIR__) . '/includes/pemeliharaan-helper.php';
+require_once dirname(__DIR__) . '/includes/aset-kelas-helper.php';
 
 require_auth(['administrator', 'operator']);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     json_error('Metode request tidak diizinkan.', [], 405);
 }
+
+release_session_lock();
 
 try {
     $q            = trim((string) ($_GET['q'] ?? ''));
@@ -59,8 +62,22 @@ try {
     }
     $page = max(1, (int) ($_GET['page'] ?? 1));
 
+    ensure_klaim_aset_table($pdo);
+
+    $currentUser = current_user();
+    $isOperatorRole = ($currentUser && ($currentUser['role'] ?? '') === 'operator');
+    $operatorKelasId = $isOperatorRole ? detect_operator_kelas_id($currentUser) : null;
+    $operatorLokasi = ($operatorKelasId !== null) ? pml_penempatan_to_lokasi('kelas-' . $operatorKelasId) : null;
+
     $where = ['jumlah_aktif > 0'];
     $params = [];
+
+    // Jika operator kelas, batasi hanya pada aset yang berlokasi di kelasnya
+    if ($operatorKelasId !== null) {
+        $where[] = 'lokasi IN (?, ?)';
+        $params[] = $operatorLokasi;
+        $params[] = 'Kelas ' . $operatorKelasId;
+    }
 
     if ($q !== '') {
         $like = '%' . $q . '%';

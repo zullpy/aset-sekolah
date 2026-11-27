@@ -16,14 +16,14 @@ class MonitoringEngine {
         }, config);
 
         this.locations = [
-            { id: 'semua', label: 'Semua', file: 'semua.php', title: 'MONITORING - Semua Lokasi', subtitle: 'Ringkasan gabungan hasil pemantauan aset dari seluruh lokasi penempatan (read-only)' },
-            { id: 'kelas-1', label: 'Kelas 1', file: 'kelas-1.php', title: 'MONITORING - Kelas 1', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 1' },
-            { id: 'kelas-2', label: 'Kelas 2', file: 'kelas-2.php', title: 'MONITORING - Kelas 2', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 2' },
-            { id: 'kelas-3', label: 'Kelas 3', file: 'kelas-3.php', title: 'MONITORING - Kelas 3', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 3' },
-            { id: 'kelas-4', label: 'Kelas 4', file: 'kelas-4.php', title: 'MONITORING - Kelas 4', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 4' },
-            { id: 'kelas-5', label: 'Kelas 5', file: 'kelas-5.php', title: 'MONITORING - Kelas 5', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 5' },
-            { id: 'kelas-6', label: 'Kelas 6', file: 'kelas-6.php', title: 'MONITORING - Kelas 6', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 6' },
-            { id: 'umum', label: 'Aset Umum', file: 'aset-umum.php', title: 'MONITORING - Aset Umum', subtitle: 'Pemantauan aset umum (perpustakaan, kantor, lapangan, UKS, dan fasilitas bersama)' }
+            { id: 'semua', label: 'Semua', file: 'semua.php', title: 'Monitoring - Semua Lokasi', subtitle: 'Ringkasan gabungan hasil pemantauan aset dari seluruh lokasi penempatan (read-only)' },
+            { id: 'kelas-1', label: 'Kelas 1', file: 'kelas-1.php', title: 'Monitoring Kelas 1', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 1' },
+            { id: 'kelas-2', label: 'Kelas 2', file: 'kelas-2.php', title: 'Monitoring Kelas 2', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 2' },
+            { id: 'kelas-3', label: 'Kelas 3', file: 'kelas-3.php', title: 'Monitoring Kelas 3', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 3' },
+            { id: 'kelas-4', label: 'Kelas 4', file: 'kelas-4.php', title: 'Monitoring Kelas 4', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 4' },
+            { id: 'kelas-5', label: 'Kelas 5', file: 'kelas-5.php', title: 'Monitoring Kelas 5', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 5' },
+            { id: 'kelas-6', label: 'Kelas 6', file: 'kelas-6.php', title: 'Monitoring Kelas 6', subtitle: 'Pemantauan kondisi fisik dan jumlah aset yang ditempatkan di Kelas 6' },
+            { id: 'umum', label: 'Aset Umum', file: 'aset-umum.php', title: 'Monitoring Aset Umum', subtitle: 'Pemantauan aset umum (perpustakaan, kantor, lapangan, UKS, dan fasilitas bersama)' }
         ];
 
         this.state = {
@@ -196,12 +196,6 @@ class MonitoringEngine {
         // Combobox pencarian Nama Aset -> autofill KIB, Kode, Jenis, Jumlah default
         this.bindAssetComboboxEvents();
 
-        // Kondisi berubah -> aktif/nonaktif opsi Perlu Pemeliharaan?
-        const kondisiEl = document.getElementById('monFieldKondisi');
-        if (kondisiEl) {
-            kondisiEl.addEventListener('change', () => this.syncPerluPemeliharaanState());
-        }
-
         // Form submit tambah/edit monitoring
         const form = document.getElementById('monAssetForm');
         if (form) {
@@ -270,7 +264,7 @@ class MonitoringEngine {
         const subtitleEl = document.getElementById('monPageSubtitle');
         if (titleEl) titleEl.textContent = meta.title;
         if (subtitleEl) subtitleEl.textContent = meta.subtitle;
-        document.title = `${meta.label} - Monitoring Aset - Sistem Informasi Inventaris Aset SDN Budi Karya`;
+        document.title = `${meta.title} - Sistem Informasi Inventaris Aset SDN Budi Karya`;
 
         // Toggle tombol Tambah & banner read-only
         const btnAdd = document.getElementById('btnAddMonitoring');
@@ -301,6 +295,15 @@ class MonitoringEngine {
         document.querySelectorAll('[data-monitoring-subitem]').forEach(li => {
             const loc = li.getAttribute('data-monitoring-subitem');
             li.classList.toggle('active', loc === this.state.penempatan);
+        });
+
+        // Sinkronisasi active state tab pills lokasi
+        document.querySelectorAll('.mon-tab-pill').forEach(pill => {
+            const href = pill.getAttribute('href') || '';
+            const isMatch = (this.state.penempatan === 'semua' && href.includes('semua.php')) ||
+                (this.state.penempatan === 'umum' && (href.includes('aset-umum.php') || href.includes('umum.php'))) ||
+                (this.state.penempatan.startsWith('kelas-') && href.includes(`${this.state.penempatan}.php`));
+            pill.classList.toggle('is-active', isMatch);
         });
     }
 
@@ -927,7 +930,12 @@ class MonitoringEngine {
         const selectedKey = hiddenInput ? hiddenInput.value : '';
         if (this.filteredAssetOptions.length === 0) {
             this.assetActiveIndex = -1;
-            dropdown.innerHTML = `<div class="mon-aset-empty">Tidak ada aset yang cocok dengan "${this.escapeHtml(query)}".</div>`;
+            const emptyMsg = opts.length === 0
+                ? (this.isClassLocation()
+                    ? 'Belum ada aset yang diklaim pada kelas ini.'
+                    : 'Belum ada aset terdaftar pada Data Aset.')
+                : `Tidak ada aset yang cocok dengan "${this.escapeHtml(query)}".`;
+            dropdown.innerHTML = `<div class="mon-aset-empty">${emptyMsg}</div>`;
             return;
         }
 
@@ -1034,8 +1042,9 @@ class MonitoringEngine {
 
         if (emptyHint) {
             const kibLink = `${this.config.kibBaseUrl}kib-b.php`;
+            const asetKelasLink = this.config.asetKelasUrl || '../aset-kelas.php';
             if (this.isClassLocation()) {
-                emptyHint.innerHTML = `Belum ada aset KIB B atau KIB E terdaftar pada Data Aset. Silakan tambahkan aset terlebih dahulu di halaman <a href="${this.escapeHtml(kibLink)}">Data Aset (KIB B / KIB E)</a>.`;
+                emptyHint.innerHTML = `Belum ada aset yang diklaim pada kelas ini. Silakan klaim aset terlebih dahulu di halaman <a href="${this.escapeHtml(asetKelasLink)}">Data Aset Kelas</a>.`;
             } else {
                 emptyHint.innerHTML = `Belum ada aset terdaftar pada Data Aset. Silakan tambahkan aset terlebih dahulu di halaman <a href="${this.escapeHtml(kibLink)}">Data Aset (KIB A-F)</a>.`;
             }
@@ -1197,9 +1206,6 @@ class MonitoringEngine {
         if (petugasEl) petugasEl.value = this.config.currentUserName || 'Administrator';
         if (jumlahEl) jumlahEl.value = '1';
         if (kondisiEl) kondisiEl.value = 'Baik';
-        const perluEl = document.getElementById('monFieldPerluPemeliharaan');
-        if (perluEl) perluEl.value = 'Tidak';
-        this.syncPerluPemeliharaanState();
 
         await this.refreshAssetOptions();
         this.populateAssetDropdown('');
@@ -1242,34 +1248,9 @@ class MonitoringEngine {
         if (kondisiEl) kondisiEl.value = item.kondisi || 'Baik';
         if (tglEl) tglEl.value = item.tgl_update || this.getTodayIso();
         if (petugasEl) petugasEl.value = item.petugas || this.config.currentUserName || 'Administrator';
-        const perluEl = document.getElementById('monFieldPerluPemeliharaan');
-        if (perluEl) perluEl.value = item.perlu_pemeliharaan === 'Ya' ? 'Ya' : 'Tidak';
-        this.syncPerluPemeliharaanState();
         if (catatanEl) catatanEl.value = item.catatan || '';
 
         this.openModal('monModalForm');
-    }
-
-    syncPerluPemeliharaanState() {
-        const kondisiEl = document.getElementById('monFieldKondisi');
-        const perluEl = document.getElementById('monFieldPerluPemeliharaan');
-        const hintEl = document.getElementById('monFieldPerluHint');
-        if (!kondisiEl || !perluEl) return;
-
-        const kondisi = kondisiEl.value;
-        const canNeedMaint = (kondisi === 'Rusak Ringan' || kondisi === 'Rusak Berat');
-        if (canNeedMaint) {
-            perluEl.disabled = false;
-            if (hintEl) {
-                hintEl.textContent = 'Pilih "Ya" agar aset otomatis masuk antrean Pemeliharaan.';
-            }
-        } else {
-            perluEl.value = 'Tidak';
-            perluEl.disabled = true;
-            if (hintEl) {
-                hintEl.textContent = 'Aktif bila Kondisi Rusak Ringan atau Rusak Berat.';
-            }
-        }
     }
 
     async handleFormSubmit(e) {
@@ -1283,9 +1264,7 @@ class MonitoringEngine {
         const kondisiVal = document.getElementById('monFieldKondisi')?.value || '';
         const tglVal = document.getElementById('monFieldTglUpdate')?.value || '';
         const petugasVal = (document.getElementById('monFieldPetugas')?.value || '').trim();
-        const perluVal = (kondisiVal === 'Rusak Ringan' || kondisiVal === 'Rusak Berat')
-            ? (document.getElementById('monFieldPerluPemeliharaan')?.value === 'Ya' ? 'Ya' : 'Tidak')
-            : 'Tidak';
+        const perluVal = 'Tidak';
         const catatanVal = (document.getElementById('monFieldCatatan')?.value || '').trim();
 
         let valid = true;

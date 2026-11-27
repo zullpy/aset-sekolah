@@ -8,6 +8,9 @@ $pageTitle = 'Data Aset - KIB A - Sistem Informasi Inventaris Aset SDN Budi Kary
 $activeMenu = 'data-aset';
 $activeSubmenu = 'kib-a';
 
+require_once __DIR__ . '/../../includes/auth.php';
+require_auth('administrator');
+
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 
@@ -158,53 +161,6 @@ window.__kibEngine = new KibEngine({
         { name: 'sumber', label: 'Sumber', span: 4, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
         { name: 'harga', label: 'Harga (Rp.)', span: 4, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
         { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
-    ],
-    initialData: [
-        {
-            id: 1,
-            kode: 'KIB-A/1997/001',
-            nama: 'Tanah',
-            no_reg: '000001',
-            luas: '1.500',
-            tahun: '1997',
-            lokasi: 'Kp. Cilaku 012/004 Ds. Nangerang Kec. Cigalontang',
-            status_tanah: 'Hak Pakai',
-            sertifikat: '00021/Nangerang/1997',
-            penggunaan: 'Bangunan Sekolah SDN Budi Karya',
-            sumber: 'APBD',
-            harga: 'Rp 250.000.000',
-            lampiran: 'Sertifikat_Tanah_1997.pdf'
-        },
-        {
-            id: 2,
-            kode: 'KIB-A/1997/002',
-            nama: 'Tanah Lapangan Olahraga & Upacara',
-            no_reg: '000002',
-            luas: '350',
-            tahun: '1997',
-            lokasi: 'Kp. Cilaku 012/004 Ds. Nangerang Kec. Cigalontang',
-            status_tanah: 'Hak Pakai',
-            sertifikat: '00022/Nangerang/1997',
-            penggunaan: 'Lapangan Olahraga & Upacara',
-            sumber: 'APBD',
-            harga: 'Rp 70.000.000',
-            lampiran: 'Sertifikat_Lapangan.pdf'
-        },
-        {
-            id: 3,
-            kode: 'KIB-A/2005/003',
-            nama: 'Tanah Kebun Sekolah & Penghijauan',
-            no_reg: '000003',
-            luas: '120',
-            tahun: '2005',
-            lokasi: 'Sisi Barat Lingkungan SDN Budi Karya',
-            status_tanah: 'Hak Pakai',
-            sertifikat: '00035/Nangerang/2005',
-            penggunaan: 'Kebun Praktik & Penghijauan Siswa',
-            sumber: 'APBD',
-            harga: 'Rp 24.000.000',
-            lampiran: 'Sertifikat_Kebun_2005.pdf'
-        }
     ]
 });
 </script>

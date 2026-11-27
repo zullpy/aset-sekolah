@@ -115,10 +115,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['user_id']      = $userData['id'];
                     $_SESSION['username']     = $userData['username'] ?? $username;
                     $_SESSION['nama_lengkap'] = $userData['nama_lengkap'] ?? $userData['username'] ?? $username;
-                    $_SESSION['role']         = $roleTitle;
+                    $_SESSION['role']         = strtolower($userData['role'] ?? ($isOperator ? 'operator' : 'administrator'));
+                    $_SESSION['role_display'] = $roleTitle;
 
-                    // Alihkan ke Dashboard
-                    $targetRedirect = file_exists(__DIR__ . '/dashboard.php') ? 'dashboard.php' : '../index.php';
+                    // Alihkan sesuai peran: Operator langsung ke Data Aset Kelas, Administrator ke Dashboard
+                    if ($isOperator) {
+                        $targetRedirect = file_exists(__DIR__ . '/aset-kelas.php') ? 'aset-kelas.php' : '../index.php';
+                    } else {
+                        $targetRedirect = file_exists(__DIR__ . '/dashboard.php') ? 'dashboard.php' : '../index.php';
+                    }
 
                     if (is_ajax_request()) {
                         json_success('Login berhasil! Mengalihkan ke halaman dashboard...', ['redirect' => $targetRedirect]);

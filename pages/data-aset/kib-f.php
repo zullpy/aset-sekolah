@@ -8,6 +8,9 @@ $pageTitle = 'Data Aset - KIB F - Sistem Informasi Inventaris Aset SDN Budi Kary
 $activeMenu = 'data-aset';
 $activeSubmenu = 'kib-f';
 
+require_once __DIR__ . '/../../includes/auth.php';
+require_auth('administrator');
+
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 
@@ -186,68 +189,6 @@ window.__kibEngine = new KibEngine({
         { name: 'persen_fisik', label: 'Persentase Fisik', span: 4, required: true, placeholder: 'ex : 90%' },
         { name: 'keterangan', label: 'Keterangan', span: 8, rowSpan: 2, type: 'textarea', placeholder: 'Masukkan spesifikasi aset' },
         { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
-    ],
-    initialData: [
-        {
-            id: 1,
-            kode: 'KIB-F/2024/001',
-            jenis: 'Pembangunan',
-            nama: 'Pembangunan Ruang Perpustakaan',
-            no_reg: '000001',
-            tingkat: 'Tidak Bertingkat',
-            beton: 'Beton',
-            luas: '56',
-            letak_bangunan: 'Sebelah Barat Ruang Kelas 6',
-            dokumen: '600/045/Disdik/2024, 10 Maret 2024',
-            tgl_mulai: '15 Maret 2024',
-            status_tanah: 'Hak Pakai',
-            biaya: 'Rp 120.000.000',
-            persen_fisik: '65%',
-            status_pengerjaan: 'Dalam Pengerjaan',
-            sumber: 'APBD',
-            keterangan: 'Pekerjaan pasangan dinding & atap',
-            lampiran: 'Kontrak_Perpus_2024.pdf'
-        },
-        {
-            id: 2,
-            kode: 'KIB-F/2023/002',
-            jenis: 'Pembangunan',
-            nama: 'Pembangunan Toilet Siswa (4 Pintu)',
-            no_reg: '000002',
-            tingkat: 'Tidak Bertingkat',
-            beton: 'Beton',
-            luas: '24',
-            letak_bangunan: 'Belakang Ruang Guru',
-            dokumen: '600/112/DAK/2023, 05 Juli 2023',
-            tgl_mulai: '12 Juli 2023',
-            status_tanah: 'Hak Pakai',
-            biaya: 'Rp 45.000.000',
-            persen_fisik: '100%',
-            status_pengerjaan: 'Selesai',
-            sumber: 'DAK Fisik',
-            keterangan: 'Sudah serah terima pertama (PHO)',
-            lampiran: 'BAST_Toilet_2023.pdf'
-        },
-        {
-            id: 3,
-            kode: 'KIB-F/2024/003',
-            jenis: 'Renovasi',
-            nama: 'Renovasi Benteng Pagar Keliling',
-            no_reg: '000003',
-            tingkat: 'Tidak Bertingkat',
-            beton: 'Beton',
-            luas: '-',
-            letak_bangunan: 'Sisi Timur Batas Sekolah',
-            dokumen: '600/018/SPK/2024, 02 Mei 2024',
-            tgl_mulai: '20 Mei 2024',
-            status_tanah: 'Hak Pakai',
-            biaya: 'Rp 35.000.000',
-            persen_fisik: '20%',
-            status_pengerjaan: 'Perencanaan',
-            sumber: 'APBD',
-            keterangan: 'Penggalian pondasi pagar',
-            lampiran: 'RAB_Benteng_2024.pdf'
-        }
     ]
 });
 </script>

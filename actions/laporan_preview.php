@@ -11,7 +11,7 @@ require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/ajax.php';
 require_once dirname(__DIR__) . '/includes/laporan-helper.php';
 
-require_auth(['administrator', 'operator']);
+require_auth('administrator');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_error('Metode request tidak diizinkan.', [], 405);

@@ -9,6 +9,7 @@ require_once dirname(__DIR__) . '/config/conn.php';
 require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/ajax.php';
 require_once dirname(__DIR__) . '/includes/pemeliharaan-helper.php';
+require_once dirname(__DIR__) . '/includes/aset-kelas-helper.php';
 
 require_auth(['administrator', 'operator']);
 
@@ -43,6 +44,25 @@ try {
     if (!$row) {
         $pdo->rollBack();
         json_error('Data pemeliharaan tidak ditemukan.', [], 404);
+    }
+
+    ensure_klaim_aset_table($pdo);
+    $currentUser = current_user();
+    $isOperatorRole = ($currentUser && ($currentUser['role'] ?? '') === 'operator');
+    $operatorKelasId = $isOperatorRole ? detect_operator_kelas_id($currentUser) : null;
+    $operatorLokasi = ($operatorKelasId !== null) ? pml_penempatan_to_lokasi('kelas-' . $operatorKelasId) : null;
+
+    if ($operatorKelasId !== null) {
+        $isOwner = in_array($row['lokasi'], [$operatorLokasi, 'Kelas ' . $operatorKelasId], true);
+        if (!$isOwner) {
+            $stmtKlaimCheck = $pdo->prepare("SELECT id FROM klaim_aset WHERE kelas_id = ? AND kib = ? AND aset_id = ? LIMIT 1");
+            $stmtKlaimCheck->execute([$operatorKelasId, $row['kib'], (int) $row['aset_id']]);
+            $isOwner = (bool) $stmtKlaimCheck->fetch();
+        }
+        if (!$isOwner) {
+            $pdo->rollBack();
+            json_error('Anda tidak memiliki akses untuk menghapus data pemeliharaan di luar kelas Anda.', [], 403);
+        }
     }
 
     $stmtChild = $pdo->prepare("SELECT COUNT(*) FROM pemeliharaan WHERE parent_id = ?");

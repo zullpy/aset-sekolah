@@ -9,6 +9,7 @@ require_once dirname(__DIR__) . '/config/conn.php';
 require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/ajax.php';
 require_once dirname(__DIR__) . '/includes/pemeliharaan-helper.php';
+require_once dirname(__DIR__) . '/includes/aset-kelas-helper.php';
 
 require_auth(['administrator', 'operator']);
 
@@ -128,6 +129,13 @@ try {
         }
     }
 
+    ensure_klaim_aset_table($pdo);
+
+    $currentUser = current_user();
+    $isOperatorRole = ($currentUser && ($currentUser['role'] ?? '') === 'operator');
+    $operatorKelasId = $isOperatorRole ? detect_operator_kelas_id($currentUser) : null;
+    $operatorLokasi = ($operatorKelasId !== null) ? pml_penempatan_to_lokasi('kelas-' . $operatorKelasId) : null;
+
     $actorName = pml_resolve_actor_name($pdo);
     $docsJson = !empty($relativeDocs) ? json_encode($relativeDocs, JSON_UNESCAPED_SLASHES) : null;
 
@@ -142,6 +150,21 @@ try {
             $pdo->rollBack();
             pml_cleanup_uploaded_files($uploadedFullPaths);
             json_error('Data antrean pemeliharaan tidak ditemukan.', [], 404);
+        }
+
+        // Cek izin akses pemeliharaan untuk operator per kelas
+        if ($operatorKelasId !== null) {
+            $isAllowed = in_array($sourceRow['lokasi'], [$operatorLokasi, 'Kelas ' . $operatorKelasId], true);
+            if (!$isAllowed) {
+                $stmtChkKlaim = $pdo->prepare("SELECT id FROM klaim_aset WHERE kelas_id = ? AND kib = ? AND aset_id = ? LIMIT 1");
+                $stmtChkKlaim->execute([$operatorKelasId, $sourceRow['kib'], (int) $sourceRow['aset_id']]);
+                $isAllowed = (bool) $stmtChkKlaim->fetch();
+            }
+            if (!$isAllowed) {
+                $pdo->rollBack();
+                pml_cleanup_uploaded_files($uploadedFullPaths);
+                json_error('Anda tidak memiliki izin memproses pemeliharaan aset di luar kelas Anda.', [], 403);
+            }
         }
 
         $sisaAktif = (int) $sourceRow['jumlah_aktif'];
@@ -198,20 +221,52 @@ try {
             json_error('Kondisi awal wajib dipilih.', ['field' => 'kondisi_awal'], 422);
         }
 
-        $stmtUsed = $pdo->prepare("
-            SELECT COALESCE(SUM(jumlah_aktif), 0)
-            FROM pemeliharaan
-            WHERE kib = ? AND aset_id = ? AND jumlah_aktif > 0
-              AND status IN ('Perlu pemeliharaan', 'Sedang ditindak lanjut', 'Selesai ditindak lanjut')
-            FOR UPDATE
-        ");
-        $stmtUsed->execute([$asset['kib'], $asset['aset_id']]);
-        $inMaint = (int) $stmtUsed->fetchColumn();
-        $maxAllowed = max(0, (int) $asset['jumlah_total'] - $inMaint);
-        if ($jumlah > $maxAllowed) {
-            $pdo->rollBack();
-            pml_cleanup_uploaded_files($uploadedFullPaths);
-            json_error("Jumlah melebihi sisa unit aset yang tersedia untuk pemeliharaan (maksimal {$maxAllowed} unit).", ['field' => 'jumlah'], 422);
+        if ($operatorKelasId !== null) {
+            $stmtKlaim = $pdo->prepare("SELECT jumlah FROM klaim_aset WHERE kelas_id = ? AND kib = ? AND aset_id = ? LIMIT 1");
+            $stmtKlaim->execute([$operatorKelasId, $kibId, $asetId]);
+            $klaimRow = $stmtKlaim->fetch(PDO::FETCH_ASSOC);
+            if (!$klaimRow) {
+                $pdo->rollBack();
+                pml_cleanup_uploaded_files($uploadedFullPaths);
+                json_error('Aset ini belum diklaim oleh kelas Anda.', ['field' => 'aset'], 422);
+            }
+
+            $lokasi = $operatorLokasi;
+            $klaimQty = (int) $klaimRow['jumlah'];
+
+            $stmtUsed = $pdo->prepare("
+                SELECT COALESCE(SUM(jumlah_aktif), 0)
+                FROM pemeliharaan
+                WHERE kib = ? AND aset_id = ?
+                  AND lokasi IN (?, ?)
+                  AND jumlah_aktif > 0
+                  AND status IN ('Perlu pemeliharaan', 'Sedang ditindak lanjut', 'Selesai ditindak lanjut')
+                FOR UPDATE
+            ");
+            $stmtUsed->execute([$kibId, $asetId, $operatorLokasi, 'Kelas ' . $operatorKelasId]);
+            $inMaint = (int) $stmtUsed->fetchColumn();
+            $maxAllowed = max(0, $klaimQty - $inMaint);
+            if ($jumlah > $maxAllowed) {
+                $pdo->rollBack();
+                pml_cleanup_uploaded_files($uploadedFullPaths);
+                json_error("Jumlah melebihi sisa unit aset yang tersedia untuk kelas Anda (maksimal {$maxAllowed} unit).", ['field' => 'jumlah'], 422);
+            }
+        } else {
+            $stmtUsed = $pdo->prepare("
+                SELECT COALESCE(SUM(jumlah_aktif), 0)
+                FROM pemeliharaan
+                WHERE kib = ? AND aset_id = ? AND jumlah_aktif > 0
+                  AND status IN ('Perlu pemeliharaan', 'Sedang ditindak lanjut', 'Selesai ditindak lanjut')
+                FOR UPDATE
+            ");
+            $stmtUsed->execute([$asset['kib'], $asset['aset_id']]);
+            $inMaint = (int) $stmtUsed->fetchColumn();
+            $maxAllowed = max(0, (int) $asset['jumlah_total'] - $inMaint);
+            if ($jumlah > $maxAllowed) {
+                $pdo->rollBack();
+                pml_cleanup_uploaded_files($uploadedFullPaths);
+                json_error("Jumlah melebihi sisa unit aset yang tersedia untuk pemeliharaan (maksimal {$maxAllowed} unit).", ['field' => 'jumlah'], 422);
+            }
         }
 
         $monitoringId = null;

@@ -5,9 +5,16 @@
  */
 
 require_once dirname(__DIR__) . '/includes/auth.php';
+require_once dirname(__DIR__) . '/includes/aset-kelas-helper.php';
 require_auth(['administrator', 'operator']);
 
-$pageTitle     = 'Pemeliharaan Aset - Sistem Informasi Inventaris Aset SDN Budi Karya';
+$currentUser = current_user();
+$isOperatorRole = ($currentUser && ($currentUser['role'] ?? '') === 'operator');
+$operatorKelasId = $isOperatorRole ? detect_operator_kelas_id($currentUser) : null;
+
+$pageTitle     = ($operatorKelasId !== null)
+    ? ('Pemeliharaan Kelas ' . $operatorKelasId . ' - Sistem Informasi Inventaris Aset SDN Budi Karya')
+    : 'Pemeliharaan Aset - Sistem Informasi Inventaris Aset SDN Budi Karya';
 $activeMenu    = 'pemeliharaan';
 $activeSubmenu = '';
 
@@ -17,7 +24,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
 <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/dashboard.css'); ?>">
 <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/kib.css'); ?>">
 <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/monitoring.css'); ?>">
-<link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/pemeliharaan.css'); ?>">
+<link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/pemeliharaan.css?v=' . filemtime(dirname(__DIR__) . '/assets/css/pemeliharaan.css')); ?>">
 
 <div class="app-layout">
     <?php require_once dirname(__DIR__) . '/includes/sidebar.php'; ?>
@@ -28,8 +35,14 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <!-- Header Halaman -->
             <div class="kib-page-header pml-page-header">
                 <div class="kib-header-left">
-                    <h1 class="kib-page-title pml-page-title">PEMELIHARAAN</h1>
-                    <p class="kib-page-subtitle pml-page-subtitle">Ringkasan informasi tahapan pemeliharaan aset sekolah</p>
+                    <h1 class="kib-page-title pml-page-title">
+                        <?php echo ($operatorKelasId !== null) ? ('PEMELIHARAAN KELAS ' . $operatorKelasId) : 'PEMELIHARAAN'; ?>
+                    </h1>
+                    <p class="kib-page-subtitle pml-page-subtitle">
+                        <?php echo ($operatorKelasId !== null)
+                            ? ('Ringkasan informasi tahapan pemeliharaan aset Kelas ' . $operatorKelasId)
+                            : 'Ringkasan informasi tahapan pemeliharaan aset sekolah'; ?>
+                    </p>
                 </div>
             </div>
 

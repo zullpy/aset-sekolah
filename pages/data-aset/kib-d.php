@@ -8,6 +8,9 @@ $pageTitle = 'Data Aset - KIB D - Sistem Informasi Inventaris Aset SDN Budi Kary
 $activeMenu = 'data-aset';
 $activeSubmenu = 'kib-d';
 
+require_once __DIR__ . '/../../includes/auth.php';
+require_auth('administrator');
+
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 
@@ -155,64 +158,6 @@ window.__kibEngine = new KibEngine({
         { name: 'sumber', label: 'Sumber', span: 3, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
         { name: 'harga', label: 'Harga (Rp.)', span: 6, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
         { name: 'lampiran', label: 'Lampiran', span: 6, type: 'file' }
-    ],
-    initialData: [
-        {
-            id: 1,
-            kode: 'KIB-D/2021/001',
-            nama: 'Jalan Paving Blok Halaman',
-            no_reg: '000001',
-            konstruksi: 'Paving Blok',
-            ukuran: '45 × 2 m',
-            luas: '90',
-            tahun: '2021',
-            dokumen: '600/012/Disdik/2021, 14 Juni 2021',
-            harga: 'Rp 28.500.000',
-            sumber: 'APBD',
-            lampiran: 'SPK_Paving_2021.pdf'
-        },
-        {
-            id: 2,
-            kode: 'KIB-D/2020/002',
-            nama: 'Jaringan Pipa Air Bersih & Sumur Bor',
-            no_reg: '000001',
-            konstruksi: 'Pipa PVC & Pompa',
-            ukuran: '120 m',
-            luas: '-',
-            tahun: '2020',
-            dokumen: '600/088/Sarpras/2020, 20 Des 2020',
-            harga: 'Rp 14.200.000',
-            sumber: 'BOS',
-            lampiran: 'Dokumen_Sumur_2020.pdf'
-        },
-        {
-            id: 3,
-            kode: 'KIB-D/2019/003',
-            nama: 'Parit / Drainase Terbuka',
-            no_reg: '000001',
-            konstruksi: 'Pasangan Batu Kali',
-            ukuran: '60 × 0.4 m',
-            luas: '24',
-            tahun: '2019',
-            dokumen: '600/005/Disdik/2019, 10 Mei 2019',
-            harga: 'Rp 9.800.000',
-            sumber: 'APBD',
-            lampiran: 'BA_Parit_2019.pdf'
-        },
-        {
-            id: 4,
-            kode: 'KIB-D/2018/004',
-            nama: 'Jaringan Kabel Listrik Terbuka & Panel',
-            no_reg: '000001',
-            konstruksi: 'Kabel Tembaga NYM',
-            ukuran: '80 m',
-            luas: '-',
-            tahun: '2018',
-            dokumen: '600/001/Sarpras/2018, 05 Jan 2018',
-            harga: 'Rp 6.500.000',
-            sumber: 'BOS',
-            lampiran: 'Nota_Kabel_2018.pdf'
-        }
     ]
 });
 </script>

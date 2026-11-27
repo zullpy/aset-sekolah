@@ -138,8 +138,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenStatus === 'valid') {
                             $matchedUser = $stmtFind->fetch();
 
                             if ($matchedUser) {
-                                $stmtUpdate = $pdo->prepare("UPDATE users SET password = ?, password_plain = ? WHERE id = ?");
-                                $stmtUpdate->execute([$hashedPassword, $password, $matchedUser['id']]);
+                                require_once dirname(__DIR__) . '/includes/password-vault.php';
+                                $encryptedPassword = encrypt_user_password($newPassword);
+                                $stmtUpdate = $pdo->prepare("UPDATE users SET password = ?, password_enc = ? WHERE id = ?");
+                                $stmtUpdate->execute([$hashedPassword, $encryptedPassword, $matchedUser['id']]);
                                 $updated = true;
                             } else {
                                 $errorMessage = 'Akun pengguna (' . htmlspecialchars($targetEmail) . ') tidak ditemukan di tabel pengguna database.';

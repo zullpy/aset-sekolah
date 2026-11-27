@@ -19,7 +19,7 @@ if (empty($activeMenu)) {
         $activeMenu = 'dashboard';
     } elseif (in_array($currentScript, ['kelola-akun.php', 'users.php', 'akun.php', 'user.php'])) {
         $activeMenu = 'kelola-akun';
-    } elseif (str_starts_with($currentScript, 'kib-') || in_array($currentScript, ['data-aset.php', 'aset.php'])) {
+    } elseif (str_starts_with($currentScript, 'kib-') || in_array($currentScript, ['data-aset.php', 'aset.php', 'aset-kelas.php'])) {
         $activeMenu = 'data-aset';
         if ($currentScript === 'kib-a.php') $activeSubmenu = 'kib-a';
         elseif ($currentScript === 'kib-b.php') $activeSubmenu = 'kib-b';
@@ -81,6 +81,12 @@ if (!isset($assetsPath)) {
     }
 }
 $logoUrl    = $appUrlPath . 'assets/logo.webp';
+$isOperatorRole = (strtolower($_SESSION['role'] ?? '') === 'operator');
+$operatorKelasId = null;
+if ($isOperatorRole) {
+    require_once __DIR__ . '/aset-kelas-helper.php';
+    $operatorKelasId = detect_operator_kelas_id($_SESSION);
+}
 
 // Tentukan data URI agar logo selalu tampil seketika tanpa error path / 404
 $logoLocalFile = dirname(__DIR__) . '/assets/logo.webp';
@@ -102,6 +108,7 @@ $logoSrc       = file_exists($logoLocalFile)
 <aside class="app-sidebar" id="appSidebar">
     <!-- Navigation Menu -->
     <ul class="sidebar-nav">
+        <?php if (!$isOperatorRole): ?>
         <!-- 1. Dashboard -->
         <li class="sidebar-item <?php echo ($activeMenu === 'dashboard') ? 'active' : ''; ?>">
             <a href="<?php echo htmlspecialchars($basePath . 'dashboard.php'); ?>" class="sidebar-link">
@@ -121,8 +128,24 @@ $logoSrc       = file_exists($logoLocalFile)
                 </div>
             </a>
         </li>
+        <?php endif; ?>
 
-        <!-- 3. Data Aset (Collapsible Dropdown) -->
+        <!-- 3. Data Aset -->
+        <?php if ($isOperatorRole): ?>
+        <?php
+            $opAsetUrl = ($operatorKelasId !== null)
+                ? ($basePath . 'aset-kelas.php?kelas_id=' . $operatorKelasId)
+                : ($basePath . 'aset-kelas.php');
+        ?>
+        <li class="sidebar-item <?php echo ($activeMenu === 'data-aset') ? 'active' : ''; ?>">
+            <a href="<?php echo htmlspecialchars($opAsetUrl); ?>" class="sidebar-link">
+                <div class="sidebar-link-content">
+                    <i class="ph-bold ph-package sidebar-icon"></i>
+                    <span>Data Aset</span>
+                </div>
+            </a>
+        </li>
+        <?php else: ?>
         <?php $isDataAsetOpen = ($activeMenu === 'data-aset'); ?>
         <li class="sidebar-item sidebar-group <?php echo $isDataAsetOpen ? 'is-open active' : ''; ?>" id="group-data-aset">
             <button type="button" class="sidebar-btn" onclick="toggleSidebarGroup('group-data-aset')" aria-expanded="<?php echo $isDataAsetOpen ? 'true' : 'false'; ?>">
@@ -165,8 +188,24 @@ $logoSrc       = file_exists($logoLocalFile)
                 </li>
             </ul>
         </li>
+        <?php endif; ?>
 
-        <!-- 4. Monitoring (Collapsible Dropdown) -->
+        <!-- 4. Monitoring -->
+        <?php if ($isOperatorRole): ?>
+        <?php
+            $opMonTarget = ($operatorKelasId !== null)
+                ? ('kelas-' . $operatorKelasId . '.php')
+                : 'aset-umum.php';
+        ?>
+        <li class="sidebar-item <?php echo ($activeMenu === 'monitoring') ? 'active' : ''; ?>">
+            <a href="<?php echo htmlspecialchars($monitoringPath . $opMonTarget); ?>" class="sidebar-link">
+                <div class="sidebar-link-content">
+                    <i class="ph-bold ph-desktop sidebar-icon"></i>
+                    <span>Monitoring</span>
+                </div>
+            </a>
+        </li>
+        <?php else: ?>
         <?php $isMonitoringOpen = ($activeMenu === 'monitoring'); ?>
         <li class="sidebar-item sidebar-group <?php echo $isMonitoringOpen ? 'is-open active' : ''; ?>" id="group-monitoring">
             <button type="button" class="sidebar-btn" onclick="toggleSidebarGroup('group-monitoring')" aria-expanded="<?php echo $isMonitoringOpen ? 'true' : 'false'; ?>">
@@ -177,6 +216,11 @@ $logoSrc       = file_exists($logoLocalFile)
                 <i class="ph-bold ph-caret-down sidebar-caret"></i>
             </button>
             <ul class="sidebar-submenu">
+                <li class="sidebar-subitem <?php echo ($activeSubmenu === 'semua') ? 'active' : ''; ?>" data-monitoring-subitem="semua">
+                    <a href="<?php echo htmlspecialchars($monitoringPath . 'semua.php'); ?>" class="sidebar-sublink">
+                        <span>Semua Lokasi</span>
+                    </a>
+                </li>
                 <li class="sidebar-subitem <?php echo ($activeSubmenu === 'kelas-1') ? 'active' : ''; ?>" data-monitoring-subitem="kelas-1">
                     <a href="<?php echo htmlspecialchars($monitoringPath . 'kelas-1.php'); ?>" class="sidebar-sublink">
                         <span>Kelas 1</span>
@@ -214,6 +258,7 @@ $logoSrc       = file_exists($logoLocalFile)
                 </li>
             </ul>
         </li>
+        <?php endif; ?>
 
         <!-- 5. Pemeliharaan -->
         <li class="sidebar-item <?php echo ($activeMenu === 'pemeliharaan') ? 'active' : ''; ?>">
@@ -225,6 +270,7 @@ $logoSrc       = file_exists($logoLocalFile)
             </a>
         </li>
 
+        <?php if (!$isOperatorRole): ?>
         <!-- 6. Laporan -->
         <li class="sidebar-item <?php echo ($activeMenu === 'laporan') ? 'active' : ''; ?>">
             <a href="<?php echo htmlspecialchars($basePath . 'laporan.php'); ?>" class="sidebar-link">
@@ -234,19 +280,32 @@ $logoSrc       = file_exists($logoLocalFile)
                 </div>
             </a>
         </li>
+        <?php endif; ?>
     </ul>
 
     <!-- Footer Profile & Logout -->
     <div class="sidebar-footer">
+        <?php if ($isOperatorRole): ?>
+        <div class="sidebar-user" title="Profil Operator">
+            <div class="sidebar-user-avatar">
+                <i class="ph-fill ph-user"></i>
+            </div>
+            <div class="sidebar-user-info">
+                <span class="sidebar-user-name"><?php echo htmlspecialchars($_SESSION['username'] ?? 'Operator'); ?></span>
+                <span class="sidebar-user-role"><?php echo htmlspecialchars($_SESSION['role_display'] ?? ucfirst($_SESSION['role'] ?? 'Operator')); ?></span>
+            </div>
+        </div>
+        <?php else: ?>
         <a href="<?php echo htmlspecialchars($basePath . 'kelola-akun.php'); ?>" class="sidebar-user" title="Profil Admin">
             <div class="sidebar-user-avatar">
                 <i class="ph-fill ph-user"></i>
             </div>
             <div class="sidebar-user-info">
                 <span class="sidebar-user-name"><?php echo htmlspecialchars($_SESSION['username'] ?? 'Admin Aset'); ?></span>
-                <span class="sidebar-user-role"><?php echo htmlspecialchars($_SESSION['role'] ?? 'Administrator'); ?></span>
+                <span class="sidebar-user-role"><?php echo htmlspecialchars($_SESSION['role_display'] ?? ucfirst($_SESSION['role'] ?? 'Administrator')); ?></span>
             </div>
         </a>
+        <?php endif; ?>
         <a href="<?php echo htmlspecialchars($basePath . 'logout.php'); ?>" class="sidebar-logout-btn" title="Keluar / Logout" onclick="confirmLogout(event, this.href);">
             <i class="ph-bold ph-sign-out"></i>
         </a>

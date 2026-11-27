@@ -8,6 +8,9 @@ $pageTitle = 'Data Aset - KIB C - Sistem Informasi Inventaris Aset SDN Budi Kary
 $activeMenu = 'data-aset';
 $activeSubmenu = 'kib-c';
 
+require_once __DIR__ . '/../../includes/auth.php';
+require_auth('administrator');
+
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 
@@ -158,113 +161,6 @@ window.__kibEngine = new KibEngine({
         { name: 'sumber', label: 'Sumber', span: 4, required: true, type: 'select', default: 'Hibah', options: ['Hibah', 'Pembelian', 'APBN', 'APBD', 'BOS'] },
         { name: 'harga', label: 'Harga (Rp.)', span: 4, type: 'currency', required: true, placeholder: 'ex : 80.000.000' },
         { name: 'lampiran', label: 'Lampiran', span: 4, type: 'file' }
-    ],
-    initialData: [
-        {
-            id: 1,
-            kode: 'KIB-C/1997/001',
-            nama: 'Ruang Kelas 1',
-            no_reg: '000001',
-            konstruksi: 'Beton',
-            luas: '56',
-            lokasi: 'Ds. Nangerang Kec. Cigalontang',
-            tgl_izin: '12 Mei 1997',
-            status_tanah: 'Hak Pakai',
-            tahun: '1997',
-            harga: 'Rp 85.000.000',
-            sumber: 'APBD',
-            lampiran: 'IMB_Kelas_1.pdf'
-        },
-        {
-            id: 2,
-            kode: 'KIB-C/1997/001',
-            nama: 'Ruang Kelas 2',
-            no_reg: '000002',
-            konstruksi: 'Beton',
-            luas: '56',
-            lokasi: 'Ds. Nangerang Kec. Cigalontang',
-            tgl_izin: '12 Mei 1997',
-            status_tanah: 'Hak Pakai',
-            tahun: '1997',
-            harga: 'Rp 85.000.000',
-            sumber: 'APBD',
-            lampiran: 'IMB_Kelas_2.pdf'
-        },
-        {
-            id: 3,
-            kode: 'KIB-C/1997/001',
-            nama: 'Ruang Kelas 3',
-            no_reg: '000003',
-            konstruksi: 'Beton',
-            luas: '56',
-            lokasi: 'Ds. Nangerang Kec. Cigalontang',
-            tgl_izin: '12 Mei 1997',
-            status_tanah: 'Hak Pakai',
-            tahun: '1997',
-            harga: 'Rp 85.000.000',
-            sumber: 'APBD',
-            lampiran: 'IMB_Kelas_3.pdf'
-        },
-        {
-            id: 4,
-            kode: 'KIB-C/1997/001',
-            nama: 'Ruang Kelas 4',
-            no_reg: '000004',
-            konstruksi: 'Beton',
-            luas: '56',
-            lokasi: 'Ds. Nangerang Kec. Cigalontang',
-            tgl_izin: '12 Mei 1997',
-            status_tanah: 'Hak Pakai',
-            tahun: '1997',
-            harga: 'Rp 85.000.000',
-            sumber: 'APBD',
-            lampiran: 'IMB_Kelas_4.pdf'
-        },
-        {
-            id: 5,
-            kode: 'KIB-C/1997/001',
-            nama: 'Ruang Kelas 5',
-            no_reg: '000005',
-            konstruksi: 'Beton',
-            luas: '56',
-            lokasi: 'Ds. Nangerang Kec. Cigalontang',
-            tgl_izin: '12 Mei 1997',
-            status_tanah: 'Hak Pakai',
-            tahun: '1997',
-            harga: 'Rp 85.000.000',
-            sumber: 'APBD',
-            lampiran: 'IMB_Kelas_5.pdf'
-        },
-        {
-            id: 6,
-            kode: 'KIB-C/1997/001',
-            nama: 'Ruang Kelas 6',
-            no_reg: '000006',
-            konstruksi: 'Beton',
-            luas: '56',
-            lokasi: 'Ds. Nangerang Kec. Cigalontang',
-            tgl_izin: '12 Mei 1997',
-            status_tanah: 'Hak Pakai',
-            tahun: '1997',
-            harga: 'Rp 85.000.000',
-            sumber: 'APBD',
-            lampiran: 'IMB_Kelas_6.pdf'
-        },
-        {
-            id: 7,
-            kode: 'KIB-C/1997/002',
-            nama: 'Ruang Kantor & Guru',
-            no_reg: '000001',
-            konstruksi: 'Beton',
-            luas: '72',
-            lokasi: 'Ds. Nangerang Kec. Cigalontang',
-            tgl_izin: '12 Mei 1997',
-            status_tanah: 'Hak Pakai',
-            tahun: '1997',
-            harga: 'Rp 110.000.000',
-            sumber: 'APBD',
-            lampiran: 'IMB_Kantor_Guru.pdf'
-        }
     ]
 });
 </script>

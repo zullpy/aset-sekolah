@@ -93,7 +93,7 @@ $tanggalStr = date('j') . ' ' . ($bulanArray[(int)date('n')] ?? date('M')) . ' '
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"/>
 
     <!-- Header & Layout Stylesheet & SweetAlert2 Theme -->
-    <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/header.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/header.css?v=' . filemtime(dirname(__DIR__) . '/assets/css/header.css')); ?>">
     <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($assetsPath . 'css/sweetalert-theme.css'); ?>">
 </head>
 <body>

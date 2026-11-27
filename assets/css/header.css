@@ -393,8 +393,9 @@ body {
         left: 0;
         top: var(--header-height, 64px) !important;
         bottom: 0 !important;
-        height: calc(100vh - var(--header-height, 64px)) !important;
-        max-height: calc(100vh - var(--header-height, 64px)) !important;
+        height: auto !important;
+        max-height: none !important;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
         z-index: 101 !important;
         transform: translateX(-100%);
         transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;

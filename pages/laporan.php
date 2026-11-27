@@ -9,7 +9,7 @@ require_once dirname(__DIR__) . '/config/conn.php';
 require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/laporan-helper.php';
 
-require_auth(['administrator', 'operator']);
+require_auth('administrator');
 
 $pageTitle     = 'Laporan - Sistem Informasi Inventaris Aset SDN Budi Karya';
 $activeMenu    = 'laporan';

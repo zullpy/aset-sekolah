@@ -10,8 +10,27 @@ require_once dirname(__DIR__) . '/config/conn.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/ajax.php';
 require_once __DIR__ . '/pemeliharaan-helper.php';
+require_once __DIR__ . '/aset-kelas-helper.php';
 
 require_auth(['administrator', 'operator']);
+
+function assert_monitoring_penempatan_access(?array $user, string $penempatan): void
+{
+    if (!$user) {
+        json_error('Sesi tidak valid.', [], 401);
+    }
+    $role = strtolower(trim((string) ($user['role'] ?? '')));
+    if ($role === 'administrator') {
+        return;
+    }
+    $assignedKelas = detect_operator_kelas_id($user);
+    if ($assignedKelas !== null) {
+        $expected = 'kelas-' . $assignedKelas;
+        if ($penempatan !== $expected) {
+            json_error('Anda hanya berwenang mengakses monitoring ' . MONITORING_LOCATIONS[$expected] . '.', [], 403);
+        }
+    }
+}
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -97,6 +116,50 @@ function parse_aset_jumlah_int($raw): int
 
 function fetch_all_monitoring_assets(PDO $pdo, string $penempatan = 'umum'): array
 {
+    // Untuk lokasi per kelas (kelas-1 s/d kelas-6), sumber aset berasal dari klaim_aset kelas tersebut
+    if (preg_match('/^kelas-([1-6])$/', $penempatan, $m)) {
+        ensure_klaim_aset_table($pdo);
+        $kelasId = (int) $m[1];
+
+        $usedMap = [];
+        $stmtUsed = $pdo->prepare("SELECT kib, aset_id, COALESCE(SUM(jumlah), 0) AS used_qty FROM monitoring_aset WHERE penempatan = ? GROUP BY kib, aset_id");
+        $stmtUsed->execute([$penempatan]);
+        while ($u = $stmtUsed->fetch(PDO::FETCH_ASSOC)) {
+            $usedMap[$u['kib'] . ':' . (int) $u['aset_id']] = (int) $u['used_qty'];
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT kib, aset_id, MAX(kode_aset) AS kode, MAX(nama_aset) AS nama, MAX(jenis_aset) AS jenis, COALESCE(SUM(jumlah), 0) AS total_klaim
+            FROM klaim_aset
+            WHERE kelas_id = ?
+            GROUP BY kib, aset_id
+            ORDER BY nama ASC, aset_id ASC
+        ");
+        $stmt->execute([$kelasId]);
+        $options = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $kibId = (string) $row['kib'];
+            $asetId = (int) $row['aset_id'];
+            $totalQty = max(1, (int) $row['total_klaim']);
+            $usedQty = $usedMap[$kibId . ':' . $asetId] ?? 0;
+            $sisaKuota = max(0, $totalQty - $usedQty);
+
+            $options[] = [
+                'kib'               => $kibId,
+                'kib_label'         => MONITORING_KIB_TABLES[$kibId]['label'] ?? strtoupper($kibId),
+                'aset_id'           => $asetId,
+                'kode'              => (string) $row['kode'],
+                'nama'              => (string) $row['nama'],
+                'jenis'             => (string) $row['jenis'],
+                'jumlah'            => $totalQty,
+                'jumlah_total'      => $totalQty,
+                'jumlah_termonitor' => $usedQty,
+                'sisa_kuota'        => $sisaKuota,
+            ];
+        }
+        return $options;
+    }
+
     $allowedKibs = allowed_kibs_for_penempatan($penempatan);
 
     $usedMap = [];
@@ -151,6 +214,18 @@ function fetch_all_monitoring_assets(PDO $pdo, string $penempatan = 'umum'): arr
 
 function get_registered_asset_stats(PDO $pdo, string $penempatan = 'semua'): array
 {
+    if (preg_match('/^kelas-([1-6])$/', $penempatan, $m)) {
+        ensure_klaim_aset_table($pdo);
+        $kelasId = (int) $m[1];
+        $stmt = $pdo->prepare("SELECT COUNT(DISTINCT CONCAT(kib, ':', aset_id)) AS aset_count, COALESCE(SUM(jumlah), 0) AS unit_total FROM klaim_aset WHERE kelas_id = ?");
+        $stmt->execute([$kelasId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return [
+            'aset_count' => (int) ($row['aset_count'] ?? 0),
+            'unit_total' => (int) ($row['unit_total'] ?? 0),
+        ];
+    }
+
     $allowedKibs = allowed_kibs_for_penempatan($penempatan);
     $asetCount = 0;
     $unitTotal = 0;
@@ -264,6 +339,8 @@ try {
             if ($penempatan === null) {
                 json_error('Parameter penempatan tidak valid.', [], 422);
             }
+            assert_monitoring_penempatan_access(current_user(), $penempatan);
+            session_write_close();
 
             if ($penempatan === 'semua') {
                 $stmt = $pdo->query("SELECT * FROM monitoring_aset ORDER BY tgl_update DESC, id DESC");
@@ -315,6 +392,8 @@ try {
             if ($penempatan === null) {
                 json_error('Parameter penempatan harus salah satu dari Kelas 1-6 atau Aset Umum.', [], 422);
             }
+            assert_monitoring_penempatan_access(current_user(), $penempatan);
+            session_write_close();
 
             $assetOptions = fetch_all_monitoring_assets($pdo, $penempatan);
             json_success('Daftar aset KIB berhasil dimuat.', [
@@ -336,6 +415,7 @@ try {
             if ($penempatan === null) {
                 json_error('Parameter penempatan tidak valid.', ['field' => 'penempatan'], 422);
             }
+            assert_monitoring_penempatan_access(current_user(), $penempatan);
 
             $id      = (int) ($_POST['id'] ?? 0);
             $kibId   = strtolower(trim((string) ($_POST['kib'] ?? '')));
@@ -352,14 +432,74 @@ try {
                 json_error('Silakan pilih Nama Aset yang tersedia pada Data Aset.', ['field' => 'aset_key'], 422);
             }
 
-            $allowedKibs = allowed_kibs_for_penempatan($penempatan);
-            if (!in_array($kibId, $allowedKibs, true)) {
-                json_error('Untuk lokasi per kelas, hanya aset KIB B dan KIB E yang diperbolehkan.', ['field' => 'aset_key'], 422);
-            }
-
-            $asset = find_monitoring_asset($pdo, $kibId, $asetId);
-            if ($asset === null) {
-                json_error('Aset tidak ditemukan pada Data Aset.', ['field' => 'aset_key'], 422);
+            $isKelasPenempatan = (bool) preg_match('/^kelas-([1-6])$/', $penempatan, $kelasMatch);
+            if ($isKelasPenempatan) {
+                ensure_klaim_aset_table($pdo);
+                $kelasId = (int) $kelasMatch[1];
+                $stmtClaimed = $pdo->prepare("
+                    SELECT kib, aset_id, MAX(kode_aset) AS kode, MAX(nama_aset) AS nama, MAX(jenis_aset) AS jenis, COALESCE(SUM(jumlah), 0) AS total_klaim
+                    FROM klaim_aset
+                    WHERE kelas_id = ? AND kib = ? AND aset_id = ?
+                    GROUP BY kib, aset_id
+                    LIMIT 1
+                ");
+                $stmtClaimed->execute([$kelasId, $kibId, $asetId]);
+                $claimedRow = $stmtClaimed->fetch(PDO::FETCH_ASSOC);
+                if (!$claimedRow) {
+                    $master = fetch_master_aset_by_id($pdo, $kibId, $asetId);
+                    if ($master) {
+                        $cUser = current_user();
+                        $insKlaim = $pdo->prepare("
+                            INSERT INTO klaim_aset (
+                                kelas_id, kib, aset_id, kode_aset, jenis_aset, jenis_kib,
+                                nama_aset, no_reg, spesifikasi, tahun, sumber, harga, jumlah, user_id
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ");
+                        $insKlaim->execute([
+                            $kelasId,
+                            $kibId,
+                            $asetId,
+                            $master['kode_aset'],
+                            $master['jenis_aset'],
+                            $master['jenis_kib'],
+                            $master['nama_aset'],
+                            $master['no_reg'] ?? '00001',
+                            $master['spesifikasi'] ?? '',
+                            $master['tahun'] ?? '',
+                            $master['sumber'] ?? '',
+                            $master['harga'] ?? '',
+                            $jumlah,
+                            $cUser['id'] ?? null
+                        ]);
+                        $claimedRow = [
+                            'kode'        => $master['kode_aset'],
+                            'nama'        => $master['nama_aset'],
+                            'jenis'       => $master['jenis_aset'],
+                            'total_klaim' => $jumlah
+                        ];
+                    } else {
+                        json_error('Aset ini belum diklaim pada Data Aset Kelas ' . $kelasId . '.', ['field' => 'aset_key'], 422);
+                    }
+                }
+                $asset = [
+                    'kib'          => $kibId,
+                    'kib_label'    => MONITORING_KIB_TABLES[$kibId]['label'] ?? strtoupper($kibId),
+                    'aset_id'      => $asetId,
+                    'kode'         => (string) $claimedRow['kode'],
+                    'nama'         => (string) $claimedRow['nama'],
+                    'jenis'        => (string) $claimedRow['jenis'],
+                    'jumlah'       => (int) $claimedRow['total_klaim'],
+                    'jumlah_total' => (int) $claimedRow['total_klaim'],
+                ];
+            } else {
+                $allowedKibs = allowed_kibs_for_penempatan($penempatan);
+                if (!in_array($kibId, $allowedKibs, true)) {
+                    json_error('Jenis KIB aset tidak diizinkan untuk lokasi ini.', ['field' => 'aset_key'], 422);
+                }
+                $asset = find_monitoring_asset($pdo, $kibId, $asetId);
+                if ($asset === null) {
+                    json_error('Aset tidak ditemukan pada Data Aset.', ['field' => 'aset_key'], 422);
+                }
             }
 
             if (!in_array($kondisi, MONITORING_CONDITIONS, true)) {
@@ -370,15 +510,20 @@ try {
                 json_error('Jumlah minimal 1.', ['field' => 'jumlah'], 422);
             }
 
-            $stmtUsed = $pdo->prepare("SELECT COALESCE(SUM(jumlah), 0) FROM monitoring_aset WHERE kib = ? AND aset_id = ? AND id <> ?");
-            $stmtUsed->execute([$asset['kib'], $asset['aset_id'], $id]);
+            if ($isKelasPenempatan) {
+                $stmtUsed = $pdo->prepare("SELECT COALESCE(SUM(jumlah), 0) FROM monitoring_aset WHERE penempatan = ? AND kib = ? AND aset_id = ? AND id <> ?");
+                $stmtUsed->execute([$penempatan, $asset['kib'], $asset['aset_id'], $id]);
+            } else {
+                $stmtUsed = $pdo->prepare("SELECT COALESCE(SUM(jumlah), 0) FROM monitoring_aset WHERE kib = ? AND aset_id = ? AND id <> ?");
+                $stmtUsed->execute([$asset['kib'], $asset['aset_id'], $id]);
+            }
             $usedOther = (int) $stmtUsed->fetchColumn();
             $maxAllowed = max(0, (int) $asset['jumlah_total'] - $usedOther);
             if ($jumlah > $maxAllowed) {
                 if ($usedOther > 0) {
-                    $quotaErr = "Jumlah melebihi sisa kuota aset (total di KIB {$asset['jumlah_total']} unit, sudah termonitor {$usedOther} unit di seluruh lokasi, sisa {$maxAllowed} unit).";
+                    $quotaErr = "Jumlah melebihi sisa kuota aset (total diklaim/terdaftar {$asset['jumlah_total']} unit, sudah termonitor {$usedOther} unit, sisa {$maxAllowed} unit).";
                 } else {
-                    $quotaErr = "Jumlah melebihi total aset di KIB (maksimal {$maxAllowed} unit).";
+                    $quotaErr = "Jumlah melebihi total aset yang tersedia (maksimal {$maxAllowed} unit).";
                 }
                 json_error($quotaErr, ['field' => 'jumlah'], 422);
             }
@@ -530,6 +675,7 @@ try {
             if ($penempatan === null || $id <= 0) {
                 json_error('Parameter penempatan atau ID tidak valid.', [], 422);
             }
+            assert_monitoring_penempatan_access(current_user(), $penempatan);
 
             $stmtFind = $pdo->prepare("SELECT nama_aset, kode_aset FROM monitoring_aset WHERE id = ? AND penempatan = ? LIMIT 1");
             $stmtFind->execute([$id, $penempatan]);
